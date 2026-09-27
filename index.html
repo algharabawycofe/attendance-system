@@ -32,6 +32,7 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .login-field input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-light)}
 .login-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border-radius:10px;font-size:15px;font-weight:700;margin-top:8px;transition:all .2s}
 .login-btn:hover{transform:translateY(-1px)}
+.login-btn:disabled{background:var(--gray-300);cursor:not-allowed;transform:none}
 .login-error{background:#fef2f2;color:var(--danger);padding:11px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-top:14px;border:1px solid #fecaca;display:none}
 .login-hint{text-align:center;font-size:12px;color:var(--gray-500);margin-top:20px;padding-top:18px;border-top:1px solid var(--gray-100)}
 .app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:64px 1fr;grid-template-areas:"sidebar header" "sidebar main";height:100vh;overflow:hidden}
@@ -248,7 +249,7 @@ const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<'
 const norm = s => String(s==null?'':s).trim().toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/\s+/g,'');
 const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
 
-/* ✅ FIX #2: date helpers use LOCAL time, not UTC */
+/* ✅ FIX: date helpers use LOCAL time, not UTC */
 const localKey = d => {
   const dt = (d instanceof Date) ? d : new Date(d);
   return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
@@ -326,14 +327,19 @@ async function fsBatchAdd(n, items){
     await b.commit();
   }
 }
+
+/* ✅ FIX: loadAll has try/finally so loader never gets stuck */
 async function loadAll(){
   showLoader(true);
-  const [b, u, s, e, p, d] = await Promise.all([
-    fsAll('branches'), fsAll('users'), fsAll('shifts'),
-    fsAll('employees'), fsAll('punches'), fsAll('daily')
-  ]);
-  Object.assign(DB, { branches:b, users:u, shifts:s, employees:e, punches:p, daily:d });
-  showLoader(false);
+  try {
+    const [b, u, s, e, p, d] = await Promise.all([
+      fsAll('branches'), fsAll('users'), fsAll('shifts'),
+      fsAll('employees'), fsAll('punches'), fsAll('daily')
+    ]);
+    Object.assign(DB, { branches:b, users:u, shifts:s, employees:e, punches:p, daily:d });
+  } finally {
+    showLoader(false);
+  }
 }
 function startLive(){
   unsubs.forEach(u => { try{ u(); }catch(e){} });
@@ -342,6 +348,8 @@ function startLive(){
     unsubs.push(onSnapshot(collection(db, col), snap => {
       DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       if(currentUser && !['reports','employee'].includes(activePage)) refreshPage();
+    }, err => {
+      console.error('onSnapshot error for', col, err);
     }));
   });
 }
@@ -355,19 +363,33 @@ const getDefaultShift = bId => {
   return b?.defaultShiftId ? getShift(b.defaultShiftId) : null;
 };
 
+/* ✅ FIX: checkSetup has try/finally + shows error instead of stuck loader */
 async function checkSetup(){
   showLoader(true);
-  const users = await fsAll('users');
-  showLoader(false);
-  const setup = users.length === 0;
-  window.__setup = setup;
-  $('loginTitle').textContent = setup ? 'إنشاء حساب المدير' : 'نظام الحضور';
-  $('loginSub').textContent = setup ? 'أدخل بيانات حساب المدير الرئيسي' : 'تسجيل الدخول';
-  $('loginNameWrap').style.display = setup ? 'block' : 'none';
-  $('loginBtn').textContent = setup ? 'إنشاء الحساب' : 'دخول';
-  $('loginHint').textContent = setup ? '' : 'يرجى التواصل مع الإدارة للحصول على بيانات الدخول';
-  $('loginPage').style.display = 'flex';
-  $('app').style.display = 'none';
+  try {
+    const users = await fsAll('users');
+    const setup = users.length === 0;
+    window.__setup = setup;
+    $('loginTitle').textContent = setup ? 'إنشاء حساب المدير' : 'نظام الحضور';
+    $('loginSub').textContent = setup ? 'أدخل بيانات حساب المدير الرئيسي' : 'تسجيل الدخول';
+    $('loginNameWrap').style.display = setup ? 'block' : 'none';
+    $('loginBtn').textContent = setup ? 'إنشاء الحساب' : 'دخول';
+    $('loginHint').textContent = setup ? '' : 'يرجى التواصل مع الإدارة للحصول على بيانات الدخول';
+    $('loginBtn').disabled = false;
+    $('loginPage').style.display = 'flex';
+    $('app').style.display = 'none';
+  } catch(e){
+    console.error('checkSetup failed:', e);
+    $('loginPage').style.display = 'flex';
+    $('app').style.display = 'none';
+    const err = $('loginErr');
+    err.textContent = '⚠️ فشل الاتصال بقاعدة البيانات: ' + (e?.message || e);
+    err.style.display = 'block';
+    $('loginBtn').disabled = true;
+    $('loginHint').textContent = 'افتح Console (F12) للتفاصيل';
+  } finally {
+    showLoader(false);
+  }
 }
 async function doLogin(){
   const u = $('loginUser').value.trim();
@@ -392,15 +414,16 @@ async function doLogin(){
     const users = await fsAll('users');
     const ph = await hash(p);
     const user = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.passwordHash === ph);
-    if(!user){ err.textContent = 'بيانات الدخول غير صحيحة'; err.style.display = 'block'; showLoader(false); return; }
+    if(!user){ err.textContent = 'بيانات الدخول غير صحيحة'; err.style.display = 'block'; return; }
     currentUser = user;
     sessionStorage.setItem('uid', user.id);
     await loadAll();
     enterApp();
   } catch(e){
-    showLoader(false);
-    err.textContent = e.message;
+    err.textContent = '⚠️ خطأ: ' + (e?.message || e);
     err.style.display = 'block';
+  } finally {
+    showLoader(false);
   }
 }
 function doLogout(){
@@ -458,7 +481,7 @@ function navigateTo(page){
   renderPage();
   $('mainContent').scrollTop = 0;
 }
-/* ✅ FIX #5: don't wipe form while a save is pending */
+/* ✅ FIX: don't wipe form while a save is pending */
 function refreshPage(){
   const ae = document.activeElement;
   if(ae && ['INPUT','SELECT','TEXTAREA'].includes(ae.tagName)) return;
@@ -529,7 +552,7 @@ function renderDaily(){
         ${DB.branches.map(b => `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
       </select>
     </div>` : '';
-  /* ✅ FIX #2: use local date keys for prev/next navigation */
+  /* ✅ FIX: use local date keys for prev/next navigation */
   const base = new Date(date+'T00:00:00');
   const y = new Date(base); y.setDate(y.getDate()-1);
   const yn = new Date(base); yn.setDate(yn.getDate()+1);
@@ -665,13 +688,12 @@ async function persistRow(tr, empId){
   } catch(e){ console.error(e); }
 }
 
-/* ✅ FIX #3: saveAll now uses a single atomic batch (with chunked fallback) */
+/* ✅ FIX: saveAll now uses a single atomic batch (with chunked fallback) */
 async function saveAll(bId, date){
   const rows = document.querySelectorAll('tr[data-empid]');
   if(!rows.length) return;
   showLoader(true);
   try {
-    // cancel any pending per-row timeouts
     rows.forEach(tr => { clearTimeout(tr.__t); tr.classList.remove('row-saving'); });
 
     const old = DB.daily.filter(d => d.branchId === bId && d.dateKey === date);
@@ -691,7 +713,6 @@ async function saveAll(bId, date){
       newRecords.forEach(data => b.set(doc(collection(db, 'daily')), data));
       await b.commit();
     } else {
-      // Chunked fallback (very large branch). Delete then add.
       for(let i=0; i<old.length; i+=400){
         const b = writeBatch(db);
         old.slice(i, i+400).forEach(d => b.delete(doc(db, 'daily', d.id)));
@@ -705,9 +726,9 @@ async function saveAll(bId, date){
     }
 
     await loadAll();
-    showLoader(false);
     renderPage();
-  } catch(e){ showLoader(false); alert(e.message); }
+  } catch(e){ alert('خطأ في الحفظ: ' + e.message); }
+  finally { showLoader(false); }
 }
 async function copyFromYesterday(bId, date){
   const base = new Date(date+'T00:00:00');
@@ -799,9 +820,9 @@ async function addBranch(){
     const b = await fsAdd('branches', { name, defaultShiftId:'', createdAt: Date.now() });
     await fsAdd('users', { username: user, passwordHash: await hash(pass), role: 'branch', name: mgr, branchId: b.id, createdAt: Date.now() });
     await loadAll();
-    showLoader(false);
     renderPage();
-  } catch(e){ showLoader(false); alert(e.message); }
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
 }
 async function setDefaultShift(bId, shiftId){
   await fsUpd('branches', bId, { defaultShiftId: shiftId });
@@ -817,8 +838,8 @@ async function editBranchPass(bId){
   try {
     await fsUpd('users', u.id, { passwordHash: await hash(np) });
     await loadAll();
-    showLoader(false);
-  } catch(e){ showLoader(false); alert(e.message); }
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
 }
 async function deleteBranch(id){
   if(!confirm('سيتم حذف الفرع وكل بياناته. متابعة؟')) return;
@@ -831,9 +852,9 @@ async function deleteBranch(id){
     await fsBatchDel('punches', p => p.branchId === id);
     await fsBatchDel('daily', d => d.branchId === id);
     await loadAll();
-    showLoader(false);
     renderPage();
-  } catch(e){ showLoader(false); alert(e.message); }
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
 }
 
 function renderShiftsTab(){
@@ -909,9 +930,9 @@ async function addShift(){
     const br = getBranch(bId);
     if(br && !br.defaultShiftId) await fsUpd('branches', bId, { defaultShiftId: sh.id });
     await loadAll();
-    showLoader(false);
     renderPage();
-  } catch(e){ showLoader(false); alert(e.message); }
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
 }
 async function deleteShift(id){
   if(!confirm('حذف الشفت؟')) return;
@@ -921,9 +942,9 @@ async function deleteShift(id){
     for(const e of DB.employees.filter(e => e.shiftId === id)) await fsUpd('employees', e.id, { shiftId: '' });
     for(const b of DB.branches.filter(b => b.defaultShiftId === id)) await fsUpd('branches', b.id, { defaultShiftId: '' });
     await loadAll();
-    showLoader(false);
     renderPage();
-  } catch(e){ showLoader(false); alert(e.message); }
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
 }
 
 function renderEmployeesTab(){
@@ -1025,9 +1046,9 @@ async function addEmp(){
   try {
     await fsAdd('employees', { branchId:bId, name, code, shiftId, active: true, createdAt: Date.now() });
     await loadAll();
-    showLoader(false);
     renderPage();
-  } catch(e){ showLoader(false); alert(e.message); }
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
 }
 async function setEmpShift(id, shiftId){
   await fsUpd('employees', id, { shiftId });
@@ -1042,9 +1063,9 @@ async function deleteEmp(id){
     await fsBatchDel('daily', d => d.empId === id);
     await fsBatchDel('punches', p => p.empId === id);
     await loadAll();
-    showLoader(false);
     renderPage();
-  } catch(e){ showLoader(false); alert(e.message); }
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
 }
 
 function showModal(html){
@@ -1100,10 +1121,10 @@ async function confirmTransfer(empId){
   try {
     await fsUpd('employees', empId, { branchId: toBranchId, transferHistory: history, lastTransfer: date });
     await loadAll();
-    showLoader(false);
     closeModal();
     renderPage();
-  } catch(e){ showLoader(false); alert(e.message); }
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
 }
 async function deactivateEmp(empId){
   const emp = DB.employees.find(e => e.id === empId);
@@ -1148,10 +1169,10 @@ async function confirmDeactivate(empId){
   try {
     await fsUpd('employees', empId, { active: false, endDate: date, endReason: reason, endNotes: notes, endedBy: currentUser.name, endedAt: Date.now() });
     await loadAll();
-    showLoader(false);
     closeModal();
     renderPage();
-  } catch(e){ showLoader(false); alert(e.message); }
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
 }
 async function reactivateEmp(empId){
   if(!confirm('إعادة التفعيل؟')) return;
@@ -1159,9 +1180,9 @@ async function reactivateEmp(empId){
   try {
     await fsUpd('employees', empId, { active: true, reactivatedAt: Date.now(), reactivatedBy: currentUser.name });
     await loadAll();
-    showLoader(false);
     renderPage();
-  } catch(e){ showLoader(false); alert(e.message); }
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
 }
 
 async function showEmpDetails(empId){
@@ -1199,7 +1220,7 @@ async function showEmpDetails(empId){
   `);
 }
 
-/* ✅ FIX #6: handle employee transfer when opening history */
+/* ✅ FIX: handle employee transfer when opening history */
 function openEmpHistory(empId){
   const emp = DB.employees.find(e => e.id === empId);
   UI.empReportId = empId;
@@ -1227,11 +1248,11 @@ async function importEmployees(ev){
     try {
       const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array', codepage:1256 });
       const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { raw:false });
-      if(!rows.length){ showLoader(false); alert('الملف فارغ'); return; }
+      if(!rows.length){ alert('الملف فارغ'); return; }
       const keys = Object.keys(rows[0]);
       const nameKey = keys.find(k => /name|الاسم|اسم/i.test(k));
       const codeKey = keys.find(k => /no\.?|code|id|كود|رقم/i.test(k));
-      if(!nameKey || !codeKey){ showLoader(false); alert('مطلوب عمودين: اسم + رقم بصمة'); return; }
+      if(!nameKey || !codeKey){ alert('مطلوب عمودين: اسم + رقم بصمة'); return; }
       const existing = DB.employees.filter(e => e.branchId === bId);
       const items = []; let skipped = 0, dup = 0;
       rows.forEach(r => {
@@ -1243,11 +1264,10 @@ async function importEmployees(ev){
       });
       if(items.length) await fsBatchAdd('employees', items);
       await loadAll();
-      showLoader(false);
       alert(`تم استيراد ${items.length} موظف\n(مكرر: ${dup} | ناقص: ${skipped})`);
       renderPage();
-    } catch(err){ showLoader(false); alert(err.message); }
-    ev.target.value = '';
+    } catch(err){ alert(err.message); }
+    finally { showLoader(false); ev.target.value = ''; }
   };
   reader.readAsArrayBuffer(file);
 }
@@ -1308,7 +1328,7 @@ async function handleUpload(ev){
       const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array', codepage:1256 });
       const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { raw:false });
       const emps = DB.employees.filter(e => e.branchId === bId);
-      if(!emps.length){ showLoader(false); alert('لا يوجد موظفين'); return; }
+      if(!emps.length){ alert('لا يوجد موظفين'); return; }
       if(replace) await fsBatchDel('punches', p => p.branchId === bId);
       const items = []; let matched = 0, skipped = 0;
       rows.forEach(r => {
@@ -1333,12 +1353,11 @@ async function handleUpload(ev){
       if(items.length) await fsBatchAdd('punches', items);
       await fsUpd('branches', bId, { lastUpload: Date.now() });
       await loadAll();
-      showLoader(false);
       $('uploadResult').innerHTML = `
         <div class="alert alert-success">تم الاستيراد — ${matched} سجل مرتبط${skipped ? ` | ${skipped} غير مرتبط` : ''}</div>
         <button class="btn btn-primary mt-3" onclick="navigateTo('reports')">الانتقال للتقارير</button>`;
-      ev.target.value = '';
-    } catch(err){ showLoader(false); alert(err.message); ev.target.value = ''; }
+    } catch(err){ alert(err.message); }
+    finally { showLoader(false); ev.target.value = ''; }
   };
   reader.readAsArrayBuffer(file);
 }
@@ -1407,7 +1426,7 @@ function calcDay(emp, dateKey, dailyRec, punches, branchId){
   if(!timeIn || !timeOut) return mkDay(dateKey, 'بصمة ناقصة', 0, 0, 0, 0, 0, sh, timeIn, timeOut);
   const dtIn = dtAt(dateKey, timeIn);
   let dtOut = dtAt(dateKey, timeOut);
-  /* ✅ FIX #4: only roll to next day if out is strictly BEFORE in (not equal) */
+  /* ✅ FIX: only roll to next day if out is strictly BEFORE in (not equal) */
   if(dtOut.getTime() < dtIn.getTime()) dtOut = new Date(dtOut.getTime() + 86400000);
   const workMins = Math.round((dtOut - dtIn) / 60000);
   const shiftMins = Math.round(sh.hours * 60);
@@ -2046,7 +2065,7 @@ function exportEmployeeReport(){
   XLSX.writeFile(wb, `سجل_${emp.name}_${today()}.xlsx`);
 }
 
-/* ✅ FIX #1: inline-handler-safe setters (avoid ReferenceError for UI/lastEmpReport) */
+/* ✅ FIX: inline-handler-safe setters (avoid ReferenceError for UI/lastEmpReport) */
 function selectEmpBranch(v){ UI.empBranchFilter = v; UI.empReportId = ''; lastEmpReport = null; renderPage(); }
 function selectEmployee(id){ UI.empReportId = id; lastEmpReport = null; renderPage(); }
 function clearEmpSelection(){ UI.empReportId = ''; lastEmpReport = null; renderPage(); }
@@ -2061,13 +2080,14 @@ Object.assign(window, {
   transferEmp, confirmTransfer, deactivateEmp, confirmDeactivate, reactivateEmp,
   showEmpDetails, closeModal, openEmpHistory,
   generateEmployeeReport, exportEmployeeReport,
-  // new helpers
   selectEmpBranch, selectEmployee, clearEmpSelection,
   setShiftBranchFilter, setEmpBranchFilter, setEmpActiveFilter
 });
 window.$ = $;
 
+/* ✅ FIX: init has try/finally + visible error message instead of stuck spinner */
 (async function init(){
+  showLoader(true);
   try {
     await checkSetup();
     const uid = sessionStorage.getItem('uid');
@@ -2080,7 +2100,17 @@ window.$ = $;
       const el = $(id);
       if(el) el.addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
     });
-  } catch(e){ console.error(e); }
+  } catch(e){
+    console.error('init failed:', e);
+    $('loginPage').style.display = 'flex';
+    $('app').style.display = 'none';
+    const err = $('loginErr');
+    err.textContent = '⚠️ خطأ في التهيئة: ' + (e?.message || e);
+    err.style.display = 'block';
+    $('loginHint').textContent = 'افتح Console (F12) للتفاصيل';
+  } finally {
+    showLoader(false);
+  }
 })();
 </script>
 </body>
