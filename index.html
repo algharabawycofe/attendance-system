@@ -3,18 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>نظام البصمة</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>">
+<title>نظام الحضور والانصراف</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱</text></svg>">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
-  --primary:#2563eb;--primary-dark:#1e40af;--primary-light:#dbeafe;
-  --success:#10b981;--warning:#f59e0b;--danger:#ef4444;--info:#06b6d4;
-  --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;
-  --gray-500:#6b7280;--gray-700:#374151;--gray-900:#111827;
-  --radius:12px;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --shadow-md:0 4px 6px rgba(0,0,0,.05),0 2px 4px rgba(0,0,0,.03);
-  --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.04);
+--primary:#2563eb;--primary-dark:#1e40af;--primary-light:#dbeafe;
+--success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;
+--gray-500:#6b7280;--gray-700:#374151;--gray-900:#111827;
+--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+--shadow-md:0 4px 6px rgba(0,0,0,.05),0 2px 4px rgba(0,0,0,.03);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -32,7 +31,7 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .login-field label{display:block;font-size:12.5px;font-weight:600;color:var(--gray-700);margin-bottom:6px}
 .login-field input{width:100%;padding:12px 14px;border:1.5px solid var(--gray-200);border-radius:10px;transition:all .2s;font-size:14px}
 .login-field input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-light)}
-.login-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border-radius:10px;font-size:15px;font-weight:700;margin-top:8px;transition:all .2s;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.login-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border-radius:10px;font-size:15px;font-weight:700;margin-top:8px;transition:all .2s}
 .login-btn:hover{transform:translateY(-1px)}
 .login-error{background:#fef2f2;color:var(--danger);padding:11px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-top:14px;border:1px solid #fecaca;display:none}
 .login-hint{text-align:center;font-size:12px;color:var(--gray-500);margin-top:20px;padding-top:18px;border-top:1px solid var(--gray-100)}
@@ -67,7 +66,7 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .main{grid-area:main;overflow-y:auto;padding:24px}
 @media(max-width:900px){.main{padding:16px}}
 
-.card{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:16px;border:1px solid var(--gray-100)}
+.card{background:#fff;border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px;border:1px solid var(--gray-100)}
 .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px}
 .card-title{font-size:16px;font-weight:700;color:var(--gray-900)}
 .card-subtitle{font-size:12.5px;color:var(--gray-500);margin-top:2px}
@@ -89,7 +88,7 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .field input:focus,.field select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
 
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
-.stat{background:#fff;border-radius:var(--radius);padding:18px;border:1px solid var(--gray-100);box-shadow:var(--shadow);transition:all .2s}
+.stat{background:#fff;border-radius:12px;padding:18px;border:1px solid var(--gray-100);box-shadow:var(--shadow);transition:all .2s}
 .stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
 .stat-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
 .stat-icon.blue{background:var(--primary-light);color:var(--primary)}
@@ -100,7 +99,7 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .stat-value{font-size:26px;font-weight:800;color:var(--gray-900);line-height:1}
 .stat-label{font-size:12.5px;color:var(--gray-500);margin-top:4px}
 
-.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--gray-100);background:#fff}
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--gray-100);background:#fff}
 table{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
 thead{background:var(--gray-50)}
 th{padding:11px 12px;text-align:right;font-weight:700;font-size:12px;color:var(--gray-700);border-bottom:1px solid var(--gray-200);white-space:nowrap}
@@ -115,7 +114,6 @@ tbody tr:last-child td{border-bottom:none}
 .b-blue{background:var(--primary-light);color:var(--primary-dark)}
 .b-gray{background:var(--gray-100);color:var(--gray-700)}
 .b-purple{background:#e9d5ff;color:#6b21a8}
-.b-yellow{background:#fef3c7;color:#854d0e}
 
 .alert{padding:12px 14px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .alert-info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
@@ -126,7 +124,6 @@ tbody tr:last-child td{border-bottom:none}
 .empty{text-align:center;padding:50px 20px;color:var(--gray-500)}
 .empty-icon{font-size:48px;margin-bottom:12px;opacity:.5}
 .empty-title{font-size:15px;font-weight:600;color:var(--gray-700);margin-bottom:4px}
-.empty-text{font-size:13px}
 
 .loader-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:2000}
 .spinner{width:44px;height:44px;border:4px solid var(--gray-200);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
@@ -135,8 +132,8 @@ tbody tr:last-child td{border-bottom:none}
 .daily-table input,.daily-table select{padding:6px 8px;font-size:12.5px;border:1px solid var(--gray-200);border-radius:7px;width:100%;transition:all .15s}
 .daily-table input:focus,.daily-table select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);outline:none}
 .daily-table .perm-hours{max-width:80px}
-.row-saving{background:#fffbeb !important}
-.row-saved{background:#f0fdf4 !important}
+.row-saving{background:#fffbeb}
+.row-saved{background:#f0fdf4}
 
 .date-nav{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
 .date-nav button{padding:6px 12px;font-size:12px;border:1.5px solid var(--gray-200);background:#fff;border-radius:7px;font-weight:600;color:var(--gray-700);transition:all .15s}
@@ -144,11 +141,10 @@ tbody tr:last-child td{border-bottom:none}
 .date-nav button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 
 .tabs-inline{display:flex;gap:6px;padding:4px;background:var(--gray-100);border-radius:10px;margin-bottom:16px;width:fit-content}
-.tab-inline{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:600;color:var(--gray-600);transition:all .15s}
-.tab-inline:hover{color:var(--gray-900)}
+.tab-inline{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:600;color:var(--gray-700);transition:all .15s}
 .tab-inline.active{background:#fff;color:var(--primary);box-shadow:var(--shadow)}
 
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1500}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1500}
 .modal{background:#fff;border-radius:16px;padding:24px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.3)}
 .modal-header{font-size:17px;font-weight:800;color:var(--gray-900);margin-bottom:16px}
 .modal-actions{display:flex;gap:10px;margin-top:20px}
@@ -161,15 +157,11 @@ tbody tr:last-child td{border-bottom:none}
 .report-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--gray-100);margin-bottom:12px;flex-wrap:wrap;gap:10px}
 .report-name{font-size:15px;font-weight:700;color:var(--gray-900)}
 .report-summary{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;padding:12px;background:var(--gray-50);border-radius:10px;margin-bottom:12px}
-.report-summary span{color:var(--gray-700)}
 .report-summary b{color:var(--gray-900)}
 
 .muted{color:var(--gray-500);font-size:12px}
-.mt-2{margin-top:8px}
 .mt-3{margin-top:12px}
-.mt-4{margin-top:16px}
-.hidden{display:none}
-.inactive-row{opacity:.6;background:var(--gray-50)}
+.inactive-row{opacity:.55}
 
 @media print{.sidebar,.header,.btn,.no-print{display:none !important}.app{display:block}.main{padding:0;overflow:visible}.card,.report-card{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}body{background:#fff}}
 </style>
@@ -178,44 +170,44 @@ tbody tr:last-child td{border-bottom:none}
 
 <div id="loginPage" class="login-page">
   <div class="login-card">
-    <div class="login-logo">⏱️</div>
-    <div class="login-title" id="loginTitle">نظام البصمة</div>
-    <div class="login-subtitle" id="loginSub">سجّل دخولك للمتابعة</div>
+    <div class="login-logo">⏱</div>
+    <div class="login-title" id="loginTitle">نظام الحضور</div>
+    <div class="login-subtitle" id="loginSub"></div>
     <div class="login-field">
       <label>اسم المستخدم</label>
-      <input id="loginUser" placeholder="admin" autocomplete="username">
+      <input id="loginUser" autocomplete="username">
     </div>
     <div class="login-field">
       <label>كلمة المرور</label>
-      <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password">
+      <input id="loginPass" type="password" autocomplete="current-password">
     </div>
     <div class="login-field" id="loginNameWrap" style="display:none">
-      <label>الاسم الكامل (للمدير)</label>
-      <input id="loginName" placeholder="الاسم">
+      <label>الاسم الكامل</label>
+      <input id="loginName">
     </div>
-    <button class="login-btn" id="loginBtn" onclick="doLogin()">🔐 دخول</button>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">دخول</button>
     <div class="login-error" id="loginErr"></div>
-    <div class="login-hint" id="loginHint">اتصل بالمدير للحصول على بيانات الدخول</div>
+    <div class="login-hint" id="loginHint"></div>
   </div>
 </div>
 
 <div id="app" class="app" style="display:none">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-      <h1>⏱️ نظام البصمة</h1>
+      <h1>⏱ نظام الحضور</h1>
       <p id="sidebarRole">—</p>
     </div>
     <div id="navMenu"></div>
-    <div class="sidebar-footer">v1.1 — نظام متعدد الفروع</div>
+    <div class="sidebar-footer">إدارة الحضور والانصراف</div>
   </aside>
   <header class="header">
     <div style="display:flex;align-items:center;gap:12px">
       <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-      <div class="header-title" id="pageTitle">الرئيسية</div>
+      <div class="header-title" id="pageTitle"></div>
     </div>
     <div class="header-actions">
       <div class="user-menu">
-        <div class="user-avatar" id="userAvatar">م</div>
+        <div class="user-avatar" id="userAvatar">—</div>
         <div>
           <div class="user-name" id="userName">—</div>
           <div class="user-role" id="userRole">—</div>
@@ -267,11 +259,7 @@ const norm = s => String(s==null?'':s).trim().toLowerCase().replace(/[أإآ]/g,
 const today = () => new Date().toISOString().slice(0,10);
 const dayName = dk => DAYS[new Date(dk+'T00:00:00').getDay()];
 const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
-const fmtDate = d => {
-  if(!d) return '—';
-  const dt = new Date(d);
-  return dt.toLocaleDateString('ar-EG', { year:'numeric', month:'short', day:'numeric' });
-};
+const fmtDate = d => d ? new Date(d).toLocaleDateString('ar-EG', { year:'numeric', month:'short', day:'numeric' }) : '—';
 
 function fmtMins(m){
   m = Math.round(m||0);
@@ -313,12 +301,10 @@ function parseDate(str){
   const dt = new Date(s);
   return isNaN(dt.getTime()) ? null : dt;
 }
-
 async function hash(p){
   const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p));
   return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
 }
-
 async function fsAll(n){
   const s = await getDocs(collection(db, n));
   return s.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -344,7 +330,6 @@ async function fsBatchAdd(n, items){
     await b.commit();
   }
 }
-
 async function loadAll(){
   showLoader(true);
   const [b, u, s, e, p, d] = await Promise.all([
@@ -354,7 +339,6 @@ async function loadAll(){
   Object.assign(DB, { branches:b, users:u, shifts:s, employees:e, punches:p, daily:d });
   showLoader(false);
 }
-
 function startLive(){
   unsubs.forEach(u => { try{ u(); }catch(e){} });
   unsubs = [];
@@ -375,22 +359,20 @@ const getDefaultShift = bId => {
   return b?.defaultShiftId ? getShift(b.defaultShiftId) : null;
 };
 
-/* ====== Auth ====== */
 async function checkSetup(){
   showLoader(true);
   const users = await fsAll('users');
   showLoader(false);
   const setup = users.length === 0;
   window.__setup = setup;
-  $('loginTitle').textContent = setup ? 'مرحباً بك' : 'نظام البصمة';
-  $('loginSub').textContent = setup ? 'أنشئ حساب المدير الرئيسي' : 'سجّل دخولك للمتابعة';
+  $('loginTitle').textContent = setup ? 'إنشاء حساب المدير' : 'نظام الحضور';
+  $('loginSub').textContent = setup ? 'أدخل بيانات حساب المدير الرئيسي' : 'تسجيل الدخول';
   $('loginNameWrap').style.display = setup ? 'block' : 'none';
-  $('loginBtn').textContent = setup ? '✨ إنشاء المدير' : '🔐 دخول';
-  $('loginHint').textContent = setup ? 'هذا الحساب سيكون مدير النظام مع كل الصلاحيات' : 'اتصل بالمدير للحصول على بيانات الدخول';
+  $('loginBtn').textContent = setup ? 'إنشاء الحساب' : 'دخول';
+  $('loginHint').textContent = setup ? '' : 'يرجى التواصل مع الإدارة للحصول على بيانات الدخول';
   $('loginPage').style.display = 'flex';
   $('app').style.display = 'none';
 }
-
 async function doLogin(){
   const u = $('loginUser').value.trim();
   const p = $('loginPass').value;
@@ -421,7 +403,7 @@ async function doLogin(){
     enterApp();
   } catch(e){
     showLoader(false);
-    err.textContent = 'خطأ: ' + e.message;
+    err.textContent = e.message;
     err.style.display = 'block';
   }
 }
@@ -437,7 +419,7 @@ function doLogout(){
 function enterApp(){
   $('loginPage').style.display = 'none';
   $('app').style.display = 'grid';
-  const role = currentUser.role === 'admin' ? 'مدير النظام' : 'فرع: ' + branchName(currentUser.branchId);
+  const role = currentUser.role === 'admin' ? 'مدير النظام' : branchName(currentUser.branchId);
   $('userName').textContent = currentUser.name;
   $('userRole').textContent = role;
   $('userAvatar').textContent = (currentUser.name || 'م').charAt(0).toUpperCase();
@@ -452,19 +434,18 @@ function enterApp(){
   renderPage();
 }
 function toggleSidebar(){ $('sidebar').classList.toggle('open'); }
-
 function buildNav(){
   const isAdmin = currentUser.role === 'admin';
   const items = isAdmin ? [
     { id:'dashboard', icon:'📊', label:'الرئيسية' },
     { id:'daily', icon:'📅', label:'التسجيل اليومي' },
-    { id:'settings', icon:'🏢', label:'الإعدادات' },
+    { id:'settings', icon:'⚙️', label:'الإعدادات' },
     { id:'uploads', icon:'📥', label:'رفع البصمة' },
     { id:'reports', icon:'📈', label:'التقارير' }
   ] : [{ id:'daily', icon:'📅', label:'التسجيل اليومي' }];
   $('navMenu').innerHTML = `
     <div class="nav-group">
-      <div class="nav-label">${isAdmin ? 'لوحة التحكم' : 'الفرع'}</div>
+      <div class="nav-label">${isAdmin ? 'الإدارة' : 'الفرع'}</div>
       ${items.map(i => `
         <button class="nav-item ${activePage === i.id ? 'active' : ''}" onclick="navigateTo('${i.id}')">
           <span class="icon">${i.icon}</span>
@@ -492,21 +473,13 @@ function renderPage(){
   $('mainContent').innerHTML = content[activePage]?.() || '';
 }
 
-/* ====== Dashboard ====== */
 function renderDashboard(){
   if(DB.branches.length === 0){
-    return `<div class="card">
-      <div class="empty">
-        <div class="empty-icon">🚀</div>
-        <div class="empty-title">ابدأ من هنا</div>
-        <div class="empty-text">روح تبويب "الإعدادات" وأضف أول فرع</div>
-        <button class="btn btn-primary mt-3" onclick="navigateTo('settings')">ابدأ الآن →</button>
-      </div>
-    </div>`;
+    return `<div class="card"><div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">لا توجد فروع</div>
+      <button class="btn btn-primary mt-3" onclick="navigateTo('settings')">إضافة فرع</button></div></div>`;
   }
   const t = today();
   const activeEmps = DB.employees.filter(e => e.active !== false).length;
-  const totalBranches = DB.branches.length;
   const todayEntries = DB.daily.filter(d => d.dateKey === t).length;
   const totalPunches = DB.punches.length;
 
@@ -516,18 +489,14 @@ function renderDashboard(){
     const percent = emps ? Math.round(todayC / emps * 100) : 0;
     return `<div class="card">
       <div class="card-header">
-        <div>
-          <div class="card-title">🏢 ${esc(b.name)}</div>
-          <div class="card-subtitle">${emps} عامل نشط</div>
-        </div>
+        <div><div class="card-title">${esc(b.name)}</div><div class="card-subtitle">${emps} موظف</div></div>
         <span class="badge b-${percent >= 100 ? 'green' : percent > 0 ? 'orange' : 'gray'}">${percent}%</span>
       </div>
       <div style="background:var(--gray-100);border-radius:8px;height:8px;overflow:hidden;margin-bottom:12px">
-        <div style="background:var(--success);height:100%;width:${percent}%;transition:width .3s"></div>
+        <div style="background:var(--success);height:100%;width:${percent}%"></div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--gray-500)">
-        <span>✅ ${todayC} مسجّل</span>
-        <span>⏳ ${emps - todayC} باقي</span>
+        <span>${todayC} مسجل</span><span>${emps - todayC} متبقي</span>
       </div>
       <button class="btn btn-outline btn-sm mt-3" style="width:100%" onclick="viewBranchToday('${b.id}')">عرض التفاصيل</button>
     </div>`;
@@ -535,24 +504,20 @@ function renderDashboard(){
 
   return `
     <div class="stats">
-      <div class="stat"><div class="stat-icon blue">🏢</div><div class="stat-value">${totalBranches}</div><div class="stat-label">الفروع</div></div>
-      <div class="stat"><div class="stat-icon green">👥</div><div class="stat-value">${activeEmps}</div><div class="stat-label">عمال نشطين</div></div>
+      <div class="stat"><div class="stat-icon blue">🏢</div><div class="stat-value">${DB.branches.length}</div><div class="stat-label">الفروع</div></div>
+      <div class="stat"><div class="stat-icon green">👥</div><div class="stat-value">${activeEmps}</div><div class="stat-label">الموظفين</div></div>
       <div class="stat"><div class="stat-icon orange">✅</div><div class="stat-value">${todayEntries}</div><div class="stat-label">تسجيلات اليوم</div></div>
-      <div class="stat"><div class="stat-icon purple">📥</div><div class="stat-value">${totalPunches}</div><div class="stat-label">بصمات مسجّلة</div></div>
+      <div class="stat"><div class="stat-icon purple">📥</div><div class="stat-value">${totalPunches}</div><div class="stat-label">البصمات</div></div>
     </div>
     <div class="card">
       <div class="card-header">
-        <div>
-          <div class="card-title">📅 تسجيل اليوم — ${DAYS[new Date(t+'T00:00:00').getDay()]} ${t}</div>
-          <div class="card-subtitle">حالة كل فرع</div>
-        </div>
+        <div><div class="card-title">حالة الفروع اليوم</div><div class="card-subtitle">${dayName(t)} ${t}</div></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">${branchCards}</div>
     </div>`;
 }
 function viewBranchToday(bId){ UI.dailyBranch = bId; navigateTo('daily'); }
 
-/* ====== Daily ====== */
 function renderDaily(){
   const isAdmin = currentUser.role === 'admin';
   const date = UI.dailyDate || today();
@@ -564,7 +529,7 @@ function renderDaily(){
     <div class="field" style="max-width:240px">
       <label>الفرع</label>
       <select onchange="setDailyBranch(this.value)">
-        <option value="">— اختر الفرع —</option>
+        <option value="">اختر الفرع</option>
         ${DB.branches.map(b => `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
       </select>
     </div>` : '';
@@ -583,7 +548,7 @@ function renderDaily(){
     </div>`;
 
   if(!bId){
-    return `<div class="card"><div class="card-header"><div class="card-title">📅 التسجيل اليومي</div></div><div class="form-row">${branchField}${dateNav}</div><div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">اختر الفرع أولاً</div></div></div>`;
+    return `<div class="card"><div class="card-header"><div class="card-title">التسجيل اليومي</div></div><div class="form-row">${branchField}${dateNav}</div><div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">اختر الفرع</div></div></div>`;
   }
 
   const emps = DB.employees.filter(e => e.branchId === bId && e.active !== false).sort((a,b) => a.name.localeCompare(b.name,'ar'));
@@ -594,7 +559,7 @@ function renderDaily(){
   const savedCount = Object.keys(dailyMap).length;
 
   if(!emps.length){
-    return `<div class="card"><div class="card-header"><div class="card-title">📅 التسجيل اليومي</div></div><div class="form-row">${branchField}${dateNav}</div><div class="empty"><div class="empty-icon">👥</div><div class="empty-title">لا يوجد عمال نشطين</div>${isAdmin ? '<button class="btn btn-primary mt-3" onclick="navigateTo(\'settings\')">إضافة عمال</button>' : ''}</div></div>`;
+    return `<div class="card"><div class="card-header"><div class="card-title">التسجيل اليومي</div></div><div class="form-row">${branchField}${dateNav}</div><div class="empty"><div class="empty-icon">👥</div><div class="empty-title">لا يوجد موظفين</div></div></div>`;
   }
 
   const rows = emps.map(e => {
@@ -606,16 +571,15 @@ function renderDaily(){
     const notes = rec.notes || '';
     const timeIn = rec.timeIn || '';
     const timeOut = rec.timeOut || '';
-
     return `<tr data-empid="${e.id}" data-branch="${bId}" data-date="${date}">
       <td style="text-align:right;min-width:170px">
         <div style="font-weight:600">${esc(e.name)}</div>
-        <div class="muted">كود: ${esc(e.code)}</div>
-        ${dailyMap[e.id] ? '<span class="badge b-blue" style="margin-top:4px">✓ محفوظ</span>' : ''}
+        <div class="muted">${esc(e.code)}</div>
+        ${dailyMap[e.id] ? '<span class="badge b-blue" style="margin-top:4px">محفوظ</span>' : ''}
       </td>
       <td style="min-width:140px">
         <select class="f-shift" onchange="saveRow('${e.id}')">
-          <option value="">— بدون —</option>
+          <option value="">—</option>
           ${branchShifts.map(s => `<option value="${s.id}" ${shiftId === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}
         </select>
       </td>
@@ -623,26 +587,22 @@ function renderDaily(){
       <td><input type="time" class="f-out" value="${timeOut}" onchange="saveRow('${e.id}')"></td>
       <td><select class="f-status" onchange="saveRow('${e.id}')">${Object.keys(STATUS).map(k => `<option value="${k}" ${status === k ? 'selected' : ''}>${STATUS[k]}</option>`).join('')}</select></td>
       <td><select class="f-ptype" onchange="saveRow('${e.id}');togglePermHours('${e.id}')">${Object.keys(PERM).map(k => `<option value="${k}" ${permType === k ? 'selected' : ''}>${PERM[k]}</option>`).join('')}</select></td>
-      <td><input type="number" class="f-phours perm-hours" min="0" max="24" step="0.5" placeholder="0" value="${permHours}" onchange="saveRow('${e.id}')" style="${permType === 'hour' ? '' : 'display:none'}"></td>
-      <td><input type="text" class="f-notes" value="${esc(notes)}" placeholder="—" style="min-width:120px" onchange="saveRow('${e.id}')"></td>
+      <td><input type="number" class="f-phours perm-hours" min="0" max="24" step="0.5" value="${permHours}" onchange="saveRow('${e.id}')" style="${permType === 'hour' ? '' : 'display:none'}"></td>
+      <td><input type="text" class="f-notes" value="${esc(notes)}" style="min-width:120px" onchange="saveRow('${e.id}')"></td>
     </tr>`;
   }).join('');
 
   return `<div class="card">
     <div class="card-header">
-      <div>
-        <div class="card-title">📅 التسجيل اليومي</div>
-        <div class="card-subtitle">${emps.length} عامل — ${savedCount} مسجّل</div>
-      </div>
+      <div><div class="card-title">التسجيل اليومي</div><div class="card-subtitle">${emps.length} موظف — ${savedCount} مسجل</div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-outline btn-sm" onclick="copyFromYesterday('${bId}','${date}')">📋 نسخ من الأمس</button>
-        <button class="btn btn-success btn-sm" onclick="saveAll('${bId}','${date}')">💾 حفظ الكل</button>
+        <button class="btn btn-outline btn-sm" onclick="copyFromYesterday('${bId}','${date}')">نسخ من الأمس</button>
+        <button class="btn btn-success btn-sm" onclick="saveAll('${bId}','${date}')">حفظ</button>
       </div>
     </div>
     <div class="form-row">${branchField}${dateNav}</div>
-    <div class="alert alert-info">💡 اختار <b>الشفت</b> + <b>الحالة</b>. لو فيه إذن، اختار <b>إذن ساعات</b> واكتب العدد.${savedCount ? `<br>📌 <b>${savedCount}</b> عامل مسجّل.` : ''}</div>
     <div class="table-wrap daily-table"><table>
-      <thead><tr><th>العامل</th><th>الشفت</th><th>الدخول</th><th>الخروج</th><th>الحالة</th><th>الإذن</th><th>عدد الساعات</th><th>ملاحظات</th></tr></thead>
+      <thead><tr><th>الموظف</th><th>الشفت</th><th>الدخول</th><th>الخروج</th><th>الحالة</th><th>الإذن</th><th>ساعات الإذن</th><th>ملاحظات</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
   </div>`;
@@ -709,7 +669,6 @@ async function saveAll(bId, date){
     rows.forEach(tr => clearTimeout(tr.__t));
     const old = DB.daily.filter(d => d.branchId === bId && d.dateKey === date);
     for(const d of old) await fsDel('daily', d.id);
-    let count = 0;
     for(const tr of rows){
       const empId = tr.dataset.empid;
       const emp = DB.employees.find(e => e.id === empId);
@@ -729,18 +688,17 @@ async function saveAll(bId, date){
       const isEmpty = !data.timeIn && !data.timeOut && !data.notes && data.status === 'present' && data.permType === 'none' && !data.permHours && data.shiftId === defShift;
       if(isEmpty) continue;
       await fsAdd('daily', data);
-      count++;
     }
     await loadAll();
     showLoader(false);
     renderPage();
-  } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
+  } catch(e){ showLoader(false); alert(e.message); }
 }
 async function copyFromYesterday(bId, date){
   const y = new Date(date+'T00:00:00'); y.setDate(y.getDate()-1);
   const yKey = y.toISOString().slice(0,10);
   const prev = DB.daily.filter(d => d.branchId === bId && d.dateKey === yKey);
-  if(!prev.length){ alert('لا توجد بيانات في يوم ' + yKey); return; }
+  if(!prev.length) return;
   if(!confirm(`نسخ ${prev.length} سجل من ${yKey}؟`)) return;
   for(const p of prev){
     const tr = document.querySelector(`tr[data-empid="${p.empId}"]`);
@@ -752,23 +710,18 @@ async function copyFromYesterday(bId, date){
     if(p.notes) tr.querySelector('.f-notes').value = p.notes;
     togglePermHours(p.empId);
   }
-  alert('✅ تم النسخ — اضغط "حفظ الكل" لتثبيتها');
 }
 
-/* ====== Settings ====== */
 function renderSettings(){
   const tab = UI.settingsTab || 'branches';
   return `<div class="card">
     <div class="card-header">
-      <div>
-        <div class="card-title">⚙️ الإعدادات</div>
-        <div class="card-subtitle">إدارة الفروع والعمال والشفتات</div>
-      </div>
+      <div><div class="card-title">الإعدادات</div><div class="card-subtitle">الفروع والموظفين والشفتات</div></div>
     </div>
     <div class="tabs-inline">
-      <button class="tab-inline ${tab === 'branches' ? 'active' : ''}" onclick="setSettingsTab('branches')">🏢 الفروع</button>
-      <button class="tab-inline ${tab === 'shifts' ? 'active' : ''}" onclick="setSettingsTab('shifts')">🕐 الشفتات</button>
-      <button class="tab-inline ${tab === 'employees' ? 'active' : ''}" onclick="setSettingsTab('employees')">👥 العمال</button>
+      <button class="tab-inline ${tab === 'branches' ? 'active' : ''}" onclick="setSettingsTab('branches')">الفروع</button>
+      <button class="tab-inline ${tab === 'shifts' ? 'active' : ''}" onclick="setSettingsTab('shifts')">الشفتات</button>
+      <button class="tab-inline ${tab === 'employees' ? 'active' : ''}" onclick="setSettingsTab('employees')">الموظفين</button>
     </div>
     <div id="settingsContent">
       ${tab === 'branches' ? renderBranchesTab() : ''}
@@ -791,41 +744,39 @@ function renderBranchesTab(){
       <td><span class="badge b-blue">${emps}</span></td>
       <td>
         <select onchange="setDefaultShift('${b.id}', this.value)" style="font-size:12px;padding:6px;border:1px solid var(--gray-200);border-radius:7px">
-          <option value="">— بدون —</option>
+          <option value="">—</option>
           ${bShifts.map(s => `<option value="${s.id}" ${b.defaultShiftId === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}
         </select>
       </td>
       <td>
-        <button class="btn btn-outline btn-sm" onclick="editBranchPass('${b.id}')">🔑</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteBranch('${b.id}')">🗑</button>
+        <button class="btn btn-outline btn-sm" onclick="editBranchPass('${b.id}')">كلمة المرور</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteBranch('${b.id}')">حذف</button>
       </td>
     </tr>`;
   }).join('');
-
   return `
     <div class="card" style="background:var(--gray-50);box-shadow:none;border:1px solid var(--gray-200)">
-      <div style="font-size:14px;font-weight:700;margin-bottom:14px">➕ إضافة فرع جديد</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px">إضافة فرع</div>
       <div class="form-row">
-        <div class="field"><label>اسم الفرع</label><input id="brName" placeholder="فرع المعادي"></div>
-        <div class="field"><label>اسم المستخدم</label><input id="brUser" placeholder="maadi"></div>
-        <div class="field"><label>كلمة المرور</label><input id="brPass" placeholder="••••••" type="text"></div>
-        <div class="field"><label>اسم المسؤول</label><input id="brMgr" placeholder="اسم مدير الفرع"></div>
-        <button class="btn btn-primary" onclick="addBranch()">➕ إضافة</button>
+        <div class="field"><label>اسم الفرع</label><input id="brName"></div>
+        <div class="field"><label>اسم المستخدم</label><input id="brUser"></div>
+        <div class="field"><label>كلمة المرور</label><input id="brPass" type="text"></div>
+        <div class="field"><label>اسم المسؤول</label><input id="brMgr"></div>
+        <button class="btn btn-primary" onclick="addBranch()">إضافة</button>
       </div>
     </div>
     ${DB.branches.length ? `
       <div class="table-wrap mt-3">
-        <table><thead><tr><th>الفرع</th><th>المستخدم</th><th>المسؤول</th><th>عمال</th><th>الشفت الافتراضي</th><th></th></tr></thead>
+        <table><thead><tr><th>الفرع</th><th>المستخدم</th><th>المسؤول</th><th>الموظفين</th><th>الشفت الافتراضي</th><th></th></tr></thead>
         <tbody>${rows}</tbody></table>
-      </div>
-    ` : `<div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">لا توجد فروع</div></div>`}`;
+      </div>` : `<div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">لا توجد فروع</div></div>`}`;
 }
 async function addBranch(){
   const name = $('brName').value.trim();
   const user = $('brUser').value.trim();
   const pass = $('brPass').value.trim();
   const mgr = $('brMgr').value.trim() || name;
-  if(!name || !user || !pass){ alert('أكمل الحقول'); return; }
+  if(!name || !user || !pass){ alert('أكمل الحقول المطلوبة'); return; }
   if(DB.users.some(u => u.username.toLowerCase() === user.toLowerCase())){ alert('اسم المستخدم مستخدم'); return; }
   showLoader(true);
   try {
@@ -843,15 +794,14 @@ async function setDefaultShift(bId, shiftId){
 }
 async function editBranchPass(bId){
   const u = DB.users.find(x => x.branchId === bId);
-  if(!u){ alert('لا يوجد مستخدم'); return; }
-  const np = prompt('كلمة المرور الجديدة لـ ' + u.username + ':', '');
+  if(!u) return;
+  const np = prompt('كلمة المرور الجديدة:', '');
   if(!np) return;
   showLoader(true);
   try {
     await fsUpd('users', u.id, { passwordHash: await hash(np) });
     await loadAll();
     showLoader(false);
-    alert('✅ تم');
   } catch(e){ showLoader(false); alert(e.message); }
 }
 async function deleteBranch(id){
@@ -880,28 +830,28 @@ function renderShiftsTab(){
     return `<tr>
       <td><b>${esc(s.name)}</b></td>
       <td>${esc(branchName(s.branchId))}</td>
-      <td><span class="badge b-green">${s.start} — ${s.end}</span></td>
-      <td>${s.hours} س</td>
-      <td>${s.graceMins} د</td>
+      <td><span class="badge b-green">${s.start} - ${s.end}</span></td>
+      <td>${s.hours}</td>
+      <td>${s.graceMins}</td>
       <td class="muted">${offs}</td>
       <td><span class="badge b-blue">${emps}</span></td>
-      <td><button class="btn btn-danger btn-sm" onclick="deleteShift('${s.id}')">🗑</button></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteShift('${s.id}')">حذف</button></td>
     </tr>`;
   }).join('');
   return `
     <div class="card" style="background:var(--gray-50);box-shadow:none;border:1px solid var(--gray-200)">
-      <div style="font-size:14px;font-weight:700;margin-bottom:14px">➕ إضافة شفت</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px">إضافة شفت</div>
       <div class="form-row">
-        <div class="field"><label>الفرع</label><select id="shBranch"><option value="">— اختر —</option>${branchOpts}</select></div>
-        <div class="field"><label>اسم الشفت</label><input id="shName" placeholder="صباحي / مسائي / ليلي"></div>
+        <div class="field"><label>الفرع</label><select id="shBranch"><option value="">اختر</option>${branchOpts}</select></div>
+        <div class="field"><label>اسم الشفت</label><input id="shName"></div>
         <div class="field"><label>بداية</label><input type="time" id="shStart" value="09:00" onchange="autoShiftHours()"></div>
         <div class="field"><label>نهاية</label><input type="time" id="shEnd" value="17:00" onchange="autoShiftHours()"></div>
         <div class="field" style="max-width:100px"><label>ساعات</label><input type="number" id="shHours" value="8" step="0.5"></div>
         <div class="field" style="max-width:100px"><label>سماح</label><input type="number" id="shGrace" value="15"></div>
-        <button class="btn btn-primary" onclick="addShift()">➕ إضافة</button>
+        <button class="btn btn-primary" onclick="addShift()">إضافة</button>
       </div>
       <div style="margin-top:12px">
-        <label style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px">أيام الراحة:</label>
+        <label style="font-size:12px;font-weight:600;color:var(--gray-700);display:block;margin-bottom:6px">أيام الراحة</label>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           ${DAYS.map((d,i) => `<label style="display:flex;align-items:center;gap:5px;font-size:12.5px;background:#fff;border:1px solid var(--gray-200);padding:6px 10px;border-radius:8px;cursor:pointer"><input type="checkbox" class="shOff" value="${i}" ${i === 5 ? 'checked' : ''}><span>${d}</span></label>`).join('')}
         </div>
@@ -909,14 +859,14 @@ function renderShiftsTab(){
     </div>
     <div class="form-row mt-3">
       <div class="field" style="max-width:260px">
-        <label>تصفية بالفرع</label>
+        <label>تصفية</label>
         <select onchange="UI.shiftBranchFilter=this.value;renderPage()">
           <option value="">كل الفروع</option>
           ${DB.branches.map(b => `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
         </select>
       </div>
     </div>
-    ${list.length ? `<div class="table-wrap mt-3"><table><thead><tr><th>الاسم</th><th>الفرع</th><th>الوقت</th><th>ساعات</th><th>سماح</th><th>الراحة</th><th>عمال</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="empty"><div class="empty-icon">🕐</div><div class="empty-title">لا توجد شفتات</div></div>`}`;
+    ${list.length ? `<div class="table-wrap mt-3"><table><thead><tr><th>الاسم</th><th>الفرع</th><th>الوقت</th><th>ساعات</th><th>سماح</th><th>الراحة</th><th>الموظفين</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="empty"><div class="empty-icon">🕐</div><div class="empty-title">لا توجد شفتات</div></div>`}`;
 }
 function autoShiftHours(){
   const s = $('shStart').value, e = $('shEnd').value;
@@ -935,7 +885,7 @@ async function addShift(){
   const hours = num($('shHours').value) || 8;
   const graceMins = num($('shGrace').value);
   const offDays = Array.from(document.querySelectorAll('.shOff:checked')).map(c => +c.value);
-  if(!bId || !name){ alert('أكمل الحقول'); return; }
+  if(!bId || !name){ alert('أكمل الحقول المطلوبة'); return; }
   showLoader(true);
   try {
     const sh = await fsAdd('shifts', { branchId:bId, name, start, end, hours, graceMins, offDays, createdAt: Date.now() });
@@ -951,28 +901,21 @@ async function deleteShift(id){
   showLoader(true);
   try {
     await fsDel('shifts', id);
-    for(const e of DB.employees.filter(e => e.shiftId === id)){
-      await fsUpd('employees', e.id, { shiftId: '' });
-    }
-    for(const b of DB.branches.filter(b => b.defaultShiftId === id)){
-      await fsUpd('branches', b.id, { defaultShiftId: '' });
-    }
+    for(const e of DB.employees.filter(e => e.shiftId === id)) await fsUpd('employees', e.id, { shiftId: '' });
+    for(const b of DB.branches.filter(b => b.defaultShiftId === id)) await fsUpd('branches', b.id, { defaultShiftId: '' });
     await loadAll();
     showLoader(false);
     renderPage();
   } catch(e){ showLoader(false); alert(e.message); }
 }
 
-/* ====== Employees (with transfer/deactivate) ====== */
 function renderEmployeesTab(){
   const bId = UI.empBranchFilter || '';
   const activeFilter = UI.empActiveFilter || 'active';
-
   let list = bId ? DB.employees.filter(e => e.branchId === bId) : DB.employees.slice();
   if(activeFilter === 'active') list = list.filter(e => e.active !== false);
   else if(activeFilter === 'inactive') list = list.filter(e => e.active === false);
   list.sort((a,b) => a.name.localeCompare(b.name,'ar'));
-
   const branchOpts = DB.branches.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
 
   const rows = list.map(e => {
@@ -980,99 +923,86 @@ function renderEmployeesTab(){
     const bShifts = DB.shifts.filter(s => s.branchId === e.branchId);
     const isInactive = e.active === false;
     const transferCount = (e.transferHistory || []).length;
-
     return `<tr class="${isInactive ? 'inactive-row' : ''}">
       <td><span class="badge b-gray">${esc(e.code)}</span></td>
       <td>
         <b>${esc(e.name)}</b>
         ${isInactive ? '<span class="badge b-red" style="margin-inline-start:6px">منتهي</span>' : ''}
-        ${transferCount > 0 ? `<span class="badge b-purple" style="margin-inline-start:6px">🔄 ${transferCount}</span>` : ''}
-        ${isInactive && e.endDate ? `<div class="muted" style="font-size:11px;margin-top:2px">حتى ${fmtDate(e.endDate)}</div>` : ''}
+        ${transferCount ? `<span class="badge b-purple" style="margin-inline-start:6px">${transferCount} نقل</span>` : ''}
       </td>
       <td>${esc(branchName(e.branchId))}</td>
       <td>
         <select onchange="setEmpShift('${e.id}', this.value)" style="font-size:12px;padding:5px;border:1px solid var(--gray-200);border-radius:6px" ${isInactive ? 'disabled' : ''}>
-          <option value="">— بدون —</option>
+          <option value="">—</option>
           ${bShifts.map(s => `<option value="${s.id}" ${e.shiftId === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}
         </select>
       </td>
       <td>${sh ? `<span class="badge b-green">${sh.start} - ${sh.end}</span>` : '—'}</td>
       <td style="white-space:nowrap">
-        <button class="btn btn-outline btn-sm" onclick="showEmpDetails('${e.id}')" title="التفاصيل">👁️</button>
+        <button class="btn btn-outline btn-sm" onclick="showEmpDetails('${e.id}')">تفاصيل</button>
         ${!isInactive ? `
-          <button class="btn btn-warning btn-sm" onclick="transferEmp('${e.id}')" title="نقل لفرع آخر">🔄</button>
-          <button class="btn btn-danger btn-sm" onclick="deactivateEmp('${e.id}')" title="إنهاء الخدمة">⛔</button>
-        ` : `
-          <button class="btn btn-success btn-sm" onclick="reactivateEmp('${e.id}')" title="إعادة التفعيل">✅</button>
-        `}
-        <button class="btn btn-danger btn-sm" onclick="deleteEmp('${e.id}')" title="حذف نهائي">🗑</button>
+          <button class="btn btn-warning btn-sm" onclick="transferEmp('${e.id}')">نقل</button>
+          <button class="btn btn-danger btn-sm" onclick="deactivateEmp('${e.id}')">إنهاء</button>
+        ` : `<button class="btn btn-success btn-sm" onclick="reactivateEmp('${e.id}')">تفعيل</button>`}
+        <button class="btn btn-danger btn-sm" onclick="deleteEmp('${e.id}')">حذف</button>
       </td>
     </tr>`;
   }).join('');
 
   return `
     <div class="card" style="background:#f0fdf4;box-shadow:none;border:1px dashed var(--success)">
-      <div style="font-size:14px;font-weight:700;margin-bottom:8px;color:#166534">📤 استيراد عمال من Excel</div>
-      <div class="muted" style="margin-bottom:12px">ارفع ملف فيه عمودين: <b>الاسم</b> و <b>رقم البصمة</b></div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:8px">استيراد من Excel</div>
       <div class="form-row">
-        <div class="field" style="max-width:260px"><label>الفرع</label><select id="impEmpBranch"><option value="">— اختر —</option>${branchOpts}</select></div>
-        <button class="btn btn-success" onclick="$('empFile').click()">📁 اختر ملف Excel</button>
+        <div class="field" style="max-width:260px"><label>الفرع</label><select id="impEmpBranch"><option value="">اختر</option>${branchOpts}</select></div>
+        <button class="btn btn-success" onclick="$('empFile').click()">اختيار ملف</button>
         <input type="file" id="empFile" accept=".xls,.xlsx,.csv" style="display:none" onchange="importEmployees(event)">
       </div>
     </div>
-
     <div class="card" style="background:var(--gray-50);box-shadow:none;border:1px solid var(--gray-200)">
-      <div style="font-size:14px;font-weight:700;margin-bottom:14px">➕ إضافة عامل يدوياً</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px">إضافة موظف</div>
       <div class="form-row">
-        <div class="field"><label>الفرع</label><select id="empBAdd" onchange="updateEmpShiftOptions()"><option value="">— اختر —</option>${branchOpts}</select></div>
-        <div class="field"><label>الاسم</label><input id="empName" placeholder="الاسم الكامل"></div>
-        <div class="field" style="max-width:160px"><label>رقم البصمة</label><input id="empCode" placeholder="5061"></div>
-        <div class="field"><label>الشفت (اختياري)</label><select id="empShiftSel"><option value="">— بدون —</option></select></div>
-        <button class="btn btn-primary" onclick="addEmp()">➕ إضافة</button>
+        <div class="field"><label>الفرع</label><select id="empBAdd" onchange="updateEmpShiftOptions()"><option value="">اختر</option>${branchOpts}</select></div>
+        <div class="field"><label>الاسم</label><input id="empName"></div>
+        <div class="field" style="max-width:160px"><label>رقم البصمة</label><input id="empCode"></div>
+        <div class="field"><label>الشفت</label><select id="empShiftSel"><option value="">—</option></select></div>
+        <button class="btn btn-primary" onclick="addEmp()">إضافة</button>
       </div>
     </div>
-
     <div class="form-row mt-3">
       <div class="field" style="max-width:240px">
-        <label>تصفية بالفرع</label>
+        <label>الفرع</label>
         <select onchange="UI.empBranchFilter=this.value;renderPage()">
           <option value="">كل الفروع</option>
           ${DB.branches.map(b => `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
         </select>
       </div>
       <div class="field" style="max-width:200px">
-        <label>حالة الموظفين</label>
+        <label>الحالة</label>
         <select onchange="UI.empActiveFilter=this.value;renderPage()">
-          <option value="active" ${activeFilter === 'active' ? 'selected' : ''}>النشطين فقط</option>
+          <option value="active" ${activeFilter === 'active' ? 'selected' : ''}>النشطين</option>
           <option value="all" ${activeFilter === 'all' ? 'selected' : ''}>الكل</option>
           <option value="inactive" ${activeFilter === 'inactive' ? 'selected' : ''}>المنتهيين</option>
         </select>
       </div>
     </div>
-
     ${list.length ? `
       <div class="table-wrap mt-3">
         <table><thead><tr><th>رقم البصمة</th><th>الاسم</th><th>الفرع</th><th>الشفت</th><th>الوقت</th><th>إجراءات</th></tr></thead>
         <tbody>${rows}</tbody></table>
-      </div>
-      <div class="alert alert-info mt-3" style="font-size:12px">
-        💡 <b>🔄</b> نقل لفرع آخر — <b>⛔</b> إنهاء الخدمة — <b>👁️</b> التفاصيل والنقل السابق
-      </div>
-    ` : `<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">لا يوجد عمال</div><div class="empty-text">استخدم Excel أو أضف يدوياً</div></div>`}
-  `;
+      </div>` : `<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">لا يوجد موظفين</div></div>`}`;
 }
 function updateEmpShiftOptions(){
   const bId = $('empBAdd').value;
   const sel = $('empShiftSel');
   const shifts = DB.shifts.filter(s => s.branchId === bId);
-  sel.innerHTML = '<option value="">— بدون —</option>' + shifts.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  sel.innerHTML = '<option value="">—</option>' + shifts.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
 }
 async function addEmp(){
   const bId = $('empBAdd').value;
   const name = $('empName').value.trim();
   const code = $('empCode').value.trim();
   const shiftId = $('empShiftSel').value;
-  if(!bId || !name || !code){ alert('أكمل الحقول'); return; }
+  if(!bId || !name || !code){ alert('أكمل الحقول المطلوبة'); return; }
   if(DB.employees.some(e => e.branchId === bId && norm(e.code) === norm(code) && e.active !== false)){ alert('رقم البصمة مستخدم'); return; }
   showLoader(true);
   try {
@@ -1088,7 +1018,7 @@ async function setEmpShift(id, shiftId){
   renderPage();
 }
 async function deleteEmp(id){
-  if(!confirm('⚠️ حذف نهائي!\n\nلو الموظف مشي من الشغل، استخدم "⛔ إنهاء الخدمة" بدل الحذف عشان تحتفظ بسجلاته.\n\nمتابعة الحذف النهائي؟')) return;
+  if(!confirm('حذف نهائي. هل أنت متأكد؟')) return;
   showLoader(true);
   try {
     await fsDel('employees', id);
@@ -1100,7 +1030,6 @@ async function deleteEmp(id){
   } catch(e){ showLoader(false); alert(e.message); }
 }
 
-/* ====== Transfer / Deactivate / Reactivate ====== */
 function showModal(html){
   $('modalContainer').innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`;
 }
@@ -1110,20 +1039,12 @@ async function transferEmp(empId){
   const emp = DB.employees.find(e => e.id === empId);
   if(!emp) return;
   const otherBranches = DB.branches.filter(b => b.id !== emp.branchId);
-  if(!otherBranches.length){
-    showModal(`
-      <div class="modal-header">🔄 نقل الموظف</div>
-      <div class="alert alert-warning">لا توجد فروع أخرى لنقل الموظف إليها</div>
-      <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal()">حسناً</button></div>
-    `);
-    return;
-  }
-
+  if(!otherBranches.length){ alert('لا توجد فروع أخرى'); return; }
   showModal(`
-    <div class="modal-header">🔄 نقل الموظف لفرع آخر</div>
+    <div class="modal-header">نقل الموظف</div>
     <div style="background:var(--gray-50);padding:12px;border-radius:8px;margin-bottom:16px">
       <div style="font-weight:700">${esc(emp.name)}</div>
-      <div class="muted">كود: ${esc(emp.code)} — حالياً في: ${esc(branchName(emp.branchId))}</div>
+      <div class="muted">${esc(emp.code)} — ${esc(branchName(emp.branchId))}</div>
     </div>
     <div class="field" style="margin-bottom:12px">
       <label>الفرع الجديد</label>
@@ -1136,19 +1057,15 @@ async function transferEmp(empId){
       <input type="date" id="transferDate" value="${today()}">
     </div>
     <div class="field" style="margin-bottom:12px">
-      <label>سبب النقل (اختياري)</label>
-      <input id="transferReason" placeholder="مثال: بناءً على طلب الموظف">
-    </div>
-    <div class="alert alert-info" style="font-size:12px">
-      💡 <b>ملاحظة:</b> السجلات القديمة (حضور وبصمات) هتفضل على الفرع القديم. التقارير هتتعرض صح.
+      <label>ملاحظات</label>
+      <input id="transferReason">
     </div>
     <div class="modal-actions">
-      <button class="btn btn-primary" onclick="confirmTransfer('${empId}')">🔄 تأكيد النقل</button>
+      <button class="btn btn-primary" onclick="confirmTransfer('${empId}')">تأكيد</button>
       <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
     </div>
   `);
 }
-
 async function confirmTransfer(empId){
   const emp = DB.employees.find(e => e.id === empId);
   if(!emp) return;
@@ -1156,53 +1073,38 @@ async function confirmTransfer(empId){
   const date = $('transferDate').value;
   const reason = $('transferReason').value.trim();
   if(!toBranchId || !date){ alert('أكمل الحقول'); return; }
-
-  const fromBranchName = branchName(emp.branchId);
-  const toBranchName = branchName(toBranchId);
   const history = emp.transferHistory || [];
   history.push({
-    from: emp.branchId,
-    fromName: fromBranchName,
-    to: toBranchId,
-    toName: toBranchName,
-    date,
-    reason,
-    by: currentUser.name,
-    at: Date.now()
+    from: emp.branchId, fromName: branchName(emp.branchId),
+    to: toBranchId, toName: branchName(toBranchId),
+    date, reason, by: currentUser.name, at: Date.now()
   });
-
   showLoader(true);
   try {
-    await fsUpd('employees', empId, {
-      branchId: toBranchId,
-      transferHistory: history,
-      lastTransfer: date
-    });
+    await fsUpd('employees', empId, { branchId: toBranchId, transferHistory: history, lastTransfer: date });
     await loadAll();
     showLoader(false);
     closeModal();
-    alert(`✅ تم نقل ${emp.name} من "${fromBranchName}" إلى "${toBranchName}" بتاريخ ${date}`);
     renderPage();
   } catch(e){ showLoader(false); alert(e.message); }
 }
-
 async function deactivateEmp(empId){
   const emp = DB.employees.find(e => e.id === empId);
   if(!emp) return;
   showModal(`
-    <div class="modal-header">⛔ إنهاء خدمة الموظف</div>
+    <div class="modal-header">إنهاء خدمة</div>
     <div style="background:var(--gray-50);padding:12px;border-radius:8px;margin-bottom:16px">
       <div style="font-weight:700">${esc(emp.name)}</div>
-      <div class="muted">كود: ${esc(emp.code)} — ${esc(branchName(emp.branchId))}</div>
+      <div class="muted">${esc(emp.code)} — ${esc(branchName(emp.branchId))}</div>
     </div>
     <div class="field" style="margin-bottom:12px">
       <label>تاريخ المغادرة</label>
       <input type="date" id="deactivateDate" value="${today()}">
     </div>
     <div class="field" style="margin-bottom:12px">
-      <label>سبب المغادرة (اختياري)</label>
+      <label>السبب</label>
       <select id="deactivateReason">
-        <option value="">— اختر —</option>
+        <option value="">اختر</option>
         <option value="استقالة">استقالة</option>
         <option value="إنهاء تعاقد">إنهاء تعاقد</option>
         <option value="تقاعد">تقاعد</option>
@@ -1212,99 +1114,73 @@ async function deactivateEmp(empId){
     </div>
     <div class="field" style="margin-bottom:12px">
       <label>ملاحظات</label>
-      <input id="deactivateNotes" placeholder="اختياري">
-    </div>
-    <div class="alert alert-warning" style="font-size:12px">
-      💡 الموظف هيختفي من التسجيل اليومي بس سجلاته التاريخية هتفضل محفوظة في التقارير.
+      <input id="deactivateNotes">
     </div>
     <div class="modal-actions">
-      <button class="btn btn-danger" onclick="confirmDeactivate('${empId}')">⛔ تأكيد الإنهاء</button>
+      <button class="btn btn-danger" onclick="confirmDeactivate('${empId}')">تأكيد</button>
       <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
     </div>
   `);
 }
-
 async function confirmDeactivate(empId){
   const date = $('deactivateDate').value;
   const reason = $('deactivateReason').value;
   const notes = $('deactivateNotes').value.trim();
-  if(!date){ alert('أدخل تاريخ المغادرة'); return; }
+  if(!date){ alert('أدخل التاريخ'); return; }
   showLoader(true);
   try {
-    await fsUpd('employees', empId, {
-      active: false,
-      endDate: date,
-      endReason: reason,
-      endNotes: notes,
-      endedBy: currentUser.name,
-      endedAt: Date.now()
-    });
+    await fsUpd('employees', empId, { active: false, endDate: date, endReason: reason, endNotes: notes, endedBy: currentUser.name, endedAt: Date.now() });
     await loadAll();
     showLoader(false);
     closeModal();
-    alert('✅ تم إنهاء الخدمة');
     renderPage();
   } catch(e){ showLoader(false); alert(e.message); }
 }
-
 async function reactivateEmp(empId){
-  const emp = DB.employees.find(e => e.id === empId);
-  if(!emp) return;
-  if(!confirm(`إعادة تفعيل "${emp.name}"؟\nسيظهر مرة أخرى في التسجيل اليومي.`)) return;
+  if(!confirm('إعادة التفعيل؟')) return;
   showLoader(true);
   try {
-    await fsUpd('employees', empId, {
-      active: true,
-      reactivatedAt: Date.now(),
-      reactivatedBy: currentUser.name
-    });
+    await fsUpd('employees', empId, { active: true, reactivatedAt: Date.now(), reactivatedBy: currentUser.name });
     await loadAll();
     showLoader(false);
-    alert('✅ تم إعادة التفعيل');
     renderPage();
   } catch(e){ showLoader(false); alert(e.message); }
 }
-
 async function showEmpDetails(empId){
   const emp = DB.employees.find(e => e.id === empId);
   if(!emp) return;
   const history = emp.transferHistory || [];
   const dailyCount = DB.daily.filter(d => d.empId === empId).length;
   const punchCount = DB.punches.filter(p => p.empId === empId).length;
-
   const historyHtml = history.length ? history.map(h => `
     <div style="padding:10px;background:var(--gray-50);border-radius:8px;margin-bottom:8px;font-size:12.5px">
-      <div style="font-weight:600">🔄 ${esc(h.fromName)} → ${esc(h.toName)}</div>
+      <div style="font-weight:600">${esc(h.fromName)} ← ${esc(h.toName)}</div>
       <div class="muted">${fmtDate(h.date)}${h.reason ? ` — ${esc(h.reason)}` : ''}</div>
-      <div class="muted" style="font-size:11px">بواسطة: ${esc(h.by || '—')}</div>
+      <div class="muted" style="font-size:11px">${esc(h.by || '—')}</div>
     </div>
   `).join('') : '<div class="muted">لا يوجد سجل نقل</div>';
-
   showModal(`
-    <div class="modal-header">👁️ تفاصيل الموظف</div>
+    <div class="modal-header">تفاصيل الموظف</div>
     <div style="background:var(--gray-50);padding:14px;border-radius:10px;margin-bottom:16px">
       <div style="font-size:16px;font-weight:800">${esc(emp.name)}</div>
-      <div class="muted">رقم البصمة: ${esc(emp.code)}</div>
-      <div class="muted">الفرع الحالي: ${esc(branchName(emp.branchId))}</div>
-      <div class="muted">الحالة: ${emp.active === false ? '<span class="badge b-red">منتهي</span>' : '<span class="badge b-green">نشط</span>'}</div>
-      ${emp.active === false ? `<div class="muted">تاريخ المغادرة: ${fmtDate(emp.endDate)}${emp.endReason ? ` — ${esc(emp.endReason)}` : ''}</div>` : ''}
+      <div class="muted">${esc(emp.code)}</div>
+      <div class="muted">${esc(branchName(emp.branchId))}</div>
+      <div class="muted">الحالة: ${emp.active === false ? 'منتهي' : 'نشط'}</div>
+      ${emp.active === false ? `<div class="muted">تاريخ المغادرة: ${fmtDate(emp.endDate)}</div>` : ''}
     </div>
     <div class="stats" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
-      <div class="stat"><div class="stat-value">${dailyCount}</div><div class="stat-label">تسجيلات يومية</div></div>
+      <div class="stat"><div class="stat-value">${dailyCount}</div><div class="stat-label">تسجيلات</div></div>
       <div class="stat"><div class="stat-value">${punchCount}</div><div class="stat-label">بصمات</div></div>
     </div>
-    <div style="font-size:14px;font-weight:700;margin-bottom:10px">🔄 سجل النقل بين الفروع</div>
+    <div style="font-size:14px;font-weight:700;margin-bottom:10px">سجل النقل</div>
     ${historyHtml}
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal()">إغلاق</button>
-    </div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">إغلاق</button></div>
   `);
 }
-
 async function importEmployees(ev){
   const file = ev.target.files[0]; if(!file) return;
   const bId = $('impEmpBranch').value;
-  if(!bId){ alert('اختر الفرع أولاً'); ev.target.value = ''; return; }
+  if(!bId){ alert('اختر الفرع'); ev.target.value = ''; return; }
   const reader = new FileReader();
   reader.onload = async e => {
     showLoader(true);
@@ -1315,8 +1191,7 @@ async function importEmployees(ev){
       const keys = Object.keys(rows[0]);
       const nameKey = keys.find(k => /name|الاسم|اسم/i.test(k));
       const codeKey = keys.find(k => /no\.?|code|id|كود|رقم/i.test(k));
-      if(!nameKey || !codeKey){ showLoader(false); alert('المطلوب عمودين: اسم + رقم بصمة'); return; }
-
+      if(!nameKey || !codeKey){ showLoader(false); alert('مطلوب عمودين: اسم + رقم بصمة'); return; }
       const existing = DB.employees.filter(e => e.branchId === bId);
       const items = []; let skipped = 0, dup = 0;
       rows.forEach(r => {
@@ -1329,7 +1204,7 @@ async function importEmployees(ev){
       if(items.length) await fsBatchAdd('employees', items);
       await loadAll();
       showLoader(false);
-      alert(`✅ تم استيراد ${items.length} عامل\n(مكرر: ${dup} | ناقص: ${skipped})`);
+      alert(`تم استيراد ${items.length} موظف\n(مكرر: ${dup} | ناقص: ${skipped})`);
       renderPage();
     } catch(err){ showLoader(false); alert(err.message); }
     ev.target.value = '';
@@ -1337,37 +1212,30 @@ async function importEmployees(ev){
   reader.readAsArrayBuffer(file);
 }
 
-/* ====== Uploads ====== */
 function renderUploads(){
   const branchOpts = DB.branches.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
   return `
     <div class="card">
       <div class="card-header">
-        <div>
-          <div class="card-title">📥 رفع بصمة الفرع</div>
-          <div class="card-subtitle">ارفع ملف Excel من جهاز البصمة</div>
-        </div>
+        <div><div class="card-title">رفع بصمة الفرع</div><div class="card-subtitle">ملف Excel من جهاز البصمة</div></div>
       </div>
       <div class="form-row">
-        <div class="field" style="max-width:280px"><label>الفرع</label><select id="upBranch"><option value="">— اختر —</option>${branchOpts}</select></div>
+        <div class="field" style="max-width:280px"><label>الفرع</label><select id="upBranch"><option value="">اختر</option>${branchOpts}</select></div>
         <div class="field" style="max-width:200px">
-          <label>استبدال البصمات القديمة</label>
-          <select id="upReplace">
-            <option value="1" selected>نعم، استبدل</option>
-            <option value="0">لا، أضف للقديم</option>
-          </select>
+          <label>البصمات القديمة</label>
+          <select id="upReplace"><option value="1" selected>استبدال</option><option value="0">إضافة</option></select>
         </div>
       </div>
       <div class="upload-zone" onclick="$('upFile').click()">
         <div style="font-size:40px;margin-bottom:10px">📁</div>
-        <div style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:4px">اضغط لاختيار ملف البصمة</div>
-        <div class="muted">XLS / XLSX / CSV — الحقول: No. / Name / Date/Time / Status</div>
+        <div style="font-size:15px;font-weight:700;color:var(--gray-700)">اختيار ملف البصمة</div>
+        <div class="muted" style="margin-top:6px">XLS / XLSX / CSV</div>
         <input type="file" id="upFile" accept=".xls,.xlsx,.csv" style="display:none" onchange="handleUpload(event)">
       </div>
       <div id="uploadResult" style="margin-top:16px"></div>
     </div>
     <div class="card">
-      <div class="card-header"><div class="card-title">📊 ملخص البصمات الحالية</div></div>
+      <div class="card-header"><div class="card-title">ملخص البصمات</div></div>
       ${DB.branches.length ? `
         <div class="table-wrap"><table>
           <thead><tr><th>الفرع</th><th>البصمات</th><th>الفترة</th><th>آخر تحديث</th></tr></thead>
@@ -1375,7 +1243,7 @@ function renderUploads(){
             ${DB.branches.map(b => {
               const punches = DB.punches.filter(p => p.branchId === b.id);
               const dates = punches.map(p => p.dateKey).sort();
-              const range = dates.length ? `${dates[0]} → ${dates[dates.length-1]}` : '—';
+              const range = dates.length ? `${dates[0]} - ${dates[dates.length-1]}` : '—';
               return `<tr>
                 <td><b>${esc(b.name)}</b></td>
                 <td><span class="badge b-blue">${punches.length}</span></td>
@@ -1400,7 +1268,7 @@ async function handleUpload(ev){
       const wb = XLSX.read(new Uint8Array(e.target.result), { type:'array', codepage:1256 });
       const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { raw:false });
       const emps = DB.employees.filter(e => e.branchId === bId);
-      if(!emps.length){ showLoader(false); alert('لا يوجد عمال'); return; }
+      if(!emps.length){ showLoader(false); alert('لا يوجد موظفين'); return; }
       if(replace) await fsBatchDel('punches', p => p.branchId === bId);
       const items = []; let matched = 0, skipped = 0;
       rows.forEach(r => {
@@ -1427,15 +1295,14 @@ async function handleUpload(ev){
       await loadAll();
       showLoader(false);
       $('uploadResult').innerHTML = `
-        <div class="alert alert-success">✅ تم الاستيراد — <b>${matched}</b> سجل مرتبط${skipped ? ` | <span style="color:#b45309">${skipped} سجل غير مرتبط</span>` : ''}</div>
-        <button class="btn btn-primary mt-3" onclick="navigateTo('reports')">الانتقال إلى التقارير ←</button>`;
+        <div class="alert alert-success">تم الاستيراد — ${matched} سجل مرتبط${skipped ? ` | ${skipped} غير مرتبط` : ''}</div>
+        <button class="btn btn-primary mt-3" onclick="navigateTo('reports')">الانتقال للتقارير</button>`;
       ev.target.value = '';
-    } catch(err){ showLoader(false); alert('خطأ: ' + err.message); ev.target.value = ''; }
+    } catch(err){ showLoader(false); alert(err.message); ev.target.value = ''; }
   };
   reader.readAsArrayBuffer(file);
 }
 
-/* ====== Smart Shift Detection ====== */
 function detectShift(empId, excludeDate){
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 45);
   const cutoffKey = cutoff.toISOString().slice(0,10);
@@ -1470,10 +1337,9 @@ function detectShift(empId, excludeDate){
   if(mins <= 0) mins += 1440;
   const hours = mins/60;
   if(hours < 4 || hours > 16) return null;
-  return { start, end, hours: Math.round(hours*10)/10, name:'مستنتج', graceMins: 15, offDays: [], detected: true };
+  return { start, end, hours: Math.round(hours*10)/10, name:'تلقائي', graceMins: 15, offDays: [], detected: true };
 }
 
-/* ====== Calc ====== */
 function calcDay(emp, dateKey, dailyRec, punches){
   let sh = null;
   if(dailyRec?.shiftId) sh = getShift(dailyRec.shiftId);
@@ -1532,7 +1398,6 @@ function calcDay(emp, dateKey, dailyRec, punches){
 function mkDay(dateKey, status, workMins, requiredMins, overtime, lateness, excusedMins, shift, timeIn, timeOut){
   return { dateKey, status, workMins, requiredMins, overtime, lateness, excusedMins, shift, timeIn, timeOut };
 }
-
 function calcEmp(emp, from, to, branchId){
   const days = {};
   DB.daily.forEach(d => {
@@ -1569,7 +1434,6 @@ function calcEmp(emp, from, to, branchId){
   return { emp, days: results, totals: t };
 }
 
-/* ====== Reports ====== */
 function renderReports(){
   const bId = UI.repBranch || (DB.branches[0]?.id || '');
   const view = UI.repView || 'detailed';
@@ -1584,122 +1448,113 @@ function renderReports(){
     const overColor = gO >= 0 ? 'var(--primary)' : 'var(--danger)';
     const summary = `
       <div class="stats">
-        <div class="stat"><div class="stat-icon blue">👥</div><div class="stat-value">${lastReport.rows.length}</div><div class="stat-label">عمال</div></div>
+        <div class="stat"><div class="stat-icon blue">👥</div><div class="stat-value">${lastReport.rows.length}</div><div class="stat-label">موظفين</div></div>
         <div class="stat"><div class="stat-icon green">✅</div><div class="stat-value">${gP}</div><div class="stat-label">حضور</div></div>
         <div class="stat"><div class="stat-icon red">❌</div><div class="stat-value">${gA}</div><div class="stat-label">غياب</div></div>
-        <div class="stat"><div class="stat-icon blue">🏖️</div><div class="stat-value">${gLv}</div><div class="stat-label">أجازة</div></div>
+        <div class="stat"><div class="stat-icon blue">🏖</div><div class="stat-value">${gLv}</div><div class="stat-label">أجازة</div></div>
         <div class="stat"><div class="stat-icon orange">⏰</div><div class="stat-value" style="font-size:16px">${fmtMins(gL)}</div><div class="stat-label">تأخير</div></div>
         <div class="stat"><div class="stat-icon purple">⚖️</div><div class="stat-value" style="font-size:16px;color:${overColor}">${gO>=0?'+':''}${fmtMins(gO)}</div><div class="stat-label">إضافي/عجز</div></div>
       </div>`;
 
     let content = '';
     if(view === 'summary'){
-      content = `
-        <div class="table-wrap"><table>
-          <thead><tr><th>الاسم</th><th>الكود</th><th>أيام</th><th>حضور</th><th>غياب</th><th>أجازة</th><th>ساعات العمل</th><th>تأخير</th><th>إضافي/عجز</th></tr></thead>
-          <tbody>
-            ${lastReport.rows.map(r => {
-              const t = r.totals;
-              const c = t.overtime >= 0 ? 'var(--primary)' : 'var(--danger)';
-              return `<tr>
-                <td style="text-align:right"><b>${esc(r.emp.name)}</b></td>
-                <td><span class="badge b-gray">${esc(r.emp.code)}</span></td>
-                <td>${t.days}</td>
-                <td style="color:var(--success);font-weight:700">${t.present}</td>
-                <td style="color:var(--danger);font-weight:700">${t.absent}</td>
-                <td style="color:var(--primary);font-weight:700">${t.leave}</td>
-                <td>${fmtMins(t.workMins)}</td>
-                <td style="color:var(--danger)">${fmtMins(t.lateness)}</td>
-                <td style="color:${c};font-weight:700">${t.overtime >= 0 ? '+' : ''}${fmtMins(t.overtime)}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table></div>`;
+      content = `<div class="table-wrap"><table>
+        <thead><tr><th>الاسم</th><th>الرقم</th><th>أيام</th><th>حضور</th><th>غياب</th><th>أجازة</th><th>ساعات العمل</th><th>تأخير</th><th>إضافي/عجز</th></tr></thead>
+        <tbody>
+          ${lastReport.rows.map(r => {
+            const t = r.totals;
+            const c = t.overtime >= 0 ? 'var(--primary)' : 'var(--danger)';
+            return `<tr>
+              <td style="text-align:right"><b>${esc(r.emp.name)}</b></td>
+              <td><span class="badge b-gray">${esc(r.emp.code)}</span></td>
+              <td>${t.days}</td>
+              <td style="color:var(--success);font-weight:700">${t.present}</td>
+              <td style="color:var(--danger);font-weight:700">${t.absent}</td>
+              <td style="color:var(--primary);font-weight:700">${t.leave}</td>
+              <td>${fmtMins(t.workMins)}</td>
+              <td style="color:var(--danger)">${fmtMins(t.lateness)}</td>
+              <td style="color:${c};font-weight:700">${t.overtime >= 0 ? '+' : ''}${fmtMins(t.overtime)}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>`;
     } else {
       content = lastReport.rows.map(r => {
         const t = r.totals;
         const c = t.overtime >= 0 ? 'var(--primary)' : 'var(--danger)';
-        return `
-          <div class="report-card">
-            <div class="report-header">
-              <div>
-                <div class="report-name">👤 ${esc(r.emp.name)}</div>
-                <div class="muted">رقم البصمة: ${esc(r.emp.code)}</div>
-              </div>
-            </div>
-            <div class="report-summary">
-              <span>📅 <b>${t.days}</b> يوم</span>
-              <span>✅ حضور <b>${t.present}</b></span>
-              <span>❌ غياب <b>${t.absent}</b></span>
-              <span>🏖️ أجازة <b>${t.leave}</b></span>
-              <span>⏰ تأخير <b style="color:var(--danger)">${fmtMins(t.lateness)}</b></span>
-              <span>⚖️ <b style="color:${c}">${t.overtime >= 0 ? '+' : ''}${fmtMins(t.overtime)}</b></span>
-            </div>
-            <div class="table-wrap"><table>
-              <thead><tr><th>التاريخ</th><th>الشفت</th><th>دخول</th><th>خروج</th><th>ساعات</th><th>إذن</th><th>تأخير</th><th>إضافي/عجز</th><th>الحالة</th></tr></thead>
-              <tbody>
-                ${r.days.map(d => {
-                  const shiftTxt = d.shift ? `${d.shift.start} - ${d.shift.end}` : '—';
-                  const detected = d.shift?.detected ? ' <span class="badge b-purple" style="font-size:9px">مستنتج</span>' : '';
-                  const exc = d.excusedMins > 0 ? `<span class="badge b-blue">${fmtMins(d.excusedMins)}</span>` : '—';
-                  const ovTxt = ['بصمة ناقصة','غياب','أجازة','مهمة'].includes(d.status) ? '—'
-                    : d.overtime > 0 ? `<b style="color:var(--primary)">+${fmtMins(d.overtime)}</b>`
-                    : d.overtime < 0 ? `<b style="color:var(--danger)">${fmtMins(d.overtime)}</b>` : '0';
-                  const workTxt = d.status === 'غياب' ? '—' : fmtMins(d.workMins);
-                  const lateTxt = d.lateness > 0 ? `<b style="color:var(--danger)">${fmtMins(d.lateness)}</b>` : '0';
-                  const cls = d.status === 'منتظم' ? 'b-green' : d.status === 'تأخير' ? 'b-red' : d.status === 'غياب' ? 'b-gray' : d.status === 'أجازة' ? 'b-blue' : d.status === 'مهمة' ? 'b-purple' : 'b-orange';
-                  return `<tr>
-                    <td>${d.dateKey}<br><span class="muted" style="font-size:11px">${dayName(d.dateKey)}</span></td>
-                    <td><span class="badge b-gray" style="font-size:10px">${shiftTxt}</span>${detected}</td>
-                    <td>${d.timeIn || '—'}</td>
-                    <td>${d.timeOut || '—'}</td>
-                    <td><b>${workTxt}</b></td>
-                    <td>${exc}</td>
-                    <td>${lateTxt}</td>
-                    <td>${ovTxt}</td>
-                    <td><span class="badge ${cls}">${d.status}</span></td>
-                  </tr>`;
-                }).join('')}
-              </tbody>
-            </table></div>
-          </div>`;
+        return `<div class="report-card">
+          <div class="report-header">
+            <div><div class="report-name">${esc(r.emp.name)}</div><div class="muted">${esc(r.emp.code)}</div></div>
+          </div>
+          <div class="report-summary">
+            <span>أيام <b>${t.days}</b></span>
+            <span>حضور <b>${t.present}</b></span>
+            <span>غياب <b>${t.absent}</b></span>
+            <span>أجازة <b>${t.leave}</b></span>
+            <span>تأخير <b style="color:var(--danger)">${fmtMins(t.lateness)}</b></span>
+            <span>صافي <b style="color:${c}">${t.overtime >= 0 ? '+' : ''}${fmtMins(t.overtime)}</b></span>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>التاريخ</th><th>الشفت</th><th>دخول</th><th>خروج</th><th>ساعات</th><th>إذن</th><th>تأخير</th><th>إضافي/عجز</th><th>الحالة</th></tr></thead>
+            <tbody>
+              ${r.days.map(d => {
+                const shiftTxt = d.shift ? `${d.shift.start} - ${d.shift.end}` : '—';
+                const detected = d.shift?.detected ? ' <span class="badge b-purple" style="font-size:9px">تلقائي</span>' : '';
+                const exc = d.excusedMins > 0 ? `<span class="badge b-blue">${fmtMins(d.excusedMins)}</span>` : '—';
+                const ovTxt = ['بصمة ناقصة','غياب','أجازة','مهمة'].includes(d.status) ? '—'
+                  : d.overtime > 0 ? `<b style="color:var(--primary)">+${fmtMins(d.overtime)}</b>`
+                  : d.overtime < 0 ? `<b style="color:var(--danger)">${fmtMins(d.overtime)}</b>` : '0';
+                const workTxt = d.status === 'غياب' ? '—' : fmtMins(d.workMins);
+                const lateTxt = d.lateness > 0 ? `<b style="color:var(--danger)">${fmtMins(d.lateness)}</b>` : '0';
+                const cls = d.status === 'منتظم' ? 'b-green' : d.status === 'تأخير' ? 'b-red' : d.status === 'غياب' ? 'b-gray' : d.status === 'أجازة' ? 'b-blue' : d.status === 'مهمة' ? 'b-purple' : 'b-orange';
+                return `<tr>
+                  <td>${d.dateKey}<br><span class="muted" style="font-size:11px">${dayName(d.dateKey)}</span></td>
+                  <td><span class="badge b-gray" style="font-size:10px">${shiftTxt}</span>${detected}</td>
+                  <td>${d.timeIn || '—'}</td>
+                  <td>${d.timeOut || '—'}</td>
+                  <td><b>${workTxt}</b></td>
+                  <td>${exc}</td>
+                  <td>${lateTxt}</td>
+                  <td>${ovTxt}</td>
+                  <td><span class="badge ${cls}">${d.status}</span></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table></div>
+        </div>`;
       }).join('');
     }
     body = summary + content;
   } else {
-    body = `<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">لا يوجد تقرير</div><div class="empty-text">اختر الفرع والفترة ثم اضغط "عرض"</div></div>`;
+    body = `<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">لا يوجد تقرير</div></div>`;
   }
 
-  return `
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">📈 التقارير</div>
-          <div class="card-subtitle">اعرض التقارير وصدّرها Excel</div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="field" style="max-width:260px">
-          <label>الفرع</label>
-          <select id="repBranch">
-            <option value="">— اختر —</option>
-            ${DB.branches.map(b => `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
-          </select>
-        </div>
-        <div class="field" style="max-width:180px"><label>من تاريخ</label><input type="date" id="repFrom" value="${UI.repFrom || ''}"></div>
-        <div class="field" style="max-width:180px"><label>إلى تاريخ</label><input type="date" id="repTo" value="${UI.repTo || ''}"></div>
-        <div class="field" style="max-width:180px">
-          <label>طريقة العرض</label>
-          <select id="repView">
-            <option value="detailed" ${view === 'detailed' ? 'selected' : ''}>👤 تفصيلي</option>
-            <option value="summary" ${view === 'summary' ? 'selected' : ''}>📊 ملخص</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" onclick="generateReport()">🔄 عرض</button>
-        <button class="btn btn-outline" onclick="exportReport()">📥 Excel</button>
-      </div>
+  return `<div class="card">
+    <div class="card-header">
+      <div><div class="card-title">التقارير</div><div class="card-subtitle">عرض وتصدير التقارير</div></div>
     </div>
-    ${body}`;
+    <div class="form-row">
+      <div class="field" style="max-width:260px">
+        <label>الفرع</label>
+        <select id="repBranch">
+          <option value="">اختر</option>
+          ${DB.branches.map(b => `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field" style="max-width:180px"><label>من</label><input type="date" id="repFrom" value="${UI.repFrom || ''}"></div>
+      <div class="field" style="max-width:180px"><label>إلى</label><input type="date" id="repTo" value="${UI.repTo || ''}"></div>
+      <div class="field" style="max-width:180px">
+        <label>العرض</label>
+        <select id="repView">
+          <option value="detailed" ${view === 'detailed' ? 'selected' : ''}>تفصيلي</option>
+          <option value="summary" ${view === 'summary' ? 'selected' : ''}>ملخص</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="generateReport()">عرض</button>
+      <button class="btn btn-outline" onclick="exportReport()">Excel</button>
+    </div>
+  </div>
+  ${body}`;
 }
 function generateReport(){
   const bId = $('repBranch').value;
@@ -1708,8 +1563,6 @@ function generateReport(){
   const view = $('repView').value;
   if(!bId){ alert('اختر الفرع'); return; }
   UI.repBranch = bId; UI.repFrom = from; UI.repTo = to; UI.repView = view;
-
-  // ⭐ نجيب كل الموظفين اللي عنده سجلات في الفرع ده خلال الفترة (بغض النظر عن فرعه الحالي)
   const empIds = new Set();
   DB.daily.forEach(d => {
     if(d.branchId !== bId) return;
@@ -1723,7 +1576,6 @@ function generateReport(){
     if(to && p.dateKey > to) return;
     empIds.add(p.empId);
   });
-
   const emps = Array.from(empIds).map(id => DB.employees.find(e => e.id === id)).filter(Boolean);
   const rows = emps.map(e => calcEmp(e, from, to, bId)).filter(r => r.days.length > 0);
   lastReport = { rows, branchId: bId, from, to };
@@ -1783,7 +1635,7 @@ window.$ = $;
       const el = $(id);
       if(el) el.addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
     });
-  } catch(e){ console.error(e); alert('خطأ: ' + e.message); }
+  } catch(e){ console.error(e); }
 })();
 </script>
 </body>
