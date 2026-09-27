@@ -20,7 +20,6 @@ html,body{height:100%}
 body{font-family:'Segoe UI',system-ui,-apple-system,Tahoma,sans-serif;background:var(--gray-50);color:var(--gray-900);font-size:14px;line-height:1.5}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
 input,select,textarea{font-family:inherit;font-size:14px}
-
 .login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#0ea5e9 100%);padding:20px;position:relative;overflow:hidden}
 .login-page::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 20% 30%,rgba(255,255,255,.08) 0%,transparent 40%),radial-gradient(circle at 80% 70%,rgba(255,255,255,.06) 0%,transparent 40%)}
 .login-card{position:relative;background:#fff;border-radius:20px;padding:44px 38px;width:100%;max-width:420px;box-shadow:0 30px 70px rgba(0,0,0,.35)}
@@ -35,7 +34,6 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .login-btn:hover{transform:translateY(-1px)}
 .login-error{background:#fef2f2;color:var(--danger);padding:11px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-top:14px;border:1px solid #fecaca;display:none}
 .login-hint{text-align:center;font-size:12px;color:var(--gray-500);margin-top:20px;padding-top:18px;border-top:1px solid var(--gray-100)}
-
 .app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:64px 1fr;grid-template-areas:"sidebar header" "sidebar main";height:100vh;overflow:hidden}
 @media(max-width:900px){.app{grid-template-columns:1fr;grid-template-rows:64px 1fr;grid-template-areas:"header" "main"}}
 .sidebar{grid-area:sidebar;background:#fff;border-left:1px solid var(--gray-200);display:flex;flex-direction:column;padding:20px 0;overflow-y:auto}
@@ -50,7 +48,6 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .nav-item.active{background:var(--primary-light);color:var(--primary-dark);font-weight:700}
 .nav-item .icon{font-size:17px;width:22px;text-align:center}
 .sidebar-footer{margin-top:auto;padding:16px 20px 0;border-top:1px solid var(--gray-100);font-size:11.5px;color:var(--gray-500);text-align:center}
-
 .header{grid-area:header;background:#fff;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 24px;gap:16px;justify-content:space-between}
 .header-title{font-size:17px;font-weight:700;color:var(--gray-900)}
 .header-actions{display:flex;align-items:center;gap:12px}
@@ -62,31 +59,28 @@ input,select,textarea{font-family:inherit;font-size:14px}
 @media(max-width:900px){.menu-btn{display:block}}
 .logout-btn{padding:7px 14px;background:var(--gray-100);border-radius:8px;font-size:12.5px;font-weight:600;color:var(--gray-700);transition:all .15s}
 .logout-btn:hover{background:#fee2e2;color:var(--danger)}
-
 .main{grid-area:main;overflow-y:auto;padding:24px}
 @media(max-width:900px){.main{padding:16px}}
-
 .card{background:#fff;border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px;border:1px solid var(--gray-100)}
 .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px}
 .card-title{font-size:16px;font-weight:700;color:var(--gray-900)}
 .card-subtitle{font-size:12.5px;color:var(--gray-500);margin-top:2px}
-
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:9px;font-size:13.5px;font-weight:600;transition:all .15s;white-space:nowrap}
 .btn-primary{background:var(--primary);color:#fff}
 .btn-primary:hover{background:var(--primary-dark)}
+.btn-primary:disabled{background:var(--gray-300);cursor:not-allowed}
 .btn-success{background:var(--success);color:#fff}
 .btn-danger{background:var(--danger);color:#fff}
 .btn-warning{background:var(--warning);color:#fff}
 .btn-outline{background:#fff;color:var(--gray-700);border:1.5px solid var(--gray-200)}
 .btn-outline:hover{border-color:var(--gray-300);background:var(--gray-50)}
+.btn-outline:disabled{opacity:.5;cursor:not-allowed}
 .btn-sm{padding:5px 10px;font-size:11.5px;border-radius:6px}
-
 .form-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
 .field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:160px}
 .field label{font-size:12px;font-weight:600;color:var(--gray-700)}
 .field input,.field select{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:9px;transition:all .15s;background:#fff}
 .field input:focus,.field select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
-
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
 .stat{background:#fff;border-radius:12px;padding:18px;border:1px solid var(--gray-100);box-shadow:var(--shadow);transition:all .2s}
 .stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
@@ -98,7 +92,6 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .stat-icon.purple{background:#e9d5ff;color:#9333ea}
 .stat-value{font-size:26px;font-weight:800;color:var(--gray-900);line-height:1}
 .stat-label{font-size:12.5px;color:var(--gray-500);margin-top:4px}
-
 .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--gray-100);background:#fff}
 table{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
 thead{background:var(--gray-50)}
@@ -106,7 +99,6 @@ th{padding:11px 12px;text-align:right;font-weight:700;font-size:12px;color:var(-
 td{padding:10px 12px;border-bottom:1px solid var(--gray-100);color:var(--gray-700)}
 tbody tr:hover{background:var(--gray-50)}
 tbody tr:last-child td{border-bottom:none}
-
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
 .b-green{background:#d1fae5;color:#065f46}
 .b-red{background:#fee2e2;color:#991b1b}
@@ -114,65 +106,52 @@ tbody tr:last-child td{border-bottom:none}
 .b-blue{background:var(--primary-light);color:var(--primary-dark)}
 .b-gray{background:var(--gray-100);color:var(--gray-700)}
 .b-purple{background:#e9d5ff;color:#6b21a8}
-
 .alert{padding:12px 14px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .alert-info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
 .alert-success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
 .alert-warning{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
 .alert-danger{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
-
 .empty{text-align:center;padding:50px 20px;color:var(--gray-500)}
 .empty-icon{font-size:48px;margin-bottom:12px;opacity:.5}
 .empty-title{font-size:15px;font-weight:600;color:var(--gray-700);margin-bottom:4px}
-
 .loader-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:2000}
 .spinner{width:44px;height:44px;border:4px solid var(--gray-200);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
 .daily-table input,.daily-table select{padding:6px 8px;font-size:12.5px;border:1px solid var(--gray-200);border-radius:7px;width:100%;transition:all .15s}
 .daily-table input:focus,.daily-table select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);outline:none}
 .daily-table .perm-hours{max-width:80px}
 .row-saving{background:#fffbeb}
 .row-saved{background:#f0fdf4}
-
 .date-nav{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
 .date-nav button{padding:6px 12px;font-size:12px;border:1.5px solid var(--gray-200);background:#fff;border-radius:7px;font-weight:600;color:var(--gray-700);transition:all .15s}
 .date-nav button:hover{border-color:var(--primary);color:var(--primary)}
 .date-nav button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-
 .tabs-inline{display:flex;gap:6px;padding:4px;background:var(--gray-100);border-radius:10px;margin-bottom:16px;width:fit-content}
 .tab-inline{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:600;color:var(--gray-700);transition:all .15s}
 .tab-inline.active{background:#fff;color:var(--primary);box-shadow:var(--shadow)}
-
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1500}
 .modal{background:#fff;border-radius:16px;padding:24px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.3)}
 .modal-header{font-size:17px;font-weight:800;color:var(--gray-900);margin-bottom:16px}
 .modal-actions{display:flex;gap:10px;margin-top:20px}
 .modal-actions .btn{flex:1;justify-content:center}
-
 .upload-zone{border:2px dashed var(--gray-300);border-radius:12px;padding:32px 20px;text-align:center;background:var(--gray-50);transition:all .2s;cursor:pointer}
 .upload-zone:hover{border-color:var(--primary);background:var(--primary-light)}
-
 .report-card{border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:14px;background:#fff}
 .report-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--gray-100);margin-bottom:12px;flex-wrap:wrap;gap:10px}
 .report-name{font-size:15px;font-weight:700;color:var(--gray-900)}
 .report-summary{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;padding:12px;background:var(--gray-50);border-radius:10px;margin-bottom:12px}
 .report-summary b{color:var(--gray-900)}
-
 .timeline{position:relative;padding-right:28px;margin:16px 0}
 .timeline::before{content:'';position:absolute;right:10px;top:8px;bottom:8px;width:2px;background:var(--gray-200)}
 .timeline-item{position:relative;padding:12px 0}
 .timeline-item::before{content:'';position:absolute;right:-24px;top:16px;width:12px;height:12px;border-radius:50%;background:var(--primary);border:3px solid #fff;box-shadow:0 0 0 2px var(--primary-light)}
-
 .branch-section{border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:14px;background:#fff}
 .branch-section-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--gray-100);margin-bottom:12px;flex-wrap:wrap;gap:10px}
-
 .muted{color:var(--gray-500);font-size:12px}
 .mt-2{margin-top:8px}
 .mt-3{margin-top:12px}
 .mt-4{margin-top:16px}
 .inactive-row{opacity:.55}
-
 @media print{.sidebar,.header,.btn,.no-print{display:none !important}.app{display:block}.main{padding:0;overflow:visible}.card,.report-card,.branch-section{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}body{background:#fff}}
 </style>
 </head>
@@ -942,7 +921,6 @@ function renderEmployeesTab(){
       <td>${sh ? `<span class="badge b-green">${sh.start} - ${sh.end}</span>` : '—'}</td>
       <td style="white-space:nowrap">
         <button class="btn btn-outline btn-sm" onclick="showEmpDetails('${e.id}')">تفاصيل</button>
-        <button class="btn btn-outline btn-sm" onclick="openEmpHistory('${e.id}')">السجل الكامل</button>
         ${!isInactive ? `
           <button class="btn btn-warning btn-sm" onclick="transferEmp('${e.id}')">نقل</button>
           <button class="btn btn-danger btn-sm" onclick="deactivateEmp('${e.id}')">إنهاء</button>
@@ -1149,7 +1127,6 @@ async function reactivateEmp(empId){
   } catch(e){ showLoader(false); alert(e.message); }
 }
 
-/* === تفاصيل الموظف === */
 async function showEmpDetails(empId){
   const emp = DB.employees.find(e => e.id === empId);
   if(!emp) return;
@@ -1185,14 +1162,18 @@ async function showEmpDetails(empId){
   `);
 }
 
-/* === فتح صفحة سجل الموظف === */
 function openEmpHistory(empId){
-  UI.empReportId = empId;
+  const emp = DB.employees.find(e => e.id === empId);
+  if(emp){
+    UI.empBranchFilter = emp.branchId; // نجيب الفرع الحالي
+    UI.empReportId = empId;
+  } else {
+    UI.empReportId = empId;
+  }
   lastEmpReport = null;
   navigateTo('employee');
 }
 
-/* === استيراد موظفين من Excel === */
 async function importEmployees(ev){
   const file = ev.target.files[0]; if(!file) return;
   const bId = $('impEmpBranch').value;
@@ -1228,7 +1209,6 @@ async function importEmployees(ev){
   reader.readAsArrayBuffer(file);
 }
 
-/* === رفع البصمة === */
 function renderUploads(){
   const branchOpts = DB.branches.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
   return `
@@ -1320,7 +1300,6 @@ async function handleUpload(ev){
   reader.readAsArrayBuffer(file);
 }
 
-/* === كشف الشفت === */
 function detectShift(empId, excludeDate){
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 45);
   const cutoffKey = cutoff.toISOString().slice(0,10);
@@ -1358,7 +1337,6 @@ function detectShift(empId, excludeDate){
   return { start, end, hours: Math.round(hours*10)/10, name:'تلقائي', graceMins: 15, offDays: [], detected: true };
 }
 
-/* === الحساب === */
 function calcDay(emp, dateKey, dailyRec, punches, branchId){
   let sh = null;
   if(dailyRec?.shiftId) sh = getShift(dailyRec.shiftId);
@@ -1445,7 +1423,6 @@ function calcEmp(emp, from, to, branchId){
   return { emp, days: results, totals: t };
 }
 
-/* === التقارير === */
 function renderReports(){
   const bId = UI.repBranch || (DB.branches[0]?.id || '');
   const view = UI.repView || 'detailed';
@@ -1621,39 +1598,97 @@ function exportReport(){
 }
 
 /* =========================================================
-   سجل الموظف الكامل - مقسم حسب الفروع
+   سجل الموظف - الفلتر: فرع أولاً ثم موظف
    ========================================================= */
 function renderEmployeeHistory(){
+  const filterBranchId = UI.empBranchFilter || '';
   const empId = UI.empReportId || '';
   const emp = empId ? DB.employees.find(e => e.id === empId) : null;
 
-  const empOptions = DB.employees
-    .slice()
-    .sort((a,b) => a.name.localeCompare(b.name,'ar'))
-    .map(e => `<option value="${e.id}" ${empId === e.id ? 'selected' : ''}>${esc(e.name)} — ${esc(e.code)} ${e.active === false ? '(منتهي)' : ''}</option>`)
-    .join('');
+  // الفلتر الأول: الفرع
+  const branchField = `<div class="field" style="max-width:260px">
+    <label>الفرع</label>
+    <select onchange="UI.empBranchFilter=this.value;UI.empReportId='';lastEmpReport=null;renderPage()">
+      <option value="">اختر الفرع</option>
+      ${DB.branches.map(b => `<option value="${b.id}" ${filterBranchId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
+    </select>
+  </div>`;
+
+  // الفلتر الثاني: الموظف (معتمد على الفرع المختار)
+  // نعرض كل الموظفين اللي عنده سجلات في الفرع ده (حاليين أو سابقين)
+  let empOptions = [];
+  if(filterBranchId){
+    const empIdsInBranch = new Set();
+    // من التسجيلات اليومية
+    DB.daily.forEach(d => { if(d.branchId === filterBranchId) empIdsInBranch.add(d.empId); });
+    // من البصمات
+    DB.punches.forEach(p => { if(p.branchId === filterBranchId) empIdsInBranch.add(p.empId); });
+    // من الموظفين الحاليين في الفرع
+    DB.employees.forEach(e => { if(e.branchId === filterBranchId) empIdsInBranch.add(e.id); });
+    empOptions = Array.from(empIdsInBranch)
+      .map(id => DB.employees.find(e => e.id === id))
+      .filter(Boolean)
+      .sort((a,b) => a.name.localeCompare(b.name,'ar'));
+  }
+
+  const empField = `<div class="field" style="max-width:340px">
+    <label>الموظف</label>
+    <select onchange="UI.empReportId=this.value;lastEmpReport=null;renderPage()" ${!filterBranchId ? 'disabled' : ''}>
+      <option value="">${filterBranchId ? 'اختر الموظف' : 'اختر الفرع أولاً'}</option>
+      ${empOptions.map(e => `<option value="${e.id}" ${empId === e.id ? 'selected' : ''}>${esc(e.name)} — ${esc(e.code)}${e.active === false ? ' (منتهي)' : ''}</option>`).join('')}
+    </select>
+  </div>`;
 
   const controls = `<div class="form-row">
-    <div class="field" style="max-width:340px">
-      <label>الموظف</label>
-      <select onchange="UI.empReportId=this.value;lastEmpReport=null;renderPage()">
-        <option value="">اختر الموظف</option>
-        ${empOptions}
-      </select>
-    </div>
-    <div class="field" style="max-width:180px"><label>من تاريخ</label><input type="date" id="empRepFrom" value="${UI.empRepFrom || ''}"></div>
-    <div class="field" style="max-width:180px"><label>إلى تاريخ</label><input type="date" id="empRepTo" value="${UI.empRepTo || ''}"></div>
+    ${branchField}
+    ${empField}
+    <div class="field" style="max-width:170px"><label>من</label><input type="date" id="empRepFrom" value="${UI.empRepFrom || ''}"></div>
+    <div class="field" style="max-width:170px"><label>إلى</label><input type="date" id="empRepTo" value="${UI.empRepTo || ''}"></div>
     <button class="btn btn-primary" onclick="generateEmployeeReport()" ${!empId ? 'disabled' : ''}>عرض</button>
     <button class="btn btn-outline" onclick="exportEmployeeReport()" ${!lastEmpReport ? 'disabled' : ''}>Excel</button>
   </div>`;
 
-  if(!empId){
+  // لو مفيش فرع مختار
+  if(!filterBranchId){
     return `<div class="card">
       <div class="card-header">
-        <div><div class="card-title">سجل الموظف الكامل</div><div class="card-subtitle">تاريخ شامل عبر كل الفروع</div></div>
+        <div><div class="card-title">سجل الموظف الكامل</div><div class="card-subtitle">اختر الفرع ثم الموظف</div></div>
       </div>
       ${controls}
-      <div class="empty"><div class="empty-icon">👤</div><div class="empty-title">اختر موظف لعرض سجله الكامل</div></div>
+      <div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">اختر الفرع أولاً</div><div class="muted" style="margin-top:6px">ثم اختر الموظف لعرض سجله الكامل</div></div>
+    </div>`;
+  }
+
+  // لو فرع مختار بس مفيش موظف
+  if(!empId){
+    const branchEmps = empOptions;
+    const empsTable = branchEmps.length ? `
+      <div class="table-wrap mt-3">
+        <table>
+          <thead><tr><th>الرقم</th><th>الاسم</th><th>الحالة</th><th>الفرع</th><th>إجراء</th></tr></thead>
+          <tbody>
+            ${branchEmps.map(e => `
+              <tr>
+                <td><span class="badge b-gray">${esc(e.code)}</span></td>
+                <td><b>${esc(e.name)}</b></td>
+                <td>${e.active === false ? '<span class="badge b-red">منتهي</span>' : '<span class="badge b-green">نشط</span>'}</td>
+                <td>${esc(branchName(e.branchId))}</td>
+                <td><button class="btn btn-primary btn-sm" onclick="UI.empReportId='${e.id}';lastEmpReport=null;renderPage()">فتح السجل</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>` : `<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">لا يوجد موظفين في هذا الفرع</div></div>`;
+
+    return `<div class="card">
+      <div class="card-header">
+        <div><div class="card-title">سجل الموظف الكامل</div><div class="card-subtitle">${branchEmps.length} موظف في ${esc(branchName(filterBranchId))}</div></div>
+      </div>
+      ${controls}
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">موظفي الفرع</div></div>
+      ${empsTable}
     </div>`;
   }
 
@@ -1670,14 +1705,15 @@ function renderEmployeeHistory(){
           <div style="font-size:13px;opacity:.85;margin-top:4px">رقم البصمة: ${esc(emp.code)}</div>
         </div>
         <div style="text-align:left">
-          <div style="font-size:13px;opacity:.85">الحالة</div>
+          <div style="font-size:13px;opacity:.85">الحالة الحالية</div>
           <div style="font-size:15px;font-weight:700">${emp.active === false ? 'منتهي' : 'نشط'}</div>
           ${emp.active === false ? `<div style="font-size:12px;opacity:.85;margin-top:2px">حتى ${fmtDate(emp.endDate)}</div>` : ''}
+          <div style="font-size:12px;opacity:.85;margin-top:4px">الفرع الحالي: ${esc(branchName(emp.branchId))}</div>
         </div>
       </div>
     </div>`;
 
-  // Timeline النقلات
+  // سجل التنقلات
   const history = emp.transferHistory || [];
   let timelineHtml = '';
   if(history.length){
@@ -1699,8 +1735,7 @@ function renderEmployeeHistory(){
   const from = UI.empRepFrom || '';
   const to = UI.empRepTo || '';
 
-  // جمع كل الأيام اللي فيها سجل لهذا الموظف (من daily + punches)
-  const dayBranchMap = {}; // dateKey → branchId
+  const dayBranchMap = {};
   DB.daily.forEach(d => {
     if(d.empId !== emp.id) return;
     if(from && d.dateKey < from) return;
@@ -1714,14 +1749,11 @@ function renderEmployeeHistory(){
     if(!dayBranchMap[p.dateKey]) dayBranchMap[p.dateKey] = p.branchId;
   });
 
-  // تجميع حسب الفرع
   const byBranch = {};
   Object.keys(dayBranchMap).forEach(dk => {
-    const bId = dayBranchMap[dk];
-    (byBranch[bId] = byBranch[bId] || []).push(dk);
+    (byBranch[dayBranchMap[dk]] = byBranch[dayBranchMap[dk]] || []).push(dk);
   });
 
-  // احسب لكل فرع
   const branchStats = Object.keys(byBranch).map(bId => {
     const dates = byBranch[bId].sort();
     const days = dates.map(dk => {
@@ -1740,17 +1772,9 @@ function renderEmployeeHistory(){
       else if(d.status === 'بصمة ناقصة') t.incomplete++;
       else t.present++;
     });
-    return {
-      branchId: bId,
-      branchName: branchName(bId),
-      firstDate: dates[0],
-      lastDate: dates[dates.length-1],
-      days,
-      totals: t
-    };
+    return { branchId: bId, branchName: branchName(bId), firstDate: dates[0], lastDate: dates[dates.length-1], days, totals: t };
   }).sort((a,b) => a.firstDate.localeCompare(b.firstDate));
 
-  // الإجمالي
   const grand = { days:0, workMins:0, overtime:0, lateness:0, present:0, absent:0, leave:0, mission:0, incomplete:0 };
   branchStats.forEach(b => {
     grand.days += b.totals.days;
@@ -1765,7 +1789,6 @@ function renderEmployeeHistory(){
   });
   const overColor = grand.overtime >= 0 ? 'var(--primary)' : 'var(--danger)';
 
-  // عرض ملخص الإجمالي
   const grandSummary = `
     <div class="card">
       <div class="card-header">
@@ -1781,7 +1804,6 @@ function renderEmployeeHistory(){
       </div>
     </div>`;
 
-  // عرض كل فرع على حدة
   let branchesHtml = '';
   if(branchStats.length === 0){
     branchesHtml = `<div class="card"><div class="empty"><div class="empty-icon">📭</div><div class="empty-title">لا توجد سجلات في هذه الفترة</div></div></div>`;
@@ -1837,7 +1859,7 @@ function renderEmployeeHistory(){
   return `<div class="card">
     <div class="card-header">
       <div><div class="card-title">سجل الموظف الكامل</div><div class="card-subtitle">تاريخ شامل عبر كل الفروع</div></div>
-      <button class="btn btn-outline btn-sm" onclick="UI.empReportId='';lastEmpReport=null;renderPage()">مسح</button>
+      <button class="btn btn-outline btn-sm" onclick="UI.empReportId='';lastEmpReport=null;renderPage()">تغيير الموظف</button>
     </div>
     ${controls}
   </div>
@@ -1919,58 +1941,52 @@ function generateEmployeeReport(){
 function exportEmployeeReport(){
   if(!lastEmpReport){ alert('اعرض التقرير أولاً'); return; }
   const { emp, from, to, branchStats, grand, transferHistory } = lastEmpReport;
-  const out = [];
+  const wb = XLSX.utils.book_new();
 
-  // رأس التقرير
-  out.push({ 'تقرير الموظف': emp.name, '': '' });
-  out.push({ 'تقرير الموظف': 'رقم البصمة', '': emp.code });
-  out.push({ 'تقرير الموظف': 'الحالة', '': emp.active === false ? 'منتهي' : 'نشط' });
-  out.push({ 'تقرير الموظف': 'الفترة', '': `${from || '—'} → ${to || '—'}` });
-  out.push({ 'تقرير الموظف': '', '': '' });
+  // صفحة 1: الملخص
+  const summaryRows = [];
+  summaryRows.push({ 'البند': 'الاسم', 'القيمة': emp.name });
+  summaryRows.push({ 'البند': 'رقم البصمة', 'القيمة': emp.code });
+  summaryRows.push({ 'البند': 'الحالة', 'القيمة': emp.active === false ? 'منتهي' : 'نشط' });
+  summaryRows.push({ 'البند': 'الفرع الحالي', 'القيمة': branchName(emp.branchId) });
+  summaryRows.push({ 'البند': 'الفترة', 'القيمة': `${from || '—'} → ${to || '—'}` });
+  summaryRows.push({ 'البند': '', 'القيمة': '' });
+  summaryRows.push({ 'البند': '📊 الإجمالي الكامل', 'القيمة': '' });
+  summaryRows.push({ 'البند': 'عدد الأيام', 'القيمة': grand.days });
+  summaryRows.push({ 'البند': 'حضور', 'القيمة': grand.present });
+  summaryRows.push({ 'البند': 'غياب', 'القيمة': grand.absent });
+  summaryRows.push({ 'البند': 'أجازة', 'القيمة': grand.leave });
+  summaryRows.push({ 'البند': 'مهمة', 'القيمة': grand.mission });
+  summaryRows.push({ 'البند': 'بصمة ناقصة', 'القيمة': grand.incomplete });
+  summaryRows.push({ 'البند': 'ساعات العمل', 'القيمة': fmtMins(grand.workMins) });
+  summaryRows.push({ 'البند': 'التأخير', 'القيمة': fmtMins(grand.lateness) });
+  summaryRows.push({ 'البند': 'إضافي/عجز', 'القيمة': fmtMins(grand.overtime) });
 
-  // سجل التنقلات
   if(transferHistory.length){
-    out.push({ 'تقرير الموظف': 'سجل التنقلات:', '': '' });
+    summaryRows.push({ 'البند': '', 'القيمة': '' });
+    summaryRows.push({ 'البند': '🔄 سجل التنقلات', 'القيمة': '' });
     transferHistory.forEach(h => {
-      out.push({
-        'تقرير الموظف': `من ${h.fromName} إلى ${h.toName}`,
-        '': `${h.date}${h.reason ? ' — ' + h.reason : ''}`
-      });
+      summaryRows.push({ 'البند': `${h.fromName} ← ${h.toName}`, 'القيمة': `${h.date}${h.reason ? ' — ' + h.reason : ''}` });
     });
-    out.push({ 'تقرير الموظف': '', '': '' });
   }
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), 'الملخص');
 
-  // الإجمالي
-  out.push({ 'تقرير الموظف': 'الإجمالي الكامل', '': '' });
-  out.push({ 'تقرير الموظف': 'أيام', '': grand.days });
-  out.push({ 'تقرير الموظف': 'حضور', '': grand.present });
-  out.push({ 'تقرير الموظف': 'غياب', '': grand.absent });
-  out.push({ 'تقرير الموظف': 'أجازة', '': grand.leave });
-  out.push({ 'تقرير الموظف': 'مهمة', '': grand.mission });
-  out.push({ 'تقرير الموظف': 'بصمة ناقصة', '': grand.incomplete });
-  out.push({ 'تقرير الموظف': 'ساعات العمل', '': fmtMins(grand.workMins) });
-  out.push({ 'تقرير الموظف': 'تأخير', '': fmtMins(grand.lateness) });
-  out.push({ 'تقرير الموظف': 'إضافي/عجز', '': fmtMins(grand.overtime) });
-  out.push({ 'تقرير الموظف': '', '': '' });
+  // صفحة 2: حسب الفرع
+  const branchRows = branchStats.map(b => ({
+    'الفرع': b.branchName,
+    'من': b.firstDate,
+    'إلى': b.lastDate,
+    'أيام': b.totals.days,
+    'حضور': b.totals.present,
+    'غياب': b.totals.absent,
+    'أجازة': b.totals.leave,
+    'ساعات العمل': fmtMins(b.totals.workMins),
+    'تأخير': fmtMins(b.totals.lateness),
+    'إضافي/عجز': fmtMins(b.totals.overtime)
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(branchRows), 'حسب الفرع');
 
-  // تفاصيل كل فرع
-  const detailRows = [];
-  branchStats.forEach(b => {
-    detailRows.push({
-      'الفرع': b.branchName,
-      'من': b.firstDate,
-      'إلى': b.lastDate,
-      'أيام': b.totals.days,
-      'حضور': b.totals.present,
-      'غياب': b.totals.absent,
-      'أجازة': b.totals.leave,
-      'ساعات العمل': fmtMins(b.totals.workMins),
-      'تأخير': fmtMins(b.totals.lateness),
-      'إضافي/عجز': fmtMins(b.totals.overtime)
-    });
-  });
-
-  // تفاصيل الأيام
+  // صفحة 3: الأيام التفصيلية
   const dailyRows = [];
   branchStats.forEach(b => {
     b.days.forEach(d => {
@@ -1989,18 +2005,8 @@ function exportEmployeeReport(){
       });
     });
   });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dailyRows), 'الأيام التفصيلية');
 
-  const wb = XLSX.utils.book_new();
-  const wsSumm = XLSX.utils.json_to_sheet(out);
-  XLSX.utils.book_append_sheet(wb, wsSumm, 'الملخص');
-  if(detailRows.length){
-    const wsDetail = XLSX.utils.json_to_sheet(detailRows);
-    XLSX.utils.book_append_sheet(wb, wsDetail, 'حسب الفرع');
-  }
-  if(dailyRows.length){
-    const wsDaily = XLSX.utils.json_to_sheet(dailyRows);
-    XLSX.utils.book_append_sheet(wb, wsDaily, 'الأيام التفصيلية');
-  }
   XLSX.writeFile(wb, `سجل_${emp.name}_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
