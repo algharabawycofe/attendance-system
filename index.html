@@ -30,7 +30,7 @@
   .field{display:flex;flex-direction:column;gap:5px}
   .field label{font-size:12.5px;font-weight:bold;color:#2c5282}
   input,select,textarea{padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:13.5px;font-family:inherit;background:#fff}
-  input:focus,select:focus{outline:none;border-color:#4299e1}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:#4299e1}
   table{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
   th,td{border:1px solid #e2e8f0;padding:8px;text-align:center;vertical-align:middle}
   th{background:#2b6cb0;color:#fff;font-weight:600;font-size:12.5px}
@@ -71,6 +71,7 @@
   .daily-table input[type="text"]{padding:5px 6px;font-size:12.5px;width:100%}
   .daily-table select{padding:5px 6px;font-size:12.5px}
   .daily-table th{white-space:nowrap}
+  .branch-header{background:linear-gradient(135deg,#1a365d,#2b6cb0);color:#fff;padding:18px;margin-top:25px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 </style>
 </head>
 <body>
@@ -130,7 +131,7 @@ let currentUser = null;
 let activeTab = 'overview';
 let UI = {
   empBranch:'all', shiftBranch:'all', permBranch:'all',
-  repBranch:'all', repEmp:'all', repFrom:'', repTo:'',
+  repBranch:'', repEmp:'all', repFrom:'', repTo:'', repViewMode:'detailed',
   dailyBranch:'', dailyDate: new Date().toISOString().slice(0,10)
 };
 let importMsg = null;
@@ -690,7 +691,6 @@ async function editBranchUser(bId){
   } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
 }
 
-/* ⭐ تبويب العمال - مع استيراد Excel */
 function viewEmployees(){
   const isAdmin = currentUser.role === 'admin';
   if(!isAdmin) UI.empBranch = currentUser.branchId;
@@ -714,7 +714,6 @@ function viewEmployees(){
         </select></div>`
     : `<input type="hidden" id="empBranchAdd" value="${currentUser.branchId}">`;
 
-  /* ⭐ قسم استيراد الموظفين من Excel (للأدمن فقط) */
   const importSection = isAdmin ? `
     <div style="background:#f0fff4;border:2px dashed #38a169;border-radius:10px;padding:18px;margin-bottom:18px">
       <h3 style="color:#22543d">📤 استيراد الموظفين من Excel</h3>
@@ -796,7 +795,6 @@ function loadShiftSelectForAdd(){
     : `<option value="">— لا توجد شفتات —</option>`;
 }
 
-/* ⭐ استيراد الموظفين من Excel */
 async function handleEmpImport(ev){
   const file = ev.target.files[0]; if(!file) return;
   const branchId = document.getElementById('empImportBranch').value;
@@ -812,7 +810,6 @@ async function handleEmpImport(ev){
       const rows = XLSX.utils.sheet_to_json(ws, {raw:false});
       if(!rows || !rows.length){ empImportMsg = {ok:false, text:'❌ الملف فارغ'}; showLoader(false); renderTab(); return; }
 
-      // استخراج أسماء الأعمدة من أول صف
       const firstRow = rows[0];
       const keys = Object.keys(firstRow);
       const nameKey = keys.find(k => /^(name|الاسم|employee name|employee|اسم الموظف|اسم العامل)/i.test(k.trim()));
@@ -831,7 +828,6 @@ async function handleEmpImport(ev){
         const name = String(row[nameKey] || '').trim();
         const code = String(row[codeKey] || '').trim();
         if(!name || !code){ skipped++; return; }
-        // تحقق من التكرار في نفس الفرع
         if(existing.some(e => norm(e.code) === norm(code)) ||
            newEmps.some(e => norm(e.code) === norm(code))){ dup++; return; }
         newEmps.push({ branchId, name, code, shiftId: defaultShift || '', active:true, createdAt: Date.now() });
@@ -1430,83 +1426,193 @@ function buildDayObj(dateKey, dayName, isOffDay, inStr, outStr, workMins, requir
   };
 }
 
+/* =========================================================
+   التقارير - محدث (فصل الفروع + وضعان للعرض)
+   ========================================================= */
 function viewReports(){
   const isAdmin = currentUser.role === 'admin';
+
+  if(isAdmin && (!UI.repBranch || UI.repBranch === 'all') && DB.branches.length){
+    UI.repBranch = DB.branches[0].id;
+  }
+  if(!isAdmin) UI.repBranch = currentUser.branchId;
+
+  const viewMode = UI.repViewMode || 'detailed';
+
   const branchField = isAdmin
     ? `<div class="field"><label>الفرع</label>
-        <select id="repBranch" onchange="UI.repBranch=this.value;UI.repEmp='all';renderTab()">
-          <option value="all">كل الفروع</option>
-          ${DB.branches.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('')}
-        </select></div>` : '';
+        <select id="repBranch" onchange="UI.repBranch=this.value;UI.repEmp='all';lastReport=null;renderTab()">
+          ${DB.branches.map(b=>`<option value="${b.id}" ${UI.repBranch===b.id?'selected':''}>🏢 ${esc(b.name)}</option>`).join('')}
+          <option value="all" ${UI.repBranch==='all'?'selected':''}>📚 كل الفروع (منفصلة)</option>
+        </select></div>`
+    : '';
 
-  const filterB = isAdmin ? UI.repBranch : currentUser.branchId;
-  let emps = DB.employees.slice();
-  if(filterB !== 'all') emps = emps.filter(e => e.branchId === filterB);
-  emps.sort((a,b)=> a.name.localeCompare(b.name,'ar'));
+  const filterB = UI.repBranch;
+  let emps = [];
+  if(filterB !== 'all'){
+    emps = DB.employees.filter(e => e.branchId === filterB);
+    emps.sort((a,b)=> a.name.localeCompare(b.name,'ar'));
+  }
 
-  const empField = `<div class="field"><label>العامل</label>
-    <select id="repEmp" onchange="UI.repEmp=this.value">
-      <option value="all">كل العمال</option>
-      ${emps.map(e=>`<option value="${e.id}">${esc(e.name)} (${esc(e.code)})</option>`).join('')}
-    </select></div>`;
+  const empField = (filterB !== 'all' && emps.length)
+    ? `<div class="field"><label>العامل</label>
+        <select id="repEmp" onchange="UI.repEmp=this.value">
+          <option value="all" ${UI.repEmp==='all'?'selected':''}>كل العمال</option>
+          ${emps.map(e=>`<option value="${e.id}" ${UI.repEmp===e.id?'selected':''}>${esc(e.name)} (${esc(e.code)})</option>`).join('')}
+        </select></div>`
+    : '';
+
+  const viewToggle = `<div class="field"><label>طريقة العرض</label>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button class="btn" style="background:${viewMode==='detailed'?'#2b6cb0':'#e2e8f0'};color:${viewMode==='detailed'?'#fff':'#2c5282'}"
+        onclick="UI.repViewMode='detailed';renderTab()">👤 تفصيلي</button>
+      <button class="btn" style="background:${viewMode==='summary'?'#2b6cb0':'#e2e8f0'};color:${viewMode==='summary'?'#fff':'#2c5282'}"
+        onclick="UI.repViewMode='summary';renderTab()">📊 ملخص</button>
+    </div>
+  </div>`;
 
   const controls = `<div class="row">
-    ${branchField}${empField}
-    <div class="field"><label>من</label><input type="date" id="repFrom" onchange="UI.repFrom=this.value"></div>
-    <div class="field"><label>إلى</label><input type="date" id="repTo" onchange="UI.repTo=this.value"></div>
-    <button class="btn" onclick="generateReport()">🔄 عرض التقرير</button>
-    <button class="btn btn-success" onclick="exportReport()">📥 Excel</button>
+    ${branchField}${empField}${viewToggle}
+    <div class="field"><label>من تاريخ</label><input type="date" id="repFrom" value="${UI.repFrom}" onchange="UI.repFrom=this.value"></div>
+    <div class="field"><label>إلى تاريخ</label><input type="date" id="repTo" value="${UI.repTo}" onchange="UI.repTo=this.value"></div>
+    <button class="btn btn-success" onclick="generateReport()">🔄 عرض التقرير</button>
+    <button class="btn" onclick="exportReport()">📥 Excel</button>
   </div>`;
 
   let body = '';
-  if(lastReport){
+  if(!DB.branches.length){
+    body = '<div class="card"><div class="empty">لا توجد فروع. أضف فرع أولاً.</div></div>';
+  } else if(lastReport){
     if(lastReport.rows.length === 0){
-      body = '<div class="empty">لا توجد بيانات للفلاتر المحددة.</div>';
-    }else{
-      let gWork=0,gOver=0,gLate=0,gDays=0;
-      lastReport.rows.forEach(r=>{ gWork += r.totals.workMins; gOver += r.totals.overtime; gLate += r.totals.netLateness; gDays += r.totals.days; });
+      body = '<div class="card"><div class="empty">لا توجد بيانات مطابقة للفلاتر المحددة.</div></div>';
+    } else {
+      let gWork=0,gOver=0,gLate=0,gDays=0,gPresent=0,gAbsent=0,gLeave=0;
+      lastReport.rows.forEach(r=>{
+        gWork += r.totals.workMins;
+        gOver += r.totals.overtime;
+        gLate += r.totals.netLateness;
+        gDays += r.totals.days;
+        gPresent += r.totals.presentDays;
+        gAbsent += r.totals.absentDays;
+        gLeave += r.totals.leaveDays;
+      });
       const overColor = gOver >= 0 ? '#2b6cb0' : '#c53030';
-      let summary = `<div class="card" style="background:#ebf8ff;border:1px solid #bee3f8">
-        <h2>📌 الملخص</h2>
+
+      const summary = `<div class="card" style="background:#ebf8ff;border:1px solid #bee3f8">
+        <h2>📌 ملخص التقرير العام</h2>
         <div class="grid">
           <div class="stat-card"><h3>👥 عمال</h3><div class="stat-row"><b style="font-size:20px">${lastReport.rows.length}</b></div></div>
           <div class="stat-card"><h3>📅 أيام</h3><div class="stat-row"><b style="font-size:20px">${gDays}</b></div></div>
-          <div class="stat-card"><h3>⌛ ساعات العمل</h3><div class="stat-row"><b style="font-size:15px">${formatMinsToText(gWork)}</b></div></div>
-          <div class="stat-card"><h3>⏰ التأخير</h3><div class="stat-row"><b style="font-size:15px;color:#c53030">${formatMinsToText(gLate)}</b></div></div>
-          <div class="stat-card"><h3>⚖️ إضافي/عجز</h3><div class="stat-row"><b style="font-size:15px;color:${overColor}">${gOver>=0?'+':''}${formatMinsToText(gOver)}</b></div></div>
+          <div class="stat-card"><h3>✅ حضور</h3><div class="stat-row"><b style="font-size:20px;color:#38a169">${gPresent}</b></div></div>
+          <div class="stat-card"><h3>❌ غياب</h3><div class="stat-row"><b style="font-size:20px;color:#e53e3e">${gAbsent}</b></div></div>
+          <div class="stat-card"><h3>🏖️ أجازة</h3><div class="stat-row"><b style="font-size:20px;color:#2b6cb0">${gLeave}</b></div></div>
+          <div class="stat-card"><h3>⌛ ساعات العمل</h3><div class="stat-row"><b style="font-size:14px">${formatMinsToText(gWork)}</b></div></div>
+          <div class="stat-card"><h3>⏰ التأخير</h3><div class="stat-row"><b style="font-size:14px;color:#c53030">${formatMinsToText(gLate)}</b></div></div>
+          <div class="stat-card"><h3>⚖️ إضافي/عجز</h3><div class="stat-row"><b style="font-size:14px;color:${overColor}">${gOver>=0?'+':''}${formatMinsToText(gOver)}</b></div></div>
         </div>
       </div>`;
-      const byBranch = {};
-      lastReport.rows.forEach(r=>{ (byBranch[r.emp.branchId] = byBranch[r.emp.branchId] || []).push(r); });
-      let cards = '';
-      Object.keys(byBranch).forEach(bId=>{
-        const list = byBranch[bId];
-        if(isAdmin && UI.repBranch === 'all'){
-          let bw=0,bo=0,bl=0;
-          list.forEach(r=>{ bw+=r.totals.workMins; bo+=r.totals.overtime; bl+=r.totals.netLateness; });
-          cards += `<h2 style="margin-top:25px">🏢 ${esc(branchName(bId))}
-            <span class="muted" style="font-size:13px;font-weight:normal">
-              (عمال: ${list.length} | ساعات: ${formatMinsToText(bw)} | تأخير: ${formatMinsToText(bl)} | إضافي: ${bo>=0?'+':''}${formatMinsToText(bo)})
-            </span></h2>`;
+
+      let content = '';
+      if(UI.repBranch === 'all'){
+        const byBranch = {};
+        lastReport.rows.forEach(r => {
+          (byBranch[r.emp.branchId] = byBranch[r.emp.branchId] || []).push(r);
+        });
+        const branchOrder = DB.branches.map(b => b.id).filter(id => byBranch[id]);
+
+        branchOrder.forEach((bId) => {
+          const list = byBranch[bId];
+          let bw=0, bo=0, bl=0, bDays=0, bPresent=0, bAbsent=0, bLeave=0;
+          list.forEach(r=>{
+            bw += r.totals.workMins;
+            bo += r.totals.overtime;
+            bl += r.totals.netLateness;
+            bDays += r.totals.days;
+            bPresent += r.totals.presentDays;
+            bAbsent += r.totals.absentDays;
+            bLeave += r.totals.leaveDays;
+          });
+
+          content += `<div class="branch-header">
+            <div style="font-size:20px;font-weight:bold">🏢 ${esc(branchName(bId))}</div>
+            <div style="font-size:13px;display:flex;gap:16px;flex-wrap:wrap">
+              <span>👥 ${list.length} عامل</span>
+              <span>📅 ${bDays} يوم</span>
+              <span>✅ ${bPresent}</span>
+              <span>❌ ${bAbsent}</span>
+              <span>🏖️ ${bLeave}</span>
+              <span>⌛ ${formatMinsToText(bw)}</span>
+              <span>⏰ ${formatMinsToText(bl)}</span>
+              <span>⚖️ ${bo>=0?'+':''}${formatMinsToText(bo)}</span>
+            </div>
+          </div>`;
+
+          if(viewMode === 'summary'){
+            content += `<div class="card"><div class="scroll-x">${reportSummaryTable(list, false)}</div></div>`;
+          } else {
+            list.forEach(r => { content += reportCardHtml(r, false); });
+          }
+        });
+      } else {
+        if(viewMode === 'summary'){
+          content = `<div class="card">
+            <h2>🏢 ${esc(branchName(UI.repBranch))} — ملخص العمال</h2>
+            <div class="scroll-x">${reportSummaryTable(lastReport.rows, false)}</div>
+          </div>`;
+        } else {
+          content = lastReport.rows.map(r => reportCardHtml(r, false)).join('');
         }
-        list.forEach(r => { cards += reportCardHtml(r, isAdmin && UI.repBranch === 'all'); });
-      });
-      body = summary + cards;
+      }
+
+      body = summary + content;
     }
   } else {
-    body = '<div class="card"><div class="empty">اضغط <b>🔄 عرض التقرير</b>.</div></div>';
+    body = '<div class="card"><div class="empty">اضغط على <b>🔄 عرض التقرير</b> لعرض النتائج.</div></div>';
   }
+
   return `<div class="card">
-    <h2>📈 التقارير</h2>
+    <h2>📈 تقارير الحضور والانصراف</h2>
     ${controls}
-    <p class="muted">الحساب من دمج <b>تسجيل اليومي</b> + <b>البصمات</b> + <b>الشفت</b> + <b>الأذونات</b>.</p>
+    <p class="muted">💡 الحساب من دمج <b>تسجيل اليومي</b> + <b>البصمات</b> + <b>الشفت</b> + <b>الأذونات</b>.</p>
   </div>${body}`;
+}
+
+function reportSummaryTable(rows, showBranch){
+  const trs = rows.map(r => {
+    const t = r.totals;
+    const overColor = t.overtime >= 0 ? '#2b6cb0' : '#c53030';
+    return `<tr>
+      ${showBranch ? `<td>${esc(branchName(r.emp.branchId))}</td>` : ''}
+      <td style="text-align:right"><b>${esc(r.emp.name)}</b></td>
+      <td>${esc(r.emp.code)}</td>
+      <td>${t.days}</td>
+      <td style="color:#38a169"><b>${t.presentDays}</b></td>
+      <td style="color:#e53e3e"><b>${t.absentDays || 0}</b></td>
+      <td style="color:#2b6cb0"><b>${t.leaveDays || 0}</b></td>
+      <td>${t.incompleteDays || 0}</td>
+      <td>${formatMinsToText(t.workMins)}</td>
+      <td style="color:#c53030">${formatMinsToText(t.netLateness)}</td>
+      <td style="color:${overColor}"><b>${t.overtime>=0?'+':''}${formatMinsToText(t.overtime)}</b></td>
+    </tr>`;
+  }).join('');
+
+  return `<table>
+    <thead>
+      <tr>
+        ${showBranch ? '<th>الفرع</th>' : ''}
+        <th>الاسم</th><th>الكود</th><th>إجمالي أيام</th>
+        <th>حضور</th><th>غياب</th><th>أجازة</th><th>بصمة ناقصة</th>
+        <th>ساعات العمل</th><th>التأخير</th><th>إضافي/عجز</th>
+      </tr>
+    </thead>
+    <tbody>${trs}</tbody>
+  </table>`;
 }
 
 function reportCardHtml(r, showBranch){
   const t = r.totals;
   const overColor = t.overtime >= 0 ? '#2b6cb0' : '#c53030';
-  const shiftTxt = r.shift ? `${r.shift.name} (${r.shift.start} - ${r.shift.end})` : 'بدون شفت';
+  const shiftTxt = r.shift ? `${r.shift.name} (${r.shift.start} - ${r.shift.end}) — ${r.shift.hours} ساعات، سماح ${r.shift.graceMins} د` : 'بدون شفت';
   const rows = r.days.map(d=>{
     const exc = d.excusedMins > 0 ? `<span class="badge b-blue">${formatMinsToText(d.excusedMins)}</span>` : '—';
     const permTxt = d.perms && d.perms.length ? `<div class="muted" style="font-size:10.5px">${d.perms.join(' + ')}</div>` : '';
@@ -1544,8 +1650,8 @@ function reportCardHtml(r, showBranch){
     </div>
     <div class="scroll-x"><table>
       <thead><tr>
-        <th>التاريخ</th><th>دخول</th><th>خروج</th><th>ساعات العمل</th>
-        <th>المطلوب</th><th>إذن</th><th>تأخير</th><th>إضافي/عجز</th><th>الحالة</th>
+        <th>التاريخ (اليوم)</th><th>الدخول</th><th>الخروج</th><th>ساعات العمل</th>
+        <th>المطلوب</th><th>إذن</th><th>التأخير</th><th>الإضافي/العجز</th><th>الحالة</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
@@ -1554,18 +1660,21 @@ function reportCardHtml(r, showBranch){
 
 function generateReport(){
   const isAdmin = currentUser.role === 'admin';
-  const branchId = isAdmin ? (document.getElementById('repBranch')?.value || 'all') : currentUser.branchId;
-  const empId = document.getElementById('repEmp')?.value || 'all';
+  const branchId = isAdmin ? (document.getElementById('repBranch')?.value || UI.repBranch) : currentUser.branchId;
+  const empId = document.getElementById('repEmp')?.value || UI.repEmp || 'all';
   const fromDate = document.getElementById('repFrom')?.value || '';
   const toDate = document.getElementById('repTo')?.value || '';
   UI.repBranch = branchId; UI.repEmp = empId; UI.repFrom = fromDate; UI.repTo = toDate;
+
   let emps = DB.employees.slice();
   if(branchId !== 'all') emps = emps.filter(e => e.branchId === branchId);
-  if(empId !== 'all') emps = emps.filter(e => e.id === empId);
+  if(empId !== 'all' && empId) emps = emps.filter(e => e.id === empId);
+
   const rows = emps.map(emp => {
     const c = calcEmployee(emp, fromDate, toDate);
     return { emp, shift: c.shift, days: c.days, totals: c.totals };
   }).filter(r => r.days.length > 0).sort((a,b)=> a.emp.name.localeCompare(b.emp.name,'ar'));
+
   lastReport = { rows, branchId, empId, fromDate, toDate, generatedAt: new Date().toISOString() };
   renderTab();
 }
