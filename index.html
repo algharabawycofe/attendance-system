@@ -8,70 +8,109 @@
 <style>
   *{box-sizing:border-box}
   body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#eef2f7;margin:0;color:#22303f}
-  .topbar{background:linear-gradient(135deg,#1a365d,#2b6cb0);color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;box-shadow:0 2px 10px rgba(0,0,0,.15)}
-  .brand{font-size:18px;font-weight:bold}
-  .userbox{display:flex;align-items:center;gap:12px;font-size:14px}
-  .container{max-width:1350px;margin:0 auto;padding:20px}
-  .card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-bottom:20px}
-  h2{font-size:19px;color:#1a365d;margin:0 0 15px}
-  h3{font-size:16px;color:#2b6cb0;margin:0 0 10px}
-  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
-  .tab{background:#fff;border:1px solid #cbd5e0;color:#2c5282;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600}
+  .topbar{background:linear-gradient(135deg,#1a365d,#2b6cb0);color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+  .brand{font-size:17px;font-weight:bold}
+  .userbox{display:flex;align-items:center;gap:12px;font-size:13px}
+  .container{max-width:1350px;margin:0 auto;padding:16px}
+  .card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-bottom:16px}
+  h2{font-size:18px;color:#1a365d;margin:0 0 12px}
+  h3{font-size:15px;color:#2b6cb0;margin:0 0 10px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+  .tab{background:#fff;border:1px solid #cbd5e0;color:#2c5282;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:600}
   .tab:hover{background:#ebf8ff}
   .tab.active{background:#2b6cb0;color:#fff;border-color:#2b6cb0}
-  .btn{background:#2b6cb0;color:#fff;border:none;padding:9px 18px;border-radius:7px;font-size:14px;cursor:pointer;font-weight:bold}
+  .btn{background:#2b6cb0;color:#fff;border:none;padding:8px 16px;border-radius:7px;font-size:13.5px;cursor:pointer;font-weight:bold}
   .btn:hover{filter:brightness(1.1)}
   .btn-success{background:#38a169}
   .btn-warn{background:#dd6b20}
   .btn-danger{background:#e53e3e}
   .btn-ghost{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4)}
-  .btn-sm{padding:5px 11px;font-size:12px;border-radius:5px}
-  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:15px}
-  .field{display:flex;flex-direction:column;gap:5px}
-  .field label{font-size:12.5px;font-weight:bold;color:#2c5282}
-  input,select,textarea{padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:13.5px;font-family:inherit;background:#fff}
+  .btn-sm{padding:4px 10px;font-size:11.5px;border-radius:5px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:12px;font-weight:bold;color:#2c5282}
+  input,select,textarea{padding:7px 10px;border:1px solid #cbd5e0;border-radius:6px;font-size:13px;font-family:inherit;background:#fff}
   input:focus,select:focus,textarea:focus{outline:none;border-color:#4299e1}
-  table{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
-  th,td{border:1px solid #e2e8f0;padding:8px;text-align:center;vertical-align:middle}
-  th{background:#2b6cb0;color:#fff;font-weight:600;font-size:12.5px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff}
+  th,td{border:1px solid #e2e8f0;padding:7px;text-align:center;vertical-align:middle}
+  th{background:#2b6cb0;color:#fff;font-weight:600;font-size:12px}
   tbody tr:nth-child(even){background:#f7fafc}
   tbody tr:hover{background:#ebf8ff}
-  .badge{padding:3px 9px;border-radius:5px;font-weight:bold;font-size:11.5px;display:inline-block}
+  .badge{padding:2px 8px;border-radius:5px;font-weight:bold;font-size:11px;display:inline-block}
   .b-green{background:#c6f6d5;color:#22543d}
   .b-red{background:#fed7d7;color:#9b2c2c}
   .b-orange{background:#feebc8;color:#c05621}
   .b-blue{background:#bee3f8;color:#2c5282}
   .b-gray{background:#e2e8f0;color:#4a5568}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:15px}
-  .stat-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px}
-  .stat-card h3{font-size:15px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}
-  .stat-row{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;color:#4a5568}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+  .stat-card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px}
+  .stat-card h3{font-size:13.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #e2e8f0}
+  .stat-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:#4a5568}
   .stat-row b{color:#1a365d}
-  .emp-card{background:#fff;border:1px solid #cbd5e0;border-radius:10px;padding:18px;margin-bottom:20px}
-  .emp-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #e2e8f0;padding-bottom:12px;margin-bottom:12px;flex-wrap:wrap;gap:10px}
-  .emp-title{font-size:16px;font-weight:bold;color:#2b6cb0}
-  .emp-summary{display:flex;gap:18px;font-size:13px;font-weight:600;background:#f7fafc;padding:10px 15px;border-radius:7px;flex-wrap:wrap;margin-bottom:12px}
+  .emp-card{background:#fff;border:1px solid #cbd5e0;border-radius:10px;padding:16px;margin-bottom:16px}
+  .emp-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #e2e8f0;padding-bottom:10px;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+  .emp-title{font-size:15px;font-weight:bold;color:#2b6cb0}
+  .emp-summary{display:flex;gap:14px;font-size:12.5px;font-weight:600;background:#f7fafc;padding:8px 12px;border-radius:7px;flex-wrap:wrap;margin-bottom:10px}
   .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a365d,#2b6cb0);padding:20px}
-  .login-card{background:#fff;padding:35px;border-radius:16px;width:100%;max-width:400px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
-  .login-card h1{text-align:center;color:#1a365d;font-size:22px;margin:0 0 25px}
-  .login-card input{width:100%;margin-bottom:14px;padding:12px}
+  .login-card{background:#fff;padding:32px;border-radius:16px;width:100%;max-width:400px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+  .login-card h1{text-align:center;color:#1a365d;font-size:21px;margin:0 0 22px}
+  .login-card input{width:100%;margin-bottom:12px;padding:11px}
   .login-card .btn{width:100%;padding:12px;font-size:15px}
-  .hint{text-align:center;font-size:12px;color:#718096;margin-top:15px;background:#f7fafc;padding:8px;border-radius:6px}
-  .alert{padding:12px;border-radius:7px;margin-bottom:15px;font-weight:bold;font-size:13.5px;text-align:center}
+  .hint{text-align:center;font-size:11.5px;color:#718096;margin-top:12px;background:#f7fafc;padding:8px;border-radius:6px}
+  .alert{padding:10px;border-radius:7px;margin-bottom:12px;font-weight:bold;font-size:13px;text-align:center}
   .alert-err{background:#fff5f5;color:#c53030;border:1px solid #fed7d7}
   .alert-ok{background:#f0fff4;color:#22543d;border:1px solid #c6f6d5}
   .alert-info{background:#ebf8ff;color:#2c5282;border:1px solid #bee3f8}
-  .upload-area{border:2px dashed #4299e1;border-radius:10px;padding:22px;text-align:center;background:#f7fafc;cursor:pointer;margin-bottom:15px}
+  .upload-area{border:2px dashed #4299e1;border-radius:10px;padding:18px;text-align:center;background:#f7fafc;cursor:pointer;margin-bottom:12px}
   .upload-area:hover{background:#ebf8ff}
-  .muted{color:#718096;font-size:12.5px}
-  .empty{text-align:center;color:#a0aec0;padding:35px;font-size:14px}
+  .muted{color:#718096;font-size:12px}
+  .empty{text-align:center;color:#a0aec0;padding:30px;font-size:13.5px}
   .scroll-x{overflow-x:auto}
-  .loader{text-align:center;padding:40px;color:#2b6cb0;font-size:16px;font-weight:bold}
+  .loader{text-align:center;padding:40px;color:#2b6cb0;font-size:15px;font-weight:bold;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.95);padding:20px 40px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);z-index:2000}
   .daily-table input[type="time"],
-  .daily-table input[type="text"]{padding:5px 6px;font-size:12.5px;width:100%}
-  .daily-table select{padding:5px 6px;font-size:12.5px}
+  .daily-table input[type="text"]{padding:4px 6px;font-size:12px;width:100%}
+  .daily-table select{padding:4px 6px;font-size:12px}
   .daily-table th{white-space:nowrap}
-  .branch-header{background:linear-gradient(135deg,#1a365d,#2b6cb0);color:#fff;padding:18px;margin-top:25px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+  .branch-header{background:linear-gradient(135deg,#1a365d,#2b6cb0);color:#fff;padding:16px;margin-top:20px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  .mini-dash{background:#fff;border-radius:10px;padding:10px 16px;margin-bottom:14px;display:flex;gap:18px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,.04);font-size:13px;align-items:center;border:1px solid #e2e8f0}
+  .mini-dash span{display:flex;align-items:center;gap:5px}
+  .mini-dash b{color:#1a365d;font-size:14px}
+  .row-saving{background:#fffbeb !important;transition:background .2s}
+  .row-saved{background:#f0fff4 !important;transition:background .3s}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1500;display:flex;align-items:center;justify-content:center;padding:20px}
+  .modal-box{background:#fff;border-radius:14px;padding:24px;width:100%;max-width:480px;box-shadow:0 25px 60px rgba(0,0,0,.35);max-height:90vh;overflow-y:auto}
+  .modal-box h2{color:#1a365d;margin-bottom:16px;font-size:18px}
+  .modal-actions{display:flex;gap:10px;margin-top:16px}
+  .modal-actions .btn{flex:1}
+  .date-nav{display:flex;gap:4px;margin-top:4px}
+  .date-nav button{padding:6px 10px;font-size:12px;border:1px solid #cbd5e0;background:#fff;border-radius:5px;cursor:pointer;font-weight:bold;color:#2c5282}
+  .date-nav button.active{background:#2b6cb0;color:#fff;border-color:#2b6cb0}
+  .date-nav button:hover{background:#ebf8ff}
+  @media(max-width:700px){
+    .row{flex-direction:column;align-items:stretch}
+    .field{width:100%}
+    input,select{width:100%}
+    .container{padding:10px}
+    .tabs{gap:4px}
+    .tab{padding:6px 10px;font-size:12px}
+    .userbox{font-size:12px}
+    table{font-size:11.5px}
+    th,td{padding:5px}
+    .daily-table input[type="time"]{min-width:80px}
+    .grid{grid-template-columns:1fr 1fr}
+  }
+  @media print{
+    body{background:#fff}
+    .topbar,.tabs,.mini-dash,.btn,.row .btn,.modal-backdrop{display:none !important}
+    .card{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}
+    .emp-card{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid;margin-bottom:12px}
+    .branch-header{background:#1a365d !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .container{max-width:100%;padding:0}
+    h2{font-size:14px}
+    table{font-size:10px}
+    th,td{padding:3px 4px}
+    .no-print{display:none !important}
+  }
 </style>
 </head>
 <body>
@@ -79,9 +118,7 @@
 <div id="loginView" class="login-wrap">
   <div class="login-card">
     <h1 id="loginTitle">⏱️ نظام البصمة</h1>
-    <div id="setupNote" style="display:none" class="alert alert-info">
-      🎉 أول تشغيل — أنشئ حساب المدير الرئيسي
-    </div>
+    <div id="setupNote" style="display:none" class="alert alert-info">🎉 أول تشغيل — أنشئ حساب المدير الرئيسي</div>
     <input id="loginUser" placeholder="اسم المستخدم" autocomplete="username">
     <input id="loginPass" type="password" placeholder="كلمة المرور" autocomplete="current-password">
     <input id="loginName" placeholder="الاسم الكامل (للمدير فقط)" style="display:none">
@@ -100,8 +137,51 @@
     </div>
   </div>
   <div class="container">
+    <div id="miniDash" class="mini-dash" style="display:none"></div>
     <div class="tabs" id="tabsNav"></div>
     <div id="tabContent"></div>
+  </div>
+</div>
+
+<!-- Modal: تسجيل إذن -->
+<div id="permModal" class="modal-backdrop" style="display:none">
+  <div class="modal-box">
+    <h2>📝 تسجيل إذن</h2>
+    <input type="hidden" id="pmEmpId">
+    <input type="hidden" id="pmDateVal">
+    <div class="field" style="margin-bottom:10px">
+      <label>العامل</label>
+      <input id="pmEmpName" disabled style="background:#f7fafc">
+    </div>
+    <div class="field" style="margin-bottom:10px">
+      <label>نوع الإذن</label>
+      <select id="pmType" onchange="togglePermModalTimes()">
+        <option value="late">إذن تأخير</option>
+        <option value="early">إذن انصراف مبكر</option>
+        <option value="mid">إذن خلال العمل</option>
+        <option value="mission">مهمة خارجية</option>
+        <option value="leave">أجازة يوم كامل</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:10px" id="pmTimesRow">
+      <div class="field" style="flex:1">
+        <label>من</label>
+        <input type="time" id="pmFrom" value="09:00">
+      </div>
+      <div class="field" style="flex:1">
+        <label>إلى</label>
+        <input type="time" id="pmTo" value="11:00">
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:10px">
+      <label>ملاحظات</label>
+      <input id="pmReason" placeholder="اختياري">
+    </div>
+    <div id="pmExisting"></div>
+    <div class="modal-actions">
+      <button class="btn btn-success" onclick="savePermFromModal()">💾 حفظ الإذن</button>
+      <button class="btn" onclick="closePermModal()">❌ إلغاء</button>
+    </div>
   </div>
 </div>
 
@@ -130,9 +210,9 @@ let DB = { branches:[], users:[], shifts:[], employees:[], permissions:[], punch
 let currentUser = null;
 let activeTab = 'overview';
 let UI = {
-  empBranch:'all', shiftBranch:'all', permBranch:'all',
+  empBranch:'all', shiftBranch:'all',
   repBranch:'', repEmp:'all', repFrom:'', repTo:'', repViewMode:'detailed',
-  dailyBranch:'', dailyDate: new Date().toISOString().slice(0,10)
+  dailyBranch:'', dailyDate: new Date().toISOString().slice(0,10), dailySearch:''
 };
 let importMsg = null;
 let empImportMsg = null;
@@ -194,10 +274,7 @@ function dtAt(dateKey, timeStr){
 function dayNameOf(dateKey){ return dayNamesAr[new Date(dateKey+'T00:00:00').getDay()]; }
 function overlapMs(a1,a2,b1,b2){ return Math.max(0, Math.min(a2,b2) - Math.max(a1,b1)); }
 function fmtTimeMs(ms){ return new Date(ms).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit',hour12:true}); }
-function fmtTimeHM(ms){
-  const d = new Date(ms);
-  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-}
+function fmtTimeHM(ms){ const d = new Date(ms); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
 function statusBadge(st){
   const map = {'منتظم':'b-green','تأخير':'b-red','عجز':'b-orange','بصمة ناقصة':'b-orange','أجازة':'b-blue','غياب':'b-gray','راحة':'b-gray','مهمة':'b-blue'};
   return `<span class="badge ${map[st]||'b-gray'}">${st}</span>`;
@@ -205,6 +282,10 @@ function statusBadge(st){
 function getShiftFor(emp){ return DB.shifts.find(s => s.id === emp.shiftId) || null; }
 function getBranch(id){ return DB.branches.find(b => b.id === id); }
 function branchName(id){ const b = getBranch(id); return b ? b.name : '—'; }
+function getBranchDefaultShift(branchId){
+  const b = getBranch(branchId);
+  return b && b.defaultShiftId ? DB.shifts.find(s => s.id === b.defaultShiftId) : null;
+}
 
 async function fsGetAll(name){
   const snap = await getDocs(collection(db, name));
@@ -325,28 +406,26 @@ function enterApp(){
   const roleTxt = currentUser.role === 'admin' ? 'مدير النظام' : ('فرع: ' + branchName(currentUser.branchId));
   document.getElementById('userInfo').innerHTML = `👤 <b>${esc(currentUser.name)}</b> — ${esc(roleTxt)}`;
   const allowed = currentUser.role === 'admin'
-    ? ['overview','daily','branches','employees','shifts','permissions','import','reports']
-    : ['overview','daily','employees','shifts','permissions','reports'];
+    ? ['overview','daily','branches','employees','shifts','files','reports']
+    : ['overview','daily','employees','shifts','reports'];
   if(!allowed.includes(activeTab)) activeTab = 'overview';
   renderTab();
 }
 
 const TABS_ADMIN = [
-  {id:'overview',label:'📊 نظرة عامة'},
-  {id:'daily',label:'📅 تسجيل اليومي'},
+  {id:'overview',label:'📊 لوحة التحكم'},
+  {id:'daily',label:'📅 التسجيل اليومي'},
   {id:'branches',label:'🏢 الفروع'},
   {id:'employees',label:'👥 العمال'},
   {id:'shifts',label:'🕐 الشفتات'},
-  {id:'permissions',label:'📝 الأذونات'},
-  {id:'import',label:'📥 استيراد البصمة'},
+  {id:'files',label:'📥 رفع الملفات'},
   {id:'reports',label:'📈 التقارير'}
 ];
 const TABS_BRANCH = [
-  {id:'overview',label:'📊 نظرة عامة'},
-  {id:'daily',label:'📅 تسجيل اليومي'},
+  {id:'overview',label:'📊 لوحة التحكم'},
+  {id:'daily',label:'📅 التسجيل اليومي'},
   {id:'employees',label:'👥 العمال'},
   {id:'shifts',label:'🕐 الشفتات'},
-  {id:'permissions',label:'📝 الأذونات'},
   {id:'reports',label:'📈 التقارير'}
 ];
 function switchTab(id){ activeTab = id; importMsg = null; empImportMsg = null; renderTab(); window.scrollTo({top:0, behavior:'smooth'}); }
@@ -356,6 +435,7 @@ function renderTab(){
   document.getElementById('tabsNav').innerHTML = tabs.map(t =>
     `<button class="tab ${t.id===activeTab?'active':''}" onclick="switchTab('${t.id}')">${t.label}</button>`
   ).join('');
+  renderMiniDash();
   let html = '';
   switch(activeTab){
     case 'overview':    html = viewOverview(); break;
@@ -363,24 +443,48 @@ function renderTab(){
     case 'branches':    html = viewBranches(); break;
     case 'employees':   html = viewEmployees(); break;
     case 'shifts':      html = viewShifts(); break;
-    case 'permissions': html = viewPermissions(); break;
-    case 'import':      html = viewImport(); break;
+    case 'files':       html = viewFiles(); break;
     case 'reports':     html = viewReports(); break;
   }
   document.getElementById('tabContent').innerHTML = html;
   afterRender();
 }
 function afterRender(){
-  ['empBranch','shiftBranch','permBranch','repBranch','repEmp','dailyBranch','empImportBranch'].forEach(id=>{
+  ['empBranch','shiftBranch','repBranch','repEmp','dailyBranch','empImportBranch'].forEach(id=>{
     const el = document.getElementById(id);
     if(el && UI[id] !== undefined) el.value = UI[id];
   });
   const f = document.getElementById('repFrom'); if(f) f.value = UI.repFrom;
   const t = document.getElementById('repTo');   if(t) t.value = UI.repTo;
+  const s = document.getElementById('dailySearch'); if(s) s.value = UI.dailySearch || '';
   if(document.getElementById('empBranchAdd')) loadShiftSelectForAdd();
-  if(document.getElementById('dailyDate')) UI.dailyDate = document.getElementById('dailyDate').value;
 }
 
+function renderMiniDash(){
+  const el = document.getElementById('miniDash');
+  if(!el) return;
+  const bId = currentUser.role === 'admin' ? (UI.dailyBranch || (DB.branches[0] && DB.branches[0].id)) : currentUser.branchId;
+  if(!bId || !getBranch(bId)){ el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+  const today = new Date().toISOString().slice(0,10);
+  const emps = DB.employees.filter(e => e.branchId === bId);
+  const todayEntries = DB.dailyEntries.filter(d => d.branchId === bId && d.dateKey === today);
+  const dates = DB.punches.filter(p => p.branchId === bId).map(p => p.dateKey).sort();
+  const lastPunch = dates.length ? dates[dates.length-1] : '—';
+  const dayName = dayNamesAr[new Date(today+'T00:00:00').getDay()];
+  el.innerHTML = `
+    <span>🏢 <b>${esc(branchName(bId))}</b></span>
+    <span>📅 <b>${dayName} ${today}</b></span>
+    <span>👥 عمال: <b>${emps.length}</b></span>
+    <span>✅ سجلوا اليوم: <b style="color:#38a169">${todayEntries.length}</b></span>
+    <span>⏳ باقي: <b style="color:#dd6b20">${Math.max(0, emps.length - todayEntries.length)}</b></span>
+    <span>📥 آخر بصمة: <b>${lastPunch}</b></span>
+  `;
+}
+
+/* =========================================================
+   لوحة التحكم
+   ========================================================= */
 function viewOverview(){
   if(currentUser.role === 'admin'){
     if(DB.branches.length === 0){
@@ -388,7 +492,7 @@ function viewOverview(){
         <div class="alert alert-info">🚀 ابدأ بالخطوات دي:</div>
         <ol style="line-height:2;font-size:14px">
           <li>روح <b>🏢 الفروع</b> → أضف فرع</li>
-          <li>روح <b>👥 العمال</b> → ارفع Excel فيه الموظفين</li>
+          <li>روح <b>📥 رفع الملفات</b> → ارفع Excel الموظفين</li>
           <li>روح <b>🕐 الشفتات</b> → أضف شفت للفرع</li>
         </ol>
       </div>`;
@@ -414,29 +518,35 @@ function viewOverview(){
         <div class="stat-card" style="background:#ebf8ff"><h3>📥 البصمات</h3><div class="stat-row"><b style="font-size:22px">${totalPunch}</b></div></div>
         <div class="stat-card" style="background:#ebf8ff"><h3>📅 تسجيلات اليومي</h3><div class="stat-row"><b style="font-size:22px">${totalDaily}</b></div></div>
       </div>
-      <h2 style="margin-top:25px">تفاصيل الفروع</h2>
+      <h2 style="margin-top:20px">تفاصيل الفروع</h2>
       <div class="grid">${cards}</div>
     </div>`;
   }
   const bId = currentUser.branchId;
   const emps = DB.employees.filter(e=>e.branchId===bId);
-  const shifts = DB.shifts.filter(s=>s.branchId===bId);
   const punches = DB.punches.filter(p=>p.branchId===bId);
   const daily = DB.dailyEntries.filter(d=>d.branchId===bId);
+  const today = new Date().toISOString().slice(0,10);
+  const todayEntries = DB.dailyEntries.filter(d=>d.branchId===bId && d.dateKey===today);
+  const dates = punches.map(p=>p.dateKey).sort();
+  const lastPunch = dates.length ? dates[dates.length-1] : '—';
   return `<div class="card">
     <h2>📊 ملخص فرع: ${esc(branchName(bId))}</h2>
     <div class="grid">
       <div class="stat-card"><h3>👥 العمال</h3><div class="stat-row"><b style="font-size:22px">${emps.length}</b></div></div>
-      <div class="stat-card"><h3>🕐 الشفتات</h3><div class="stat-row"><b style="font-size:22px">${shifts.length}</b></div></div>
-      <div class="stat-card"><h3>📅 تسجيلات اليومي</h3><div class="stat-row"><b style="font-size:22px">${daily.length}</b></div></div>
+      <div class="stat-card"><h3>✅ سجلوا اليوم</h3><div class="stat-row"><b style="font-size:22px;color:#38a169">${todayEntries.length}</b></div></div>
+      <div class="stat-card"><h3>📅 إجمالي تسجيلاتك</h3><div class="stat-row"><b style="font-size:22px">${daily.length}</b></div></div>
       <div class="stat-card"><h3>📥 البصمات</h3><div class="stat-row"><b style="font-size:22px">${punches.length}</b></div></div>
     </div>
-    <div class="alert alert-info" style="margin-top:15px">
-      💡 ابدأ من <b>📅 تسجيل اليومي</b> لتسجيل حضور العمال.
+    <div class="alert alert-info" style="margin-top:12px">
+      💡 آخر بصمة مستوردة: <b>${lastPunch}</b> — ابدأ من <b>📅 التسجيل اليومي</b> لتسجيل حضور العمال.
     </div>
   </div>`;
 }
 
+/* =========================================================
+   التسجيل اليومي — مع بحث + حفظ تلقائي + نسخ من الأمس
+   ========================================================= */
 function viewDaily(){
   const isAdmin = currentUser.role === 'admin';
   const selectedDate = UI.dailyDate || new Date().toISOString().slice(0,10);
@@ -451,8 +561,24 @@ function viewDaily(){
           ${DB.branches.map(b=>`<option value="${b.id}" ${UI.dailyBranch===b.id?'selected':''}>${esc(b.name)}</option>`).join('')}
         </select></div>` : '';
 
+  // Quick date nav
+  const today = new Date().toISOString().slice(0,10);
+  const y = new Date(); y.setDate(y.getDate()-1);
+  const yesterday = y.toISOString().slice(0,10);
+  const t = new Date(); t.setDate(t.getDate()+1);
+  const tomorrow = t.toISOString().slice(0,10);
+
+  const dateNav = `<div class="field"><label>التاريخ</label>
+    <input type="date" id="dailyDate" value="${selectedDate}" onchange="UI.dailyDate=this.value;renderTab()">
+    <div class="date-nav">
+      <button class="${selectedDate===yesterday?'active':''}" onclick="UI.dailyDate='${yesterday}';renderTab()">أمس</button>
+      <button class="${selectedDate===today?'active':''}" onclick="UI.dailyDate='${today}';renderTab()">اليوم</button>
+      <button class="${selectedDate===tomorrow?'active':''}" onclick="UI.dailyDate='${tomorrow}';renderTab()">غداً</button>
+    </div>
+  </div>`;
+
   if(!filterB){
-    return `<div class="card"><h2>📅 تسجيل اليومي</h2><div class="row">${branchField}</div><div class="empty">اختر الفرع</div></div>`;
+    return `<div class="card"><h2>📅 التسجيل اليومي</h2><div class="row">${branchField}${dateNav}</div><div class="empty">اختر الفرع</div></div>`;
   }
 
   const emps = DB.employees.filter(e => e.branchId === filterB).sort((a,b)=> a.name.localeCompare(b.name,'ar'));
@@ -471,6 +597,7 @@ function viewDaily(){
       (permsByEmp[p.empId] = permsByEmp[p.empId] || []).push(p);
   });
 
+  const defaultShift = getBranchDefaultShift(filterB);
   let savedCount = 0;
   const rows = emps.map(e=>{
     const daily = dailyByEmp[e.id] || {};
@@ -490,53 +617,57 @@ function viewDaily(){
 
     const manualIn  = daily.manualIn  !== undefined ? daily.manualIn  : autoIn;
     const manualOut = daily.manualOut !== undefined ? daily.manualOut : autoOut;
-    const shiftId   = daily.shiftId   || e.shiftId || '';
+    const shiftId   = daily.shiftId   || e.shiftId || (defaultShift ? defaultShift.id : '');
     const status    = daily.status    || 'present';
     const notes     = daily.notes     || '';
     const branchShifts = DB.shifts.filter(s => s.branchId === e.branchId);
     const permTxt = perms.length ? perms.map(p => PERM_TYPES[p.type] || p.type).join(' + ') : '—';
     const hasFingerprint = punches.length
-      ? `<span class="badge b-green" style="font-size:10px">بصمة ✓</span>`
-      : `<span class="badge b-gray" style="font-size:10px">لا بصمة</span>`;
-    const savedBadge = dailyByEmp[e.id] ? `<span class="badge b-blue" style="font-size:10px">محفوظ</span>` : '';
+      ? `<span class="badge b-green" style="font-size:9.5px">بصمة ✓</span>`
+      : `<span class="badge b-gray" style="font-size:9.5px">لا بصمة</span>`;
+    const savedBadge = dailyByEmp[e.id] ? `<span class="badge b-blue" style="font-size:9.5px">محفوظ</span>` : '';
 
-    return `<tr data-empid="${e.id}">
-      <td style="text-align:right;min-width:150px">
+    return `<tr data-empid="${e.id}" data-branch="${filterB}" data-date="${selectedDate}">
+      <td style="text-align:right;min-width:140px">
         <b>${esc(e.name)}</b><br>
-        <span class="muted" style="font-size:11px">كود: ${esc(e.code)}</span>
-        <div style="margin-top:4px">${hasFingerprint} ${savedBadge}</div>
+        <span class="muted" style="font-size:10.5px">كود: ${esc(e.code)}</span>
+        <div style="margin-top:3px">${hasFingerprint} ${savedBadge}</div>
       </td>
-      <td style="min-width:130px">
-        <select class="daily-shift">
+      <td style="min-width:120px">
+        <select class="daily-shift" onchange="onDailyFieldChange('${e.id}')">
           <option value="">— بدون —</option>
           ${branchShifts.map(s=>`<option value="${s.id}" ${shiftId===s.id?'selected':''}>${esc(s.name)} (${s.start}-${s.end})</option>`).join('')}
         </select>
       </td>
-      <td><input type="time" class="daily-in" value="${manualIn}"></td>
-      <td><input type="time" class="daily-out" value="${manualOut}"></td>
+      <td><input type="time" class="daily-in" value="${manualIn}" onchange="onDailyFieldChange('${e.id}')"></td>
+      <td><input type="time" class="daily-out" value="${manualOut}" onchange="onDailyFieldChange('${e.id}')"></td>
       <td>
-        <select class="daily-status">
+        <select class="daily-status" onchange="onDailyFieldChange('${e.id}')">
           ${Object.keys(STATUS_TYPES).map(k=>`<option value="${k}" ${status===k?'selected':''}>${STATUS_TYPES[k]}</option>`).join('')}
         </select>
       </td>
-      <td style="font-size:11.5px;min-width:100px">${permTxt}</td>
-      <td><input type="text" class="daily-notes" value="${esc(notes)}" placeholder="ملاحظات" style="min-width:110px"></td>
-      <td><button class="btn btn-warn btn-sm" onclick="openPermForEmp('${e.id}','${selectedDate}')">📝 إذن</button></td>
+      <td style="font-size:11px;min-width:90px">${permTxt}</td>
+      <td><input type="text" class="daily-notes" value="${esc(notes)}" placeholder="ملاحظات" style="min-width:100px" onchange="onDailyFieldChange('${e.id}')"></td>
+      <td><button class="btn btn-warn btn-sm" onclick="openPermModal('${e.id}','${selectedDate}')">📝 إذن</button></td>
     </tr>`;
   }).join('');
 
   return `<div class="card">
-    <h2>📅 تسجيل اليومي</h2>
+    <h2>📅 التسجيل اليومي</h2>
     <div class="row">
       ${branchField}
-      <div class="field"><label>التاريخ</label>
-        <input type="date" id="dailyDate" value="${selectedDate}" onchange="UI.dailyDate=this.value;renderTab()">
+      ${dateNav}
+      <div class="field">
+        <label>🔍 بحث</label>
+        <input type="text" id="dailySearch" placeholder="ابحث بالاسم أو الكود..." value="${esc(UI.dailySearch||'')}" oninput="UI.dailySearch=this.value;filterDailyRows()">
       </div>
-      <button class="btn btn-success" onclick="saveDailyEntries('${filterB}','${selectedDate}')">💾 حفظ الكل</button>
-      <button class="btn" onclick="loadFingerprintsIntoForm('${filterB}','${selectedDate}')">⬇️ استيراد البصمات للحقول</button>
+      <button class="btn btn-success" onclick="saveAllDaily('${filterB}','${selectedDate}')">💾 حفظ الكل</button>
+      <button class="btn" onclick="copyFromYesterday('${filterB}','${selectedDate}')">📋 نسخ من الأمس</button>
+      <button class="btn" onclick="loadFingerprintsIntoForm('${filterB}','${selectedDate}')">⬇️ البصمات للحقول</button>
+      ${defaultShift ? `<div class="badge b-blue" style="align-self:center">الشفت الافتراضي: ${esc(defaultShift.name)}</div>` : ''}
     </div>
-    <div class="alert alert-info">
-      💡 سجل الشفت والحضور لكل عامل ثم اضغط <b>💾 حفظ الكل</b>. بياناتك هنا هتاخد الأولوية على البصمة.
+    <div class="alert alert-info" style="font-size:12px">
+      💡 <b>الحفظ تلقائي</b> بعد ثانيتين من أي تعديل — وممكن كمان تضغط <b>💾 حفظ الكل</b>. بياناتك هتاخد الأولوية على البصمة.
       ${savedCount ? `<br>📌 <b>${savedCount}</b> عامل مسجل بالفعل في هذا اليوم.` : ''}
     </div>
     ${emps.length ? `<div class="scroll-x daily-table"><table>
@@ -548,14 +679,78 @@ function viewDaily(){
   </div>`;
 }
 
-async function saveDailyEntries(branchId, dateKey){
+function filterDailyRows(){
+  const q = (UI.dailySearch||'').trim().toLowerCase();
+  document.querySelectorAll('tr[data-empid]').forEach(tr => {
+    const text = tr.querySelector('td').innerText.toLowerCase();
+    tr.style.display = (!q || text.includes(q)) ? '' : 'none';
+  });
+}
+
+function onDailyFieldChange(empId){
+  const tr = document.querySelector(`tr[data-empid="${empId}"]`);
+  if(!tr) return;
+  const branchId = tr.dataset.branch;
+  const dateKey = tr.dataset.date;
+  tr.classList.add('row-saving');
+  clearTimeout(tr.__saveTimer);
+  tr.__saveTimer = setTimeout(async () => {
+    await saveRowEntry(tr, empId, branchId, dateKey);
+    tr.classList.remove('row-saving');
+    tr.classList.add('row-saved');
+    setTimeout(() => tr.classList.remove('row-saved'), 1500);
+    renderMiniDash();
+  }, 1500);
+}
+
+async function saveRowEntry(tr, empId, branchId, dateKey){
+  const manualIn  = tr.querySelector('.daily-in').value;
+  const manualOut = tr.querySelector('.daily-out').value;
+  const shiftId   = tr.querySelector('.daily-shift').value;
+  const status    = tr.querySelector('.daily-status').value;
+  const notes     = tr.querySelector('.daily-notes').value.trim();
+  const emp = DB.employees.find(e => e.id === empId);
+  const empDefaultShift = emp ? (emp.shiftId || '') : '';
+  const branchDefault = getBranchDefaultShift(branchId);
+  const defShiftId = empDefaultShift || (branchDefault ? branchDefault.id : '');
+  const isEmpty = !manualIn && !manualOut && !notes && status === 'present' && shiftId === defShiftId;
+
+  const existing = DB.dailyEntries.find(d => d.branchId===branchId && d.dateKey===dateKey && d.empId===empId);
+  try {
+    if(isEmpty && existing){
+      await fsDelete('dailyEntries', existing.id);
+      DB.dailyEntries = DB.dailyEntries.filter(d => d.id !== existing.id);
+    } else if(!isEmpty && existing){
+      const data = { manualIn, manualOut, shiftId, status, notes, enteredBy: currentUser.name, updatedAt: Date.now() };
+      await fsUpdate('dailyEntries', existing.id, data);
+      Object.assign(existing, data);
+    } else if(!isEmpty && !existing){
+      const doc = await fsAdd('dailyEntries', {
+        branchId, dateKey, empId, manualIn, manualOut, shiftId, status, notes,
+        enteredBy: currentUser.name, updatedAt: Date.now()
+      });
+      DB.dailyEntries.push(doc);
+    }
+    // تحديث البادج في الـ DOM
+    const badges = tr.querySelector('td div');
+    if(badges){
+      const hasSaved = tr.querySelector('.b-blue');
+      if(!isEmpty && !hasSaved){
+        badges.innerHTML += ' <span class="badge b-blue" style="font-size:9.5px">محفوظ</span>';
+      }
+    }
+  } catch(e){
+    console.error('Auto-save error:', e);
+  }
+}
+
+async function saveAllDaily(branchId, dateKey){
   const rows = document.querySelectorAll('tr[data-empid]');
   if(!rows.length){ alert('لا يوجد عمال'); return; }
   showLoader(true);
   try {
     const old = DB.dailyEntries.filter(d => d.branchId===branchId && d.dateKey===dateKey);
     for(const d of old) await fsDelete('dailyEntries', d.id);
-
     let saved = 0;
     for(const row of rows){
       const empId = row.dataset.empid;
@@ -566,11 +761,12 @@ async function saveDailyEntries(branchId, dateKey){
       const notes     = row.querySelector('.daily-notes').value.trim();
       const emp = DB.employees.find(e => e.id === empId);
       const empDefaultShift = emp ? (emp.shiftId || '') : '';
-      const isEmpty = !manualIn && !manualOut && !notes && status === 'present' && shiftId === empDefaultShift;
+      const branchDefault = getBranchDefaultShift(branchId);
+      const defShiftId = empDefaultShift || (branchDefault ? branchDefault.id : '');
+      const isEmpty = !manualIn && !manualOut && !notes && status === 'present' && shiftId === defShiftId;
       if(isEmpty) continue;
       await fsAdd('dailyEntries', {
-        branchId, dateKey, empId,
-        manualIn, manualOut, shiftId, status, notes,
+        branchId, dateKey, empId, manualIn, manualOut, shiftId, status, notes,
         enteredBy: currentUser.name, updatedAt: Date.now()
       });
       saved++;
@@ -579,6 +775,30 @@ async function saveDailyEntries(branchId, dateKey){
     showLoader(false);
     alert('✅ تم حفظ بيانات ' + saved + ' عامل');
     renderTab();
+  } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
+}
+
+async function copyFromYesterday(branchId, dateKey){
+  const y = new Date(dateKey + 'T00:00:00');
+  y.setDate(y.getDate() - 1);
+  const yKey = y.toISOString().slice(0,10);
+  const yesterdayEntries = DB.dailyEntries.filter(d => d.branchId===branchId && d.dateKey===yKey);
+  if(!yesterdayEntries.length){ alert('❌ لا توجد بيانات مسجلة في يوم ' + yKey); return; }
+  if(!confirm(`هيتم نسخ بيانات يوم ${yKey} (${yesterdayEntries.length} عامل) لهذا اليوم. متابعة؟`)) return;
+
+  showLoader(true);
+  try {
+    for(const entry of yesterdayEntries){
+      const tr = document.querySelector(`tr[data-empid="${entry.empId}"]`);
+      if(!tr) continue;
+      if(entry.manualIn)  tr.querySelector('.daily-in').value = entry.manualIn;
+      if(entry.manualOut) tr.querySelector('.daily-out').value = entry.manualOut;
+      if(entry.shiftId)   tr.querySelector('.daily-shift').value = entry.shiftId;
+      if(entry.status)    tr.querySelector('.daily-status').value = entry.status;
+      if(entry.notes)     tr.querySelector('.daily-notes').value = entry.notes;
+    }
+    showLoader(false);
+    alert(`✅ تم نسخ ${yesterdayEntries.length} سجل. اضغط "حفظ الكل" لتثبيتهم.`);
   } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
 }
 
@@ -598,31 +818,114 @@ function loadFingerprintsIntoForm(branchId, dateKey){
     if(cin && inEl && !inEl.value){ inEl.value = fmtTimeHM(cin.timeMs); count++; }
     if(cout && cout !== cin && outEl && !outEl.value){ outEl.value = fmtTimeHM(cout.timeMs); }
   });
+  if(count === 0){ alert('لا توجد بصمات جديدة'); return; }
   alert('✅ تم استيراد ' + count + ' بصمة للحقول. اضغط حفظ الكل.');
 }
 
-function openPermForEmp(empId, date){
-  switchTab('permissions');
-  setTimeout(()=>{
-    const s = document.getElementById('pmEmp');
-    const d = document.getElementById('pmDate');
-    if(s) s.value = empId;
-    if(d) d.value = date;
-  }, 200);
+/* =========================================================
+   Modal: تسجيل إذن
+   ========================================================= */
+function openPermModal(empId, date){
+  const emp = DB.employees.find(e => e.id === empId);
+  if(!emp){ alert('العامل غير موجود'); return; }
+  document.getElementById('pmEmpId').value = empId;
+  document.getElementById('pmDateVal').value = date;
+  document.getElementById('pmEmpName').value = emp.name + ' (' + emp.code + ') — ' + date;
+  document.getElementById('pmReason').value = '';
+  document.getElementById('pmType').value = 'late';
+  document.getElementById('pmFrom').value = '09:00';
+  document.getElementById('pmTo').value = '11:00';
+  togglePermModalTimes();
+
+  // عرض الأذونات الموجودة في نفس اليوم
+  const existing = DB.permissions.filter(p => p.empId === empId && p.date === date);
+  const el = document.getElementById('pmExisting');
+  if(existing.length){
+    el.innerHTML = `<div class="alert alert-info" style="font-size:12px">
+      <b>الأذونات الحالية في نفس اليوم:</b><br>
+      ${existing.map(p => `• ${PERM_TYPES[p.type]||p.type} ${p.fromTime?`(${p.fromTime} - ${p.toTime})`:''} <button class="btn btn-danger btn-sm" onclick="deletePermFromModal('${p.id}')">🗑</button>`).join('<br>')}
+    </div>`;
+  } else {
+    el.innerHTML = '';
+  }
+
+  document.getElementById('permModal').style.display = 'flex';
+}
+function closePermModal(){
+  document.getElementById('permModal').style.display = 'none';
+}
+function togglePermModalTimes(){
+  const t = document.getElementById('pmType').value;
+  const hide = (t === 'leave');
+  document.getElementById('pmTimesRow').style.display = hide ? 'none' : 'flex';
+}
+async function savePermFromModal(){
+  const empId = document.getElementById('pmEmpId').value;
+  const date = document.getElementById('pmDateVal').value;
+  const type = document.getElementById('pmType').value;
+  const fromTime = document.getElementById('pmFrom').value;
+  const toTime = document.getElementById('pmTo').value;
+  const reason = document.getElementById('pmReason').value.trim();
+  const emp = DB.employees.find(e => e.id === empId); if(!emp){ alert('العامل غير موجود'); return; }
+
+  let minutes = 0;
+  if(type !== 'leave'){
+    if(!fromTime || !toTime){ alert('أدخل الأوقات'); return; }
+    const s = dtAt(date, fromTime), e = dtAt(date, toTime);
+    let mins = Math.round((e - s)/60000);
+    if(mins <= 0) mins += 1440;
+    minutes = mins;
+  }
+  showLoader(true);
+  try {
+    await fsAdd('permissions', {
+      branchId: emp.branchId, empId, date, type,
+      fromTime: type==='leave'?'':fromTime,
+      toTime: type==='leave'?'':toTime,
+      minutes, reason, createdBy: currentUser.name, createdAt: Date.now()
+    });
+    await loadAllData();
+    showLoader(false);
+    openPermModal(empId, date);
+    renderMiniDash();
+  } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
+}
+async function deletePermFromModal(permId){
+  if(!confirm('حذف الإذن؟')) return;
+  const empId = document.getElementById('pmEmpId').value;
+  const date = document.getElementById('pmDateVal').value;
+  showLoader(true);
+  try {
+    await fsDelete('permissions', permId);
+    await loadAllData();
+    showLoader(false);
+    openPermModal(empId, date);
+  } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
 }
 
+/* =========================================================
+   الفروع
+   ========================================================= */
 function viewBranches(){
   const rows = DB.branches.map(b=>{
     const u = DB.users.find(x=>x.branchId===b.id);
     const emps = DB.employees.filter(e=>e.branchId===b.id).length;
+    const branchShifts = DB.shifts.filter(s => s.branchId === b.id);
+    const defShift = b.defaultShiftId ? branchShifts.find(s => s.id === b.defaultShiftId) : null;
     return `<tr>
-      <td>${esc(b.name)}</td>
+      <td><b>${esc(b.name)}</b></td>
       <td>${esc(u?u.username:'—')}</td>
       <td>${esc(u?u.name:'—')}</td>
       <td>${emps}</td>
       <td>
-        <button class="btn btn-sm" onclick="editBranchUser('${b.id}')">🔑 كلمة المرور</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteBranch('${b.id}')">🗑 حذف</button>
+        <select onchange="setBranchDefaultShift('${b.id}', this.value)" style="font-size:11.5px;padding:3px">
+          <option value="">— بدون —</option>
+          ${branchShifts.map(s=>`<option value="${s.id}" ${b.defaultShiftId===s.id?'selected':''}>${esc(s.name)} (${s.start}-${s.end})</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <button class="btn btn-sm" onclick="editBranchUser('${b.id}')">🔑</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteBranch('${b.id}')">🗑</button>
       </td>
     </tr>`;
   }).join('');
@@ -630,13 +933,16 @@ function viewBranches(){
     <h2>🏢 إدارة الفروع</h2>
     <div class="row">
       <div class="field"><label>اسم الفرع</label><input id="brName" placeholder="مثال: فرع المعادي"></div>
-      <div class="field"><label>اسم المستخدم للفرع</label><input id="brUser" placeholder="maadi"></div>
+      <div class="field"><label>اسم المستخدم</label><input id="brUser" placeholder="maadi"></div>
       <div class="field"><label>كلمة المرور</label><input id="brPass" placeholder="••••••"></div>
       <div class="field"><label>اسم المسؤول</label><input id="brMgr" placeholder="اسم مدير الفرع"></div>
       <button class="btn btn-success" onclick="addBranch()">➕ إضافة فرع</button>
     </div>
+    <div class="alert alert-info" style="font-size:12px">
+      💡 <b>الشفت الافتراضي</b> يتحط على كل عمال الفرع تلقائياً لو مفيش شفت مخصص للعامل.
+    </div>
     ${DB.branches.length ? `<div class="scroll-x"><table>
-      <thead><tr><th>الفرع</th><th>اسم المستخدم</th><th>المسؤول</th><th>عدد العمال</th><th>إجراءات</th></tr></thead>
+      <thead><tr><th>الفرع</th><th>المستخدم</th><th>المسؤول</th><th>عمال</th><th>الشفت الافتراضي</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>` : '<div class="empty">لا توجد فروع بعد.</div>'}
   </div>`;
@@ -650,9 +956,18 @@ async function addBranch(){
   if(DB.users.some(u => u.username.toLowerCase() === user.toLowerCase())){ alert('اسم المستخدم مستخدم'); return; }
   showLoader(true);
   try {
-    const b = await fsAdd('branches', { name, createdAt: Date.now() });
+    const b = await fsAdd('branches', { name, defaultShiftId:'', createdAt: Date.now() });
     const hash = await hashPass(pass);
     await fsAdd('users', { username:user, passwordHash:hash, role:'branch', name:mgr, branchId:b.id, createdAt:Date.now() });
+    await loadAllData();
+    showLoader(false);
+    renderTab();
+  } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
+}
+async function setBranchDefaultShift(bId, shiftId){
+  showLoader(true);
+  try {
+    await fsUpdate('branches', bId, { defaultShiftId: shiftId });
     await loadAllData();
     showLoader(false);
     renderTab();
@@ -691,6 +1006,9 @@ async function editBranchUser(bId){
   } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
 }
 
+/* =========================================================
+   العمال — مع بحث
+   ========================================================= */
 function viewEmployees(){
   const isAdmin = currentUser.role === 'admin';
   if(!isAdmin) UI.empBranch = currentUser.branchId;
@@ -714,49 +1032,20 @@ function viewEmployees(){
         </select></div>`
     : `<input type="hidden" id="empBranchAdd" value="${currentUser.branchId}">`;
 
-  const importSection = isAdmin ? `
-    <div style="background:#f0fff4;border:2px dashed #38a169;border-radius:10px;padding:18px;margin-bottom:18px">
-      <h3 style="color:#22543d">📤 استيراد الموظفين من Excel</h3>
-      <p class="muted" style="margin:0 0 10px">ارفع ملف Excel فيه عمودين: <b>الاسم</b> و <b>رقم البصمة</b>. النظام هينشئ كل الموظفين مرة واحدة.</p>
-      ${empImportMsg ? `<div class="alert ${empImportMsg.ok?'alert-ok':'alert-err'}">${empImportMsg.text}</div>` : ''}
-      <div class="row" style="margin-bottom:0">
-        <div class="field"><label>الفرع</label>
-          <select id="empImportBranch">
-            <option value="">— اختر الفرع —</option>
-            ${DB.branches.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('')}
-          </select>
-        </div>
-        <div class="field"><label>الشفت الافتراضي (اختياري)</label>
-          <select id="empImportShift">
-            <option value="">— بدون شفت —</option>
-          </select>
-        </div>
-        <div class="field">
-          <label style="visibility:hidden">زر</label>
-          <button class="btn btn-success" onclick="document.getElementById('empExcelFile').click()">📁 اختر ملف Excel</button>
-          <input type="file" id="empExcelFile" accept=".xls,.xlsx,.csv" style="display:none" onchange="handleEmpImport(event)">
-        </div>
-      </div>
-      <p class="muted" style="margin-top:8px;font-size:11.5px">
-        💡 أسماء الأعمدة المقبولة: <code>Name</code>, <code>الاسم</code>, <code>Employee Name</code> | <code>No.</code>, <code>كود</code>, <code>Code</code>, <code>ID</code>, <code>الرقم</code>
-      </p>
-    </div>` : '';
-
   const rows = list.map(e=>{
     const sh = getShiftFor(e);
     const branchShifts = DB.shifts.filter(s => s.branchId === e.branchId);
-    return `<tr>
+    return `<tr data-emprow="${e.id}">
       <td><b>${esc(e.code)}</b></td>
       <td>${esc(e.name)}</td>
       <td>${esc(branchName(e.branchId))}</td>
       <td>
-        <select onchange="setEmpShift('${e.id}', this.value)" style="font-size:12px;padding:5px">
+        <select onchange="setEmpShift('${e.id}', this.value)" style="font-size:11.5px;padding:4px">
           <option value="">— بدون شفت —</option>
           ${branchShifts.map(s=>`<option value="${s.id}" ${e.shiftId===s.id?'selected':''}>${esc(s.name)} (${s.start}-${s.end})</option>`).join('')}
         </select>
       </td>
       <td>${sh ? esc(sh.start) : '—'}</td>
-      <td>${sh ? esc(sh.graceMins)+' د' : '—'}</td>
       <td>${DB.punches.filter(p=>p.empId===e.id).length}</td>
       <td>
         <button class="btn btn-sm" onclick="editEmployee('${e.id}')">✏️</button>
@@ -767,7 +1056,6 @@ function viewEmployees(){
 
   return `<div class="card">
     <h2>👥 إدارة العمال</h2>
-    ${importSection}
     <h3>➕ إضافة عامل يدوياً</h3>
     <div class="row">
       ${addBranchField}
@@ -777,13 +1065,23 @@ function viewEmployees(){
       <button class="btn btn-success" onclick="addEmployee()">➕ إضافة</button>
     </div>
     ${isAdmin ? branchOptions : ''}
-    ${list.length ? `<div class="scroll-x" style="margin-top:15px"><table>
-      <thead><tr><th>رقم البصمة</th><th>الاسم</th><th>الفرع</th><th>الشفت</th><th>بداية</th><th>سماح</th><th>بصمات</th><th>إجراءات</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>` : '<div class="empty">لا يوجد عمال مسجلون.</div>'}
+    <div class="field" style="max-width:300px">
+      <label>🔍 بحث</label>
+      <input type="text" id="empSearch" placeholder="ابحث بالاسم أو الكود..." oninput="filterEmpRows(this.value)">
+    </div>
+    ${list.length ? `<div class="scroll-x" style="margin-top:12px"><table>
+      <thead><tr><th>رقم البصمة</th><th>الاسم</th><th>الفرع</th><th>الشفت</th><th>بداية</th><th>بصمات</th><th>إجراءات</th></tr></thead>
+      <tbody id="empTbody">${rows}</tbody>
+    </table></div>` : '<div class="empty">لا يوجد عمال. استخدم <b>📥 رفع الملفات</b> لرفع Excel.</div>'}
   </div>`;
 }
-
+function filterEmpRows(q){
+  q = (q||'').trim().toLowerCase();
+  document.querySelectorAll('tr[data-emprow]').forEach(tr=>{
+    const txt = tr.innerText.toLowerCase();
+    tr.style.display = (!q || txt.includes(q)) ? '' : 'none';
+  });
+}
 function loadShiftSelectForAdd(){
   const bIdEl = document.getElementById('empBranchAdd');
   const sel = document.getElementById('empShift');
@@ -794,60 +1092,6 @@ function loadShiftSelectForAdd(){
     ? `<option value="">— بدون شفت —</option>` + sh.map(s=>`<option value="${s.id}">${esc(s.name)} (${s.start} - ${s.end})</option>`).join('')
     : `<option value="">— لا توجد شفتات —</option>`;
 }
-
-async function handleEmpImport(ev){
-  const file = ev.target.files[0]; if(!file) return;
-  const branchId = document.getElementById('empImportBranch').value;
-  const defaultShift = document.getElementById('empImportShift').value;
-  if(!branchId){ alert('اختر الفرع أولاً'); ev.target.value=''; return; }
-  const reader = new FileReader();
-  reader.onload = async function(e){
-    showLoader(true);
-    try {
-      const data = new Uint8Array(e.target.result);
-      const wb = XLSX.read(data, {type:'array', codepage:1256});
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, {raw:false});
-      if(!rows || !rows.length){ empImportMsg = {ok:false, text:'❌ الملف فارغ'}; showLoader(false); renderTab(); return; }
-
-      const firstRow = rows[0];
-      const keys = Object.keys(firstRow);
-      const nameKey = keys.find(k => /^(name|الاسم|employee name|employee|اسم الموظف|اسم العامل)/i.test(k.trim()));
-      const codeKey = keys.find(k => /^(no\.?|code|id|كود|الرقم|رقم البصمة|employee id)/i.test(k.trim()));
-
-      if(!nameKey || !codeKey){
-        empImportMsg = {ok:false, text:'❌ لازم يكون فيه عمود للاسم وعمود لرقم البصمة. الأعمدة الموجودة: ' + keys.join(', ')};
-        showLoader(false); renderTab(); return;
-      }
-
-      const existing = DB.employees.filter(e => e.branchId === branchId);
-      const newEmps = [];
-      let skipped = 0, dup = 0;
-
-      rows.forEach(row=>{
-        const name = String(row[nameKey] || '').trim();
-        const code = String(row[codeKey] || '').trim();
-        if(!name || !code){ skipped++; return; }
-        if(existing.some(e => norm(e.code) === norm(code)) ||
-           newEmps.some(e => norm(e.code) === norm(code))){ dup++; return; }
-        newEmps.push({ branchId, name, code, shiftId: defaultShift || '', active:true, createdAt: Date.now() });
-      });
-
-      if(newEmps.length) await fsBatchAdd('employees', newEmps);
-      await loadAllData();
-      showLoader(false);
-      empImportMsg = {ok:true, text:`✅ تم استيراد <b>${newEmps.length}</b> موظف | مكرر: ${dup} | ناقص: ${skipped}`};
-      renderTab();
-    } catch(err){
-      console.error(err);
-      empImportMsg = {ok:false, text:'❌ خطأ: ' + err.message};
-      showLoader(false); renderTab();
-    }
-    ev.target.value = '';
-  };
-  reader.readAsArrayBuffer(file);
-}
-
 async function addEmployee(){
   const bId = document.getElementById('empBranchAdd').value;
   const name = document.getElementById('empName').value.trim();
@@ -900,6 +1144,9 @@ async function deleteEmployee(id){
   } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
 }
 
+/* =========================================================
+   الشفتات
+   ========================================================= */
 function viewShifts(){
   const isAdmin = currentUser.role === 'admin';
   const filterB = isAdmin ? UI.shiftBranch : currentUser.branchId;
@@ -915,7 +1162,7 @@ function viewShifts(){
     : `<input type="hidden" id="shBranchAdd" value="${currentUser.branchId}">`;
 
   const filterField = isAdmin
-    ? `<div class="field"><label>تصفية بالفرع</label>
+    ? `<div class="field"><label>تصفية</label>
         <select id="shiftBranch" onchange="UI.shiftBranch=this.value;renderTab()">
           <option value="all">كل الفروع</option>
           ${DB.branches.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('')}
@@ -931,7 +1178,7 @@ function viewShifts(){
       <td>${esc(s.end)}</td>
       <td>${s.hours}</td>
       <td>${s.graceMins} د</td>
-      <td style="font-size:11.5px">${esc(off)}</td>
+      <td style="font-size:11px">${esc(off)}</td>
       <td>${emps}</td>
       <td>
         <button class="btn btn-sm" onclick="editShift('${s.id}')">✏️</button>
@@ -951,7 +1198,7 @@ function viewShifts(){
       <div class="field"><label>سماح (د)</label><input type="number" id="shGrace" value="15" min="0" style="width:80px"></div>
       <button class="btn btn-success" onclick="addShift()">➕ إضافة</button>
     </div>
-    <div class="field" style="margin-bottom:15px">
+    <div class="field" style="margin-bottom:12px">
       <label>أيام الراحة</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         ${dayNamesAr.map((d,i)=>`<label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f7fafc;border:1px solid #e2e8f0;padding:4px 8px;border-radius:5px;cursor:pointer"><input type="checkbox" class="shDayOff" value="${i}" ${(i===5)?'checked':''}> ${d}</label>`).join('')}
@@ -959,7 +1206,7 @@ function viewShifts(){
     </div>
     ${isAdmin ? filterField : ''}
     ${list.length ? `<div class="scroll-x"><table>
-      <thead><tr><th>الشفت</th><th>الفرع</th><th>من</th><th>إلى</th><th>ساعات</th><th>سماح</th><th>راحة</th><th>عمال</th><th>إجراءات</th></tr></thead>
+      <thead><tr><th>الشفت</th><th>الفرع</th><th>من</th><th>إلى</th><th>ساعات</th><th>سماح</th><th>راحة</th><th>عمال</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>` : '<div class="empty">لا توجد شفتات.</div>'}
   </div>`;
@@ -986,7 +1233,12 @@ async function addShift(){
   if(!name){ alert('أدخل اسم الشفت'); return; }
   showLoader(true);
   try {
-    await fsAdd('shifts', { branchId:bId, name, start, end, hours, graceMins, offDays, createdAt:Date.now() });
+    const shift = await fsAdd('shifts', { branchId:bId, name, start, end, hours, graceMins, offDays, createdAt:Date.now() });
+    // لو الفرع ملوش شفت افتراضي، خليه هو
+    const br = getBranch(bId);
+    if(br && !br.defaultShiftId){
+      await fsUpdate('branches', bId, { defaultShiftId: shift.id });
+    }
     await loadAllData();
     showLoader(false);
     renderTab();
@@ -1018,119 +1270,20 @@ async function deleteShift(id){
     await fsDelete('shifts', id);
     const empsWithShift = DB.employees.filter(e => e.shiftId === id);
     for(const e of empsWithShift){ await fsUpdate('employees', e.id, { shiftId: '' }); }
+    // لو الشفت الافتراضي لفرع، امسحه
+    for(const b of DB.branches){
+      if(b.defaultShiftId === id) await fsUpdate('branches', b.id, { defaultShiftId: '' });
+    }
     await loadAllData();
     showLoader(false);
     renderTab();
   } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
 }
 
-function viewPermissions(){
-  const isAdmin = currentUser.role === 'admin';
-  const filterB = isAdmin ? UI.permBranch : currentUser.branchId;
-  let emps = DB.employees.slice();
-  if(filterB !== 'all') emps = emps.filter(e => e.branchId === filterB);
-  emps.sort((a,b)=> a.name.localeCompare(b.name,'ar'));
-  let list = DB.permissions.slice();
-  if(filterB !== 'all') list = list.filter(p => p.branchId === filterB);
-  list.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
-
-  const branchFilter = isAdmin
-    ? `<div class="field"><label>تصفية بالفرع</label>
-        <select id="permBranch" onchange="UI.permBranch=this.value;renderTab()">
-          <option value="all">كل الفروع</option>
-          ${DB.branches.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('')}
-        </select></div>` : '';
-
-  const rows = list.map(p=>{
-    const e = DB.employees.find(x=>x.id===p.empId);
-    return `<tr>
-      <td>${esc(e?e.name:'—')}</td>
-      <td>${esc(e?e.code:'—')}</td>
-      <td>${esc(branchName(p.branchId))}</td>
-      <td>${esc(p.date)} (${dayNameOf(p.date)})</td>
-      <td><span class="badge b-blue">${PERM_TYPES[p.type]||p.type}</span></td>
-      <td>${p.type==='leave' ? 'اليوم كامل' : esc(p.fromTime)+' - '+esc(p.toTime)}</td>
-      <td>${p.type==='leave' ? '—' : formatMinsToText(p.minutes)}</td>
-      <td style="font-size:12px">${esc(p.reason||'')}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="deletePermission('${p.id}')">🗑</button></td>
-    </tr>`;
-  }).join('');
-
-  return `<div class="card">
-    <h2>📝 تسجيل الأذونات</h2>
-    <div class="row">
-      <div class="field"><label>العامل</label>
-        <select id="pmEmp">
-          <option value="">— اختر —</option>
-          ${emps.map(e=>`<option value="${e.id}">${esc(e.name)} (${esc(e.code)}) — ${esc(branchName(e.branchId))}</option>`).join('')}
-        </select>
-      </div>
-      <div class="field"><label>التاريخ</label><input type="date" id="pmDate"></div>
-      <div class="field"><label>النوع</label>
-        <select id="pmType" onchange="togglePermTimes()">
-          ${Object.keys(PERM_TYPES).map(k=>`<option value="${k}">${PERM_TYPES[k]}</option>`).join('')}
-        </select>
-      </div>
-      <div class="field" id="pmFromWrap"><label>من</label><input type="time" id="pmFrom" value="09:00"></div>
-      <div class="field" id="pmToWrap"><label>إلى</label><input type="time" id="pmTo" value="11:00"></div>
-      <div class="field" style="flex:1;min-width:160px"><label>ملاحظات</label><input id="pmReason" placeholder="اختياري"></div>
-      <button class="btn btn-success" onclick="addPermission()">➕ تسجيل</button>
-    </div>
-    ${branchFilter}
-    ${list.length ? `<div class="scroll-x"><table>
-      <thead><tr><th>العامل</th><th>رقم البصمة</th><th>الفرع</th><th>التاريخ</th><th>النوع</th><th>الفترة</th><th>المدة</th><th>ملاحظات</th><th></th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>` : '<div class="empty">لا توجد أذونات.</div>'}
-  </div>`;
-}
-function togglePermTimes(){
-  const t = document.getElementById('pmType').value;
-  const hide = (t === 'leave');
-  document.getElementById('pmFromWrap').style.display = hide ? 'none' : 'flex';
-  document.getElementById('pmToWrap').style.display = hide ? 'none' : 'flex';
-}
-async function addPermission(){
-  const empId = document.getElementById('pmEmp').value;
-  const date = document.getElementById('pmDate').value;
-  const type = document.getElementById('pmType').value;
-  const fromTime = document.getElementById('pmFrom').value;
-  const toTime = document.getElementById('pmTo').value;
-  const reason = document.getElementById('pmReason').value.trim();
-  if(!empId){ alert('اختر العامل'); return; }
-  if(!date){ alert('اختر التاريخ'); return; }
-  const emp = DB.employees.find(e=>e.id===empId); if(!emp) return;
-  let minutes = 0;
-  if(type !== 'leave'){
-    if(!fromTime || !toTime){ alert('أدخل الأوقات'); return; }
-    const s = dtAt(date, fromTime), e = dtAt(date, toTime);
-    let mins = Math.round((e - s)/60000);
-    if(mins <= 0) mins += 1440;
-    minutes = mins;
-  }
-  showLoader(true);
-  try {
-    await fsAdd('permissions', {
-      branchId: emp.branchId, empId, date, type,
-      fromTime: type==='leave'?'':fromTime, toTime: type==='leave'?'':toTime,
-      minutes, reason, createdBy: currentUser.name, createdAt: Date.now()
-    });
-    await loadAllData();
-    showLoader(false);
-    renderTab();
-  } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
-}
-async function deletePermission(id){
-  if(!confirm('حذف الإذن؟')) return;
-  showLoader(true);
-  try {
-    await fsDelete('permissions', id);
-    await loadAllData();
-    showLoader(false);
-    renderTab();
-  } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
-}
-
-function viewImport(){
+/* =========================================================
+   رفع الملفات — تبويب موحد
+   ========================================================= */
+function viewFiles(){
   const branchOptions = DB.branches.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('');
   const unm = DB.unmatched || [];
   const unmRows = unm.slice(0,200).map((u,i)=>{
@@ -1143,7 +1296,7 @@ function viewImport(){
       <td>${fmtTimeMs(u.timeMs)}</td>
       <td>${esc(u.status||'')}</td>
       <td>
-        <select id="map_${i}" style="font-size:12px;padding:4px">
+        <select id="map_${i}" style="font-size:11.5px;padding:3px">
           <option value="">— اربط —</option>
           ${emps.map(e=>`<option value="${e.id}">${esc(e.name)} (${esc(e.code)})</option>`).join('')}
         </select>
@@ -1153,9 +1306,31 @@ function viewImport(){
   }).join('');
 
   return `<div class="card">
-    <h2>📥 استيراد تقرير البصمة</h2>
+    <h2>📥 رفع ملفات الفرع</h2>
+
+    <h3>1️⃣ رفع الموظفين من Excel</h3>
+    <p class="muted" style="margin:0 0 10px">ارفع ملف Excel فيه عمودين: <b>الاسم</b> و <b>رقم البصمة</b>. النظام هينشئ كل الموظفين مرة واحدة.</p>
+    ${empImportMsg ? `<div class="alert ${empImportMsg.ok?'alert-ok':'alert-err'}">${empImportMsg.text}</div>` : ''}
+    <div class="row" style="background:#f0fff4;padding:14px;border-radius:10px;border:1px dashed #38a169">
+      <div class="field"><label>الفرع</label>
+        <select id="empImportBranch" onchange="loadEmpImportShiftSelect()">
+          <option value="">— اختر الفرع —</option>
+          ${branchOptions}
+        </select>
+      </div>
+      <div class="field"><label>الشفت الافتراضي (اختياري)</label>
+        <select id="empImportShift">
+          <option value="">— بدون شفت —</option>
+        </select>
+      </div>
+      <button class="btn btn-success" onclick="document.getElementById('empExcelFile').click()">📁 اختر ملف Excel</button>
+      <input type="file" id="empExcelFile" accept=".xls,.xlsx,.csv" style="display:none" onchange="handleEmpImport(event)">
+    </div>
+
+    <h3 style="margin-top:22px">2️⃣ رفع بصمة الفرع من Excel</h2>
+    <p class="muted" style="margin:0 0 10px">ارفع ملف بصمات الجهاز. يحتوي على: <b>No. / Name / Date/Time / Status</b>.</p>
     ${importMsg ? `<div class="alert ${importMsg.ok?'alert-ok':'alert-err'}">${importMsg.text}</div>` : ''}
-    <div class="row">
+    <div class="row" style="background:#ebf8ff;padding:14px;border-radius:10px;border:1px dashed #4299e1">
       <div class="field"><label>الفرع</label>
         <select id="impBranch">
           <option value="">— اختر الفرع —</option>
@@ -1163,23 +1338,81 @@ function viewImport(){
         </select>
       </div>
       <div class="field"><label>استبدال البصمات القديمة</label>
-        <label style="font-weight:normal;font-size:13px;display:flex;align-items:center;gap:6px;padding:8px 0">
+        <label style="font-weight:normal;font-size:12.5px;display:flex;align-items:center;gap:6px;padding:7px 0">
           <input type="checkbox" id="impReplace" checked style="width:auto"> نعم
         </label>
       </div>
-    </div>
-    <div class="upload-area" onclick="document.getElementById('impFile').click()">
-      <h3>📁 اضغط لاختيار ملف البصمة</h3>
-      <p class="muted">XLS / XLSX / CSV — يحتوي على: No. / Name / Date/Time / Status</p>
+      <button class="btn" onclick="document.getElementById('impFile').click()">📁 اختر ملف البصمة</button>
       <input type="file" id="impFile" accept=".xls,.xlsx,.csv" style="display:none" onchange="handleImport(event)">
     </div>
-    <p class="muted">🔗 الربط: <b>رقم البصمة + الاسم</b> ثم رقم البصمة لوحده</p>
-    ${unm.length ? `<h2 style="margin-top:25px">⚠️ غير مرتبطة (${unm.length})</h2>
+
+    ${unm.length ? `<h2 style="margin-top:25px">⚠️ سجلات غير مرتبطة (${unm.length})</h2>
       <div class="scroll-x"><table>
-        <thead><tr><th>رقم البصمة</th><th>الاسم</th><th>الفرع</th><th>التاريخ</th><th>الوقت</th><th>الحالة</th><th>ربط</th></tr></thead>
+        <thead><tr><th>رقم</th><th>الاسم</th><th>الفرع</th><th>التاريخ</th><th>الوقت</th><th>الحالة</th><th>ربط</th></tr></thead>
         <tbody>${unmRows}</tbody>
       </table></div>` : ''}
   </div>`;
+}
+function loadEmpImportShiftSelect(){
+  const bId = document.getElementById('empImportBranch').value;
+  const sel = document.getElementById('empImportShift');
+  if(!sel) return;
+  const sh = DB.shifts.filter(s => s.branchId === bId);
+  sel.innerHTML = sh.length
+    ? `<option value="">— بدون شفت —</option>` + sh.map(s=>`<option value="${s.id}">${esc(s.name)} (${s.start}-${s.end})</option>`).join('')
+    : `<option value="">— لا توجد شفتات —</option>`;
+}
+
+async function handleEmpImport(ev){
+  const file = ev.target.files[0]; if(!file) return;
+  const branchId = document.getElementById('empImportBranch').value;
+  const defaultShift = document.getElementById('empImportShift').value;
+  if(!branchId){ alert('اختر الفرع أولاً'); ev.target.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    showLoader(true);
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array', codepage:1256});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {raw:false});
+      if(!rows || !rows.length){ empImportMsg = {ok:false, text:'❌ الملف فارغ'}; showLoader(false); renderTab(); return; }
+
+      const keys = Object.keys(rows[0]);
+      const nameKey = keys.find(k => /^(name|الاسم|employee name|employee|اسم الموظف|اسم العامل)/i.test(k.trim()));
+      const codeKey = keys.find(k => /^(no\.?|code|id|كود|الرقم|رقم البصمة|employee id)/i.test(k.trim()));
+
+      if(!nameKey || !codeKey){
+        empImportMsg = {ok:false, text:'❌ لازم يكون فيه عمود للاسم وعمود لرقم البصمة. الأعمدة: ' + keys.join(', ')};
+        showLoader(false); renderTab(); return;
+      }
+
+      const existing = DB.employees.filter(e => e.branchId === branchId);
+      const newEmps = [];
+      let skipped = 0, dup = 0;
+
+      rows.forEach(row=>{
+        const name = String(row[nameKey] || '').trim();
+        const code = String(row[codeKey] || '').trim();
+        if(!name || !code){ skipped++; return; }
+        if(existing.some(e => norm(e.code) === norm(code)) ||
+           newEmps.some(e => norm(e.code) === norm(code))){ dup++; return; }
+        newEmps.push({ branchId, name, code, shiftId: defaultShift || '', active:true, createdAt: Date.now() });
+      });
+
+      if(newEmps.length) await fsBatchAdd('employees', newEmps);
+      await loadAllData();
+      showLoader(false);
+      empImportMsg = {ok:true, text:`✅ تم استيراد <b>${newEmps.length}</b> موظف | مكرر: ${dup} | ناقص: ${skipped}`};
+      renderTab();
+    } catch(err){
+      console.error(err);
+      empImportMsg = {ok:false, text:'❌ خطأ: ' + err.message};
+      showLoader(false); renderTab();
+    }
+    ev.target.value = '';
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 async function handleImport(ev){
@@ -1273,8 +1506,13 @@ async function mapUnmatched(i){
   } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
 }
 
+/* =========================================================
+   محرك الحساب
+   ========================================================= */
 function calcEmployee(emp, fromDate, toDate){
-  const empDefaultShift = getShiftFor(emp) || { start:'09:00', end:'17:00', hours:8, graceMins:15, offDays:[], name:'افتراضي' };
+  const empShift = getShiftFor(emp);
+  const branchDefault = getBranchDefaultShift(emp.branchId);
+  const empDefaultShift = empShift || branchDefault || { start:'09:00', end:'17:00', hours:8, graceMins:15, offDays:[], name:'افتراضي' };
   const byDay = {};
   DB.punches.forEach(p=>{
     if(p.empId !== emp.id) return;
@@ -1427,23 +1665,21 @@ function buildDayObj(dateKey, dayName, isOffDay, inStr, outStr, workMins, requir
 }
 
 /* =========================================================
-   التقارير - محدث (فصل الفروع + وضعان للعرض)
+   التقارير
    ========================================================= */
 function viewReports(){
   const isAdmin = currentUser.role === 'admin';
-
   if(isAdmin && (!UI.repBranch || UI.repBranch === 'all') && DB.branches.length){
     UI.repBranch = DB.branches[0].id;
   }
   if(!isAdmin) UI.repBranch = currentUser.branchId;
 
   const viewMode = UI.repViewMode || 'detailed';
-
   const branchField = isAdmin
     ? `<div class="field"><label>الفرع</label>
         <select id="repBranch" onchange="UI.repBranch=this.value;UI.repEmp='all';lastReport=null;renderTab()">
           ${DB.branches.map(b=>`<option value="${b.id}" ${UI.repBranch===b.id?'selected':''}>🏢 ${esc(b.name)}</option>`).join('')}
-          <option value="all" ${UI.repBranch==='all'?'selected':''}>📚 كل الفروع (منفصلة)</option>
+          <option value="all" ${UI.repBranch==='all'?'selected':''}>📚 كل الفروع</option>
         </select></div>`
     : '';
 
@@ -1462,44 +1698,39 @@ function viewReports(){
         </select></div>`
     : '';
 
-  const viewToggle = `<div class="field"><label>طريقة العرض</label>
-    <div style="display:flex;gap:6px;margin-top:4px">
-      <button class="btn" style="background:${viewMode==='detailed'?'#2b6cb0':'#e2e8f0'};color:${viewMode==='detailed'?'#fff':'#2c5282'}"
+  const viewToggle = `<div class="field"><label>العرض</label>
+    <div style="display:flex;gap:5px;margin-top:3px">
+      <button class="btn btn-sm" style="background:${viewMode==='detailed'?'#2b6cb0':'#e2e8f0'};color:${viewMode==='detailed'?'#fff':'#2c5282'}"
         onclick="UI.repViewMode='detailed';renderTab()">👤 تفصيلي</button>
-      <button class="btn" style="background:${viewMode==='summary'?'#2b6cb0':'#e2e8f0'};color:${viewMode==='summary'?'#fff':'#2c5282'}"
+      <button class="btn btn-sm" style="background:${viewMode==='summary'?'#2b6cb0':'#e2e8f0'};color:${viewMode==='summary'?'#fff':'#2c5282'}"
         onclick="UI.repViewMode='summary';renderTab()">📊 ملخص</button>
     </div>
   </div>`;
 
   const controls = `<div class="row">
     ${branchField}${empField}${viewToggle}
-    <div class="field"><label>من تاريخ</label><input type="date" id="repFrom" value="${UI.repFrom}" onchange="UI.repFrom=this.value"></div>
-    <div class="field"><label>إلى تاريخ</label><input type="date" id="repTo" value="${UI.repTo}" onchange="UI.repTo=this.value"></div>
-    <button class="btn btn-success" onclick="generateReport()">🔄 عرض التقرير</button>
+    <div class="field"><label>من</label><input type="date" id="repFrom" value="${UI.repFrom}" onchange="UI.repFrom=this.value"></div>
+    <div class="field"><label>إلى</label><input type="date" id="repTo" value="${UI.repTo}" onchange="UI.repTo=this.value"></div>
+    <button class="btn btn-success" onclick="generateReport()">🔄 عرض</button>
     <button class="btn" onclick="exportReport()">📥 Excel</button>
+    <button class="btn" onclick="printReport()">🖨️ PDF</button>
   </div>`;
 
   let body = '';
   if(!DB.branches.length){
-    body = '<div class="card"><div class="empty">لا توجد فروع. أضف فرع أولاً.</div></div>';
+    body = '<div class="card"><div class="empty">لا توجد فروع.</div></div>';
   } else if(lastReport){
     if(lastReport.rows.length === 0){
-      body = '<div class="card"><div class="empty">لا توجد بيانات مطابقة للفلاتر المحددة.</div></div>';
+      body = '<div class="card"><div class="empty">لا توجد بيانات للفلاتر المحددة.</div></div>';
     } else {
       let gWork=0,gOver=0,gLate=0,gDays=0,gPresent=0,gAbsent=0,gLeave=0;
       lastReport.rows.forEach(r=>{
-        gWork += r.totals.workMins;
-        gOver += r.totals.overtime;
-        gLate += r.totals.netLateness;
-        gDays += r.totals.days;
-        gPresent += r.totals.presentDays;
-        gAbsent += r.totals.absentDays;
-        gLeave += r.totals.leaveDays;
+        gWork += r.totals.workMins; gOver += r.totals.overtime; gLate += r.totals.netLateness;
+        gDays += r.totals.days; gPresent += r.totals.presentDays; gAbsent += r.totals.absentDays; gLeave += r.totals.leaveDays;
       });
       const overColor = gOver >= 0 ? '#2b6cb0' : '#c53030';
-
       const summary = `<div class="card" style="background:#ebf8ff;border:1px solid #bee3f8">
-        <h2>📌 ملخص التقرير العام</h2>
+        <h2>📌 ملخص التقرير</h2>
         <div class="grid">
           <div class="stat-card"><h3>👥 عمال</h3><div class="stat-row"><b style="font-size:20px">${lastReport.rows.length}</b></div></div>
           <div class="stat-card"><h3>📅 أيام</h3><div class="stat-row"><b style="font-size:20px">${gDays}</b></div></div>
@@ -1515,29 +1746,20 @@ function viewReports(){
       let content = '';
       if(UI.repBranch === 'all'){
         const byBranch = {};
-        lastReport.rows.forEach(r => {
-          (byBranch[r.emp.branchId] = byBranch[r.emp.branchId] || []).push(r);
-        });
+        lastReport.rows.forEach(r => { (byBranch[r.emp.branchId] = byBranch[r.emp.branchId] || []).push(r); });
         const branchOrder = DB.branches.map(b => b.id).filter(id => byBranch[id]);
-
         branchOrder.forEach((bId) => {
           const list = byBranch[bId];
           let bw=0, bo=0, bl=0, bDays=0, bPresent=0, bAbsent=0, bLeave=0;
           list.forEach(r=>{
-            bw += r.totals.workMins;
-            bo += r.totals.overtime;
-            bl += r.totals.netLateness;
-            bDays += r.totals.days;
-            bPresent += r.totals.presentDays;
-            bAbsent += r.totals.absentDays;
-            bLeave += r.totals.leaveDays;
+            bw += r.totals.workMins; bo += r.totals.overtime; bl += r.totals.netLateness;
+            bDays += r.totals.days; bPresent += r.totals.presentDays; bAbsent += r.totals.absentDays; bLeave += r.totals.leaveDays;
           });
-
           content += `<div class="branch-header">
-            <div style="font-size:20px;font-weight:bold">🏢 ${esc(branchName(bId))}</div>
-            <div style="font-size:13px;display:flex;gap:16px;flex-wrap:wrap">
-              <span>👥 ${list.length} عامل</span>
-              <span>📅 ${bDays} يوم</span>
+            <div style="font-size:19px;font-weight:bold">🏢 ${esc(branchName(bId))}</div>
+            <div style="font-size:12.5px;display:flex;gap:14px;flex-wrap:wrap">
+              <span>👥 ${list.length}</span>
+              <span>📅 ${bDays}</span>
               <span>✅ ${bPresent}</span>
               <span>❌ ${bAbsent}</span>
               <span>🏖️ ${bLeave}</span>
@@ -1546,43 +1768,39 @@ function viewReports(){
               <span>⚖️ ${bo>=0?'+':''}${formatMinsToText(bo)}</span>
             </div>
           </div>`;
-
           if(viewMode === 'summary'){
-            content += `<div class="card"><div class="scroll-x">${reportSummaryTable(list, false)}</div></div>`;
+            content += `<div class="card"><div class="scroll-x">${reportSummaryTable(list)}</div></div>`;
           } else {
-            list.forEach(r => { content += reportCardHtml(r, false); });
+            list.forEach(r => { content += reportCardHtml(r); });
           }
         });
       } else {
         if(viewMode === 'summary'){
           content = `<div class="card">
             <h2>🏢 ${esc(branchName(UI.repBranch))} — ملخص العمال</h2>
-            <div class="scroll-x">${reportSummaryTable(lastReport.rows, false)}</div>
+            <div class="scroll-x">${reportSummaryTable(lastReport.rows)}</div>
           </div>`;
         } else {
-          content = lastReport.rows.map(r => reportCardHtml(r, false)).join('');
+          content = lastReport.rows.map(r => reportCardHtml(r)).join('');
         }
       }
-
       body = summary + content;
     }
   } else {
-    body = '<div class="card"><div class="empty">اضغط على <b>🔄 عرض التقرير</b> لعرض النتائج.</div></div>';
+    body = '<div class="card"><div class="empty">اضغط <b>🔄 عرض</b>.</div></div>';
   }
 
   return `<div class="card">
-    <h2>📈 تقارير الحضور والانصراف</h2>
+    <h2>📈 التقارير</h2>
     ${controls}
-    <p class="muted">💡 الحساب من دمج <b>تسجيل اليومي</b> + <b>البصمات</b> + <b>الشفت</b> + <b>الأذونات</b>.</p>
   </div>${body}`;
 }
 
-function reportSummaryTable(rows, showBranch){
+function reportSummaryTable(rows){
   const trs = rows.map(r => {
     const t = r.totals;
     const overColor = t.overtime >= 0 ? '#2b6cb0' : '#c53030';
     return `<tr>
-      ${showBranch ? `<td>${esc(branchName(r.emp.branchId))}</td>` : ''}
       <td style="text-align:right"><b>${esc(r.emp.name)}</b></td>
       <td>${esc(r.emp.code)}</td>
       <td>${t.days}</td>
@@ -1595,27 +1813,22 @@ function reportSummaryTable(rows, showBranch){
       <td style="color:${overColor}"><b>${t.overtime>=0?'+':''}${formatMinsToText(t.overtime)}</b></td>
     </tr>`;
   }).join('');
-
   return `<table>
-    <thead>
-      <tr>
-        ${showBranch ? '<th>الفرع</th>' : ''}
-        <th>الاسم</th><th>الكود</th><th>إجمالي أيام</th>
-        <th>حضور</th><th>غياب</th><th>أجازة</th><th>بصمة ناقصة</th>
-        <th>ساعات العمل</th><th>التأخير</th><th>إضافي/عجز</th>
-      </tr>
-    </thead>
+    <thead><tr>
+      <th>الاسم</th><th>الكود</th><th>أيام</th><th>حضور</th><th>غياب</th><th>أجازة</th>
+      <th>بصمة ناقصة</th><th>ساعات العمل</th><th>التأخير</th><th>إضافي/عجز</th>
+    </tr></thead>
     <tbody>${trs}</tbody>
   </table>`;
 }
 
-function reportCardHtml(r, showBranch){
+function reportCardHtml(r){
   const t = r.totals;
   const overColor = t.overtime >= 0 ? '#2b6cb0' : '#c53030';
-  const shiftTxt = r.shift ? `${r.shift.name} (${r.shift.start} - ${r.shift.end}) — ${r.shift.hours} ساعات، سماح ${r.shift.graceMins} د` : 'بدون شفت';
+  const shiftTxt = r.shift ? `${r.shift.name} (${r.shift.start} - ${r.shift.end})` : 'بدون شفت';
   const rows = r.days.map(d=>{
     const exc = d.excusedMins > 0 ? `<span class="badge b-blue">${formatMinsToText(d.excusedMins)}</span>` : '—';
-    const permTxt = d.perms && d.perms.length ? `<div class="muted" style="font-size:10.5px">${d.perms.join(' + ')}</div>` : '';
+    const permTxt = d.perms && d.perms.length ? `<div class="muted" style="font-size:10px">${d.perms.join(' + ')}</div>` : '';
     const ovTxt = (d.status === 'بصمة ناقصة' || d.status === 'غياب') ? '—' :
       (d.overtime > 0 ? `<b style="color:#2b6cb0">+${formatMinsToText(d.overtime)}</b>` :
         (d.overtime < 0 ? `<b style="color:#c53030">${formatMinsToText(d.overtime)}</b>` : '0'));
@@ -1623,7 +1836,7 @@ function reportCardHtml(r, showBranch){
     const workTxt = (d.status === 'غياب') ? '—' : formatMinsToText(d.workMins);
     const reqTxt = (d.status === 'أجازة' || d.status === 'غياب') ? '—' : formatMinsToText(d.requiredMins);
     return `<tr>
-      <td>${d.dateKey}<br><span class="muted" style="font-size:11px">${d.dayName}${d.isOffDay?' (راحة)':''}</span></td>
+      <td>${d.dateKey}<br><span class="muted" style="font-size:10px">${d.dayName}${d.isOffDay?' (راحة)':''}</span></td>
       <td>${d.inStr}</td><td>${d.outStr}</td>
       <td><b>${workTxt}</b></td><td>${reqTxt}</td>
       <td>${exc}${permTxt}</td><td>${lateTxt}</td><td>${ovTxt}</td>
@@ -1632,9 +1845,7 @@ function reportCardHtml(r, showBranch){
   }).join('');
   return `<div class="emp-card">
     <div class="emp-header">
-      <div class="emp-title">👤 ${esc(r.emp.name)} — كود: ${esc(r.emp.code)}
-        ${showBranch ? `<span class="badge b-gray" style="margin-inline-start:8px">${esc(branchName(r.emp.branchId))}</span>` : ''}
-      </div>
+      <div class="emp-title">👤 ${esc(r.emp.name)} — كود: ${esc(r.emp.code)}</div>
       <div class="muted">🕐 ${esc(shiftTxt)}</div>
     </div>
     <div class="emp-summary">
@@ -1650,8 +1861,8 @@ function reportCardHtml(r, showBranch){
     </div>
     <div class="scroll-x"><table>
       <thead><tr>
-        <th>التاريخ (اليوم)</th><th>الدخول</th><th>الخروج</th><th>ساعات العمل</th>
-        <th>المطلوب</th><th>إذن</th><th>التأخير</th><th>الإضافي/العجز</th><th>الحالة</th>
+        <th>التاريخ</th><th>دخول</th><th>خروج</th><th>ساعات العمل</th>
+        <th>المطلوب</th><th>إذن</th><th>تأخير</th><th>إضافي/عجز</th><th>الحالة</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
@@ -1665,16 +1876,13 @@ function generateReport(){
   const fromDate = document.getElementById('repFrom')?.value || '';
   const toDate = document.getElementById('repTo')?.value || '';
   UI.repBranch = branchId; UI.repEmp = empId; UI.repFrom = fromDate; UI.repTo = toDate;
-
   let emps = DB.employees.slice();
   if(branchId !== 'all') emps = emps.filter(e => e.branchId === branchId);
   if(empId !== 'all' && empId) emps = emps.filter(e => e.id === empId);
-
   const rows = emps.map(emp => {
     const c = calcEmployee(emp, fromDate, toDate);
     return { emp, shift: c.shift, days: c.days, totals: c.totals };
   }).filter(r => r.days.length > 0).sort((a,b)=> a.emp.name.localeCompare(b.emp.name,'ar'));
-
   lastReport = { rows, branchId, empId, fromDate, toDate, generatedAt: new Date().toISOString() };
   renderTab();
 }
@@ -1692,7 +1900,7 @@ function exportReport(){
         'الدخول': d.inStr, 'الخروج': d.outStr,
         'ساعات العمل': formatMinsToText(d.workMins),
         'المطلوبة': formatMinsToText(d.requiredMins),
-        'إذن (د)': d.excusedMins, 'إذن': d.excusedMins ? formatMinsToText(d.excusedMins) : '',
+        'إذن (د)': d.excusedMins,
         'تأخير (د)': d.netLateness, 'تأخير': formatMinsToText(d.netLateness),
         'إضافي/عجز (د)': d.overtime, 'إضافي/عجز': formatMinsToText(d.overtime),
         'الحالة': d.status
@@ -1706,15 +1914,21 @@ function exportReport(){
   XLSX.writeFile(wb, 'تقرير_الحضور.xlsx');
 }
 
+function printReport(){
+  if(!lastReport || !lastReport.rows.length){ alert('لا يوجد تقرير لعرضه. اضغط "عرض" أولاً.'); return; }
+  window.print();
+}
+
 Object.assign(window, {
   doLogin, doLogout, switchTab,
-  addBranch, deleteBranch, editBranchUser,
+  addBranch, deleteBranch, editBranchUser, setBranchDefaultShift,
   loadShiftSelectForAdd, addEmployee, setEmpShift, editEmployee, deleteEmployee,
   autoShiftHours, addShift, editShift, deleteShift,
-  togglePermTimes, addPermission, deletePermission,
-  handleImport, handleEmpImport, mapUnmatched,
-  generateReport, exportReport,
-  saveDailyEntries, loadFingerprintsIntoForm, openPermForEmp
+  handleImport, handleEmpImport, mapUnmatched, loadEmpImportShiftSelect,
+  generateReport, exportReport, printReport,
+  saveAllDaily, loadFingerprintsIntoForm, openPermModal,
+  closePermModal, togglePermModalTimes, savePermFromModal, deletePermFromModal,
+  onDailyFieldChange, copyFromYesterday, filterDailyRows, filterEmpRows
 });
 
 (async function init(){
