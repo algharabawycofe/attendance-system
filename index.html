@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>نظام البصمة متعدد الفروع</title>
+<title>نظام البصمة  </title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   *{box-sizing:border-box}
@@ -143,7 +143,6 @@
   </div>
 </div>
 
-<!-- Modal: تسجيل إذن -->
 <div id="permModal" class="modal-backdrop" style="display:none">
   <div class="modal-box">
     <h2>📝 تسجيل إذن</h2>
@@ -164,19 +163,10 @@
       </select>
     </div>
     <div style="display:flex;gap:10px;margin-bottom:10px" id="pmTimesRow">
-      <div class="field" style="flex:1">
-        <label>من</label>
-        <input type="time" id="pmFrom" value="09:00">
-      </div>
-      <div class="field" style="flex:1">
-        <label>إلى</label>
-        <input type="time" id="pmTo" value="11:00">
-      </div>
+      <div class="field" style="flex:1"><label>من</label><input type="time" id="pmFrom" value="09:00"></div>
+      <div class="field" style="flex:1"><label>إلى</label><input type="time" id="pmTo" value="11:00"></div>
     </div>
-    <div class="field" style="margin-bottom:10px">
-      <label>ملاحظات</label>
-      <input id="pmReason" placeholder="اختياري">
-    </div>
+    <div class="field" style="margin-bottom:10px"><label>ملاحظات</label><input id="pmReason" placeholder="اختياري"></div>
     <div id="pmExisting"></div>
     <div class="modal-actions">
       <button class="btn btn-success" onclick="savePermFromModal()">💾 حفظ الإذن</button>
@@ -405,10 +395,13 @@ function enterApp(){
   document.getElementById('appView').style.display = 'block';
   const roleTxt = currentUser.role === 'admin' ? 'مدير النظام' : ('فرع: ' + branchName(currentUser.branchId));
   document.getElementById('userInfo').innerHTML = `👤 <b>${esc(currentUser.name)}</b> — ${esc(roleTxt)}`;
-  const allowed = currentUser.role === 'admin'
-    ? ['overview','daily','branches','employees','shifts','files','reports']
-    : ['overview','daily','employees','shifts','reports'];
-  if(!allowed.includes(activeTab)) activeTab = 'overview';
+
+  if(currentUser.role === 'admin'){
+    if(!['overview','daily','branches','employees','shifts','files','reports'].includes(activeTab)) activeTab = 'overview';
+  } else {
+    // الفرع عنده تبويب واحد بس
+    activeTab = 'daily';
+  }
   renderTab();
 }
 
@@ -422,16 +415,13 @@ const TABS_ADMIN = [
   {id:'reports',label:'📈 التقارير'}
 ];
 const TABS_BRANCH = [
-  {id:'overview',label:'📊 لوحة التحكم'},
-  {id:'daily',label:'📅 التسجيل اليومي'},
-  {id:'employees',label:'👥 العمال'},
-  {id:'shifts',label:'🕐 الشفتات'},
-  {id:'reports',label:'📈 التقارير'}
+  {id:'daily',label:'📅 تسجيل الشفتات اليومية'}
 ];
 function switchTab(id){ activeTab = id; importMsg = null; empImportMsg = null; renderTab(); window.scrollTo({top:0, behavior:'smooth'}); }
 
 function renderTab(){
-  const tabs = currentUser.role === 'admin' ? TABS_ADMIN : TABS_BRANCH;
+  const isBranch = currentUser.role !== 'admin';
+  const tabs = isBranch ? TABS_BRANCH : TABS_ADMIN;
   document.getElementById('tabsNav').innerHTML = tabs.map(t =>
     `<button class="tab ${t.id===activeTab?'active':''}" onclick="switchTab('${t.id}')">${t.label}</button>`
   ).join('');
@@ -478,75 +468,48 @@ function renderMiniDash(){
     <span>👥 عمال: <b>${emps.length}</b></span>
     <span>✅ سجلوا اليوم: <b style="color:#38a169">${todayEntries.length}</b></span>
     <span>⏳ باقي: <b style="color:#dd6b20">${Math.max(0, emps.length - todayEntries.length)}</b></span>
-    <span>📥 آخر بصمة: <b>${lastPunch}</b></span>
   `;
 }
 
-/* =========================================================
-   لوحة التحكم
-   ========================================================= */
+/* ============== لوحة التحكم (أدمن فقط) ============== */
 function viewOverview(){
-  if(currentUser.role === 'admin'){
-    if(DB.branches.length === 0){
-      return `<div class="card">
-        <div class="alert alert-info">🚀 ابدأ بالخطوات دي:</div>
-        <ol style="line-height:2;font-size:14px">
-          <li>روح <b>🏢 الفروع</b> → أضف فرع</li>
-          <li>روح <b>📥 رفع الملفات</b> → ارفع Excel الموظفين</li>
-          <li>روح <b>🕐 الشفتات</b> → أضف شفت للفرع</li>
-        </ol>
-      </div>`;
-    }
-    let totalEmp=0, totalPunch=0, totalDaily=0;
-    const cards = DB.branches.map(b=>{
-      const emps = DB.employees.filter(e=>e.branchId===b.id).length;
-      const punches = DB.punches.filter(p=>p.branchId===b.id).length;
-      const daily = DB.dailyEntries.filter(d=>d.branchId===b.id).length;
-      totalEmp += emps; totalPunch += punches; totalDaily += daily;
-      return `<div class="stat-card">
-        <h3>🏢 ${esc(b.name)}</h3>
-        <div class="stat-row"><span>👥 العمال</span><b>${emps}</b></div>
-        <div class="stat-row"><span>📅 تسجيلات اليومي</span><b>${daily}</b></div>
-        <div class="stat-row"><span>📥 سجلات البصمة</span><b>${punches}</b></div>
-      </div>`;
-    }).join('');
+  if(DB.branches.length === 0){
     return `<div class="card">
-      <h2>📊 ملخص الفروع</h2>
-      <div class="grid">
-        <div class="stat-card" style="background:#ebf8ff"><h3>🏢 الفروع</h3><div class="stat-row"><b style="font-size:22px">${DB.branches.length}</b></div></div>
-        <div class="stat-card" style="background:#ebf8ff"><h3>👥 العمال</h3><div class="stat-row"><b style="font-size:22px">${totalEmp}</b></div></div>
-        <div class="stat-card" style="background:#ebf8ff"><h3>📥 البصمات</h3><div class="stat-row"><b style="font-size:22px">${totalPunch}</b></div></div>
-        <div class="stat-card" style="background:#ebf8ff"><h3>📅 تسجيلات اليومي</h3><div class="stat-row"><b style="font-size:22px">${totalDaily}</b></div></div>
-      </div>
-      <h2 style="margin-top:20px">تفاصيل الفروع</h2>
-      <div class="grid">${cards}</div>
+      <div class="alert alert-info">🚀 ابدأ بالخطوات دي:</div>
+      <ol style="line-height:2;font-size:14px">
+        <li>روح <b>🏢 الفروع</b> → أضف فرع</li>
+        <li>روح <b>🕐 الشفتات</b> → أضف شفتات الفرع</li>
+        <li>روح <b>📥 رفع الملفات</b> → ارفع Excel الموظفين</li>
+      </ol>
     </div>`;
   }
-  const bId = currentUser.branchId;
-  const emps = DB.employees.filter(e=>e.branchId===bId);
-  const punches = DB.punches.filter(p=>p.branchId===bId);
-  const daily = DB.dailyEntries.filter(d=>d.branchId===bId);
-  const today = new Date().toISOString().slice(0,10);
-  const todayEntries = DB.dailyEntries.filter(d=>d.branchId===bId && d.dateKey===today);
-  const dates = punches.map(p=>p.dateKey).sort();
-  const lastPunch = dates.length ? dates[dates.length-1] : '—';
+  let totalEmp=0, totalPunch=0, totalDaily=0;
+  const cards = DB.branches.map(b=>{
+    const emps = DB.employees.filter(e=>e.branchId===b.id).length;
+    const punches = DB.punches.filter(p=>p.branchId===b.id).length;
+    const daily = DB.dailyEntries.filter(d=>d.branchId===b.id).length;
+    totalEmp += emps; totalPunch += punches; totalDaily += daily;
+    return `<div class="stat-card">
+      <h3>🏢 ${esc(b.name)}</h3>
+      <div class="stat-row"><span>👥 العمال</span><b>${emps}</b></div>
+      <div class="stat-row"><span>📅 تسجيلات اليومي</span><b>${daily}</b></div>
+      <div class="stat-row"><span>📥 سجلات البصمة</span><b>${punches}</b></div>
+    </div>`;
+  }).join('');
   return `<div class="card">
-    <h2>📊 ملخص فرع: ${esc(branchName(bId))}</h2>
+    <h2>📊 ملخص الفروع</h2>
     <div class="grid">
-      <div class="stat-card"><h3>👥 العمال</h3><div class="stat-row"><b style="font-size:22px">${emps.length}</b></div></div>
-      <div class="stat-card"><h3>✅ سجلوا اليوم</h3><div class="stat-row"><b style="font-size:22px;color:#38a169">${todayEntries.length}</b></div></div>
-      <div class="stat-card"><h3>📅 إجمالي تسجيلاتك</h3><div class="stat-row"><b style="font-size:22px">${daily.length}</b></div></div>
-      <div class="stat-card"><h3>📥 البصمات</h3><div class="stat-row"><b style="font-size:22px">${punches.length}</b></div></div>
+      <div class="stat-card" style="background:#ebf8ff"><h3>🏢 الفروع</h3><div class="stat-row"><b style="font-size:22px">${DB.branches.length}</b></div></div>
+      <div class="stat-card" style="background:#ebf8ff"><h3>👥 العمال</h3><div class="stat-row"><b style="font-size:22px">${totalEmp}</b></div></div>
+      <div class="stat-card" style="background:#ebf8ff"><h3>📥 البصمات</h3><div class="stat-row"><b style="font-size:22px">${totalPunch}</b></div></div>
+      <div class="stat-card" style="background:#ebf8ff"><h3>📅 تسجيلات اليومي</h3><div class="stat-row"><b style="font-size:22px">${totalDaily}</b></div></div>
     </div>
-    <div class="alert alert-info" style="margin-top:12px">
-      💡 آخر بصمة مستوردة: <b>${lastPunch}</b> — ابدأ من <b>📅 التسجيل اليومي</b> لتسجيل حضور العمال.
-    </div>
+    <h2 style="margin-top:20px">تفاصيل الفروع</h2>
+    <div class="grid">${cards}</div>
   </div>`;
 }
 
-/* =========================================================
-   التسجيل اليومي — مع بحث + حفظ تلقائي + نسخ من الأمس
-   ========================================================= */
+/* ============== التسجيل اليومي ============== */
 function viewDaily(){
   const isAdmin = currentUser.role === 'admin';
   const selectedDate = UI.dailyDate || new Date().toISOString().slice(0,10);
@@ -561,7 +524,6 @@ function viewDaily(){
           ${DB.branches.map(b=>`<option value="${b.id}" ${UI.dailyBranch===b.id?'selected':''}>${esc(b.name)}</option>`).join('')}
         </select></div>` : '';
 
-  // Quick date nav
   const today = new Date().toISOString().slice(0,10);
   const y = new Date(); y.setDate(y.getDate()-1);
   const yesterday = y.toISOString().slice(0,10);
@@ -582,58 +544,32 @@ function viewDaily(){
   }
 
   const emps = DB.employees.filter(e => e.branchId === filterB).sort((a,b)=> a.name.localeCompare(b.name,'ar'));
-  const punchesByEmp = {};
-  DB.punches.forEach(p=>{
-    if(p.branchId !== filterB || p.dateKey !== selectedDate) return;
-    (punchesByEmp[p.empId] = punchesByEmp[p.empId] || []).push(p);
-  });
   const dailyByEmp = {};
   DB.dailyEntries.forEach(d=>{
     if(d.dateKey === selectedDate && d.branchId === filterB) dailyByEmp[d.empId] = d;
-  });
-  const permsByEmp = {};
-  DB.permissions.forEach(p=>{
-    if(p.date === selectedDate && p.branchId === filterB)
-      (permsByEmp[p.empId] = permsByEmp[p.empId] || []).push(p);
   });
 
   const defaultShift = getBranchDefaultShift(filterB);
   let savedCount = 0;
   const rows = emps.map(e=>{
     const daily = dailyByEmp[e.id] || {};
-    const punches = punchesByEmp[e.id] || [];
-    const perms = permsByEmp[e.id] || [];
     if(dailyByEmp[e.id]) savedCount++;
 
-    let autoIn = '', autoOut = '';
-    if(punches.length){
-      const sorted = punches.slice().sort((a,b)=> a.timeMs - b.timeMs);
-      const cin = sorted.find(p=>/c\s*\/?\s*in/i.test(p.status||'')) || sorted[0];
-      const couts = sorted.filter(p=>/c\s*\/?\s*out/i.test(p.status||''));
-      const cout = couts.length ? couts[couts.length-1] : (sorted.length>1 ? sorted[sorted.length-1] : null);
-      if(cin) autoIn = fmtTimeHM(cin.timeMs);
-      if(cout && cout !== cin) autoOut = fmtTimeHM(cout.timeMs);
-    }
-
-    const manualIn  = daily.manualIn  !== undefined ? daily.manualIn  : autoIn;
-    const manualOut = daily.manualOut !== undefined ? daily.manualOut : autoOut;
+    const manualIn  = daily.manualIn  || '';
+    const manualOut = daily.manualOut || '';
     const shiftId   = daily.shiftId   || e.shiftId || (defaultShift ? defaultShift.id : '');
     const status    = daily.status    || 'present';
     const notes     = daily.notes     || '';
     const branchShifts = DB.shifts.filter(s => s.branchId === e.branchId);
-    const permTxt = perms.length ? perms.map(p => PERM_TYPES[p.type] || p.type).join(' + ') : '—';
-    const hasFingerprint = punches.length
-      ? `<span class="badge b-green" style="font-size:9.5px">بصمة ✓</span>`
-      : `<span class="badge b-gray" style="font-size:9.5px">لا بصمة</span>`;
     const savedBadge = dailyByEmp[e.id] ? `<span class="badge b-blue" style="font-size:9.5px">محفوظ</span>` : '';
 
     return `<tr data-empid="${e.id}" data-branch="${filterB}" data-date="${selectedDate}">
-      <td style="text-align:right;min-width:140px">
+      <td style="text-align:right;min-width:160px">
         <b>${esc(e.name)}</b><br>
         <span class="muted" style="font-size:10.5px">كود: ${esc(e.code)}</span>
-        <div style="margin-top:3px">${hasFingerprint} ${savedBadge}</div>
+        <div style="margin-top:3px">${savedBadge}</div>
       </td>
-      <td style="min-width:120px">
+      <td style="min-width:140px">
         <select class="daily-shift" onchange="onDailyFieldChange('${e.id}')">
           <option value="">— بدون —</option>
           ${branchShifts.map(s=>`<option value="${s.id}" ${shiftId===s.id?'selected':''}>${esc(s.name)} (${s.start}-${s.end})</option>`).join('')}
@@ -646,14 +582,12 @@ function viewDaily(){
           ${Object.keys(STATUS_TYPES).map(k=>`<option value="${k}" ${status===k?'selected':''}>${STATUS_TYPES[k]}</option>`).join('')}
         </select>
       </td>
-      <td style="font-size:11px;min-width:90px">${permTxt}</td>
-      <td><input type="text" class="daily-notes" value="${esc(notes)}" placeholder="ملاحظات" style="min-width:100px" onchange="onDailyFieldChange('${e.id}')"></td>
-      <td><button class="btn btn-warn btn-sm" onclick="openPermModal('${e.id}','${selectedDate}')">📝 إذن</button></td>
+      <td><input type="text" class="daily-notes" value="${esc(notes)}" placeholder="ملاحظات" style="min-width:110px" onchange="onDailyFieldChange('${e.id}')"></td>
     </tr>`;
   }).join('');
 
   return `<div class="card">
-    <h2>📅 التسجيل اليومي</h2>
+    <h2>📅 تسجيل الشفتات اليومية</h2>
     <div class="row">
       ${branchField}
       ${dateNav}
@@ -663,19 +597,18 @@ function viewDaily(){
       </div>
       <button class="btn btn-success" onclick="saveAllDaily('${filterB}','${selectedDate}')">💾 حفظ الكل</button>
       <button class="btn" onclick="copyFromYesterday('${filterB}','${selectedDate}')">📋 نسخ من الأمس</button>
-      <button class="btn" onclick="loadFingerprintsIntoForm('${filterB}','${selectedDate}')">⬇️ البصمات للحقول</button>
       ${defaultShift ? `<div class="badge b-blue" style="align-self:center">الشفت الافتراضي: ${esc(defaultShift.name)}</div>` : ''}
     </div>
     <div class="alert alert-info" style="font-size:12px">
-      💡 <b>الحفظ تلقائي</b> بعد ثانيتين من أي تعديل — وممكن كمان تضغط <b>💾 حفظ الكل</b>. بياناتك هتاخد الأولوية على البصمة.
+      💡 الحفظ بيتم <b>تلقائياً</b> بعد ثانيتين من أي تعديل — أو اضغط <b>💾 حفظ الكل</b> مباشرة.
       ${savedCount ? `<br>📌 <b>${savedCount}</b> عامل مسجل بالفعل في هذا اليوم.` : ''}
     </div>
     ${emps.length ? `<div class="scroll-x daily-table"><table>
       <thead><tr>
-        <th>العامل</th><th>الشفت</th><th>الدخول</th><th>الخروج</th><th>الحالة</th><th>الأذونات</th><th>ملاحظات</th><th>إجراء</th>
+        <th>العامل</th><th>الشفت</th><th>الدخول</th><th>الخروج</th><th>الحالة</th><th>ملاحظات</th>
       </tr></thead>
       <tbody>${rows}</tbody>
-    </table></div>` : '<div class="empty">لا يوجد عمال. أضف أو استورد عمال أولاً.</div>'}
+    </table></div>` : '<div class="empty">لا يوجد عمال. الأدمن لازم يرفع موظفين أولاً.</div>'}
   </div>`;
 }
 
@@ -731,7 +664,6 @@ async function saveRowEntry(tr, empId, branchId, dateKey){
       });
       DB.dailyEntries.push(doc);
     }
-    // تحديث البادج في الـ DOM
     const badges = tr.querySelector('td div');
     if(badges){
       const hasSaved = tr.querySelector('.b-blue');
@@ -802,29 +734,7 @@ async function copyFromYesterday(branchId, dateKey){
   } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
 }
 
-function loadFingerprintsIntoForm(branchId, dateKey){
-  const rows = document.querySelectorAll('tr[data-empid]');
-  let count = 0;
-  rows.forEach(row=>{
-    const empId = row.dataset.empid;
-    const punches = DB.punches.filter(p => p.branchId===branchId && p.dateKey===dateKey && p.empId===empId);
-    if(!punches.length) return;
-    const sorted = punches.slice().sort((a,b)=> a.timeMs - b.timeMs);
-    const cin = sorted.find(p=>/c\s*\/?\s*in/i.test(p.status||'')) || sorted[0];
-    const couts = sorted.filter(p=>/c\s*\/?\s*out/i.test(p.status||''));
-    const cout = couts.length ? couts[couts.length-1] : (sorted.length>1 ? sorted[sorted.length-1] : null);
-    const inEl = row.querySelector('.daily-in');
-    const outEl = row.querySelector('.daily-out');
-    if(cin && inEl && !inEl.value){ inEl.value = fmtTimeHM(cin.timeMs); count++; }
-    if(cout && cout !== cin && outEl && !outEl.value){ outEl.value = fmtTimeHM(cout.timeMs); }
-  });
-  if(count === 0){ alert('لا توجد بصمات جديدة'); return; }
-  alert('✅ تم استيراد ' + count + ' بصمة للحقول. اضغط حفظ الكل.');
-}
-
-/* =========================================================
-   Modal: تسجيل إذن
-   ========================================================= */
+/* ============== Modal الأذونات (للأدمن فقط) ============== */
 function openPermModal(empId, date){
   const emp = DB.employees.find(e => e.id === empId);
   if(!emp){ alert('العامل غير موجود'); return; }
@@ -836,8 +746,6 @@ function openPermModal(empId, date){
   document.getElementById('pmFrom').value = '09:00';
   document.getElementById('pmTo').value = '11:00';
   togglePermModalTimes();
-
-  // عرض الأذونات الموجودة في نفس اليوم
   const existing = DB.permissions.filter(p => p.empId === empId && p.date === date);
   const el = document.getElementById('pmExisting');
   if(existing.length){
@@ -848,16 +756,12 @@ function openPermModal(empId, date){
   } else {
     el.innerHTML = '';
   }
-
   document.getElementById('permModal').style.display = 'flex';
 }
-function closePermModal(){
-  document.getElementById('permModal').style.display = 'none';
-}
+function closePermModal(){ document.getElementById('permModal').style.display = 'none'; }
 function togglePermModalTimes(){
   const t = document.getElementById('pmType').value;
-  const hide = (t === 'leave');
-  document.getElementById('pmTimesRow').style.display = hide ? 'none' : 'flex';
+  document.getElementById('pmTimesRow').style.display = (t === 'leave') ? 'none' : 'flex';
 }
 async function savePermFromModal(){
   const empId = document.getElementById('pmEmpId').value;
@@ -867,7 +771,6 @@ async function savePermFromModal(){
   const toTime = document.getElementById('pmTo').value;
   const reason = document.getElementById('pmReason').value.trim();
   const emp = DB.employees.find(e => e.id === empId); if(!emp){ alert('العامل غير موجود'); return; }
-
   let minutes = 0;
   if(type !== 'leave'){
     if(!fromTime || !toTime){ alert('أدخل الأوقات'); return; }
@@ -880,8 +783,7 @@ async function savePermFromModal(){
   try {
     await fsAdd('permissions', {
       branchId: emp.branchId, empId, date, type,
-      fromTime: type==='leave'?'':fromTime,
-      toTime: type==='leave'?'':toTime,
+      fromTime: type==='leave'?'':fromTime, toTime: type==='leave'?'':toTime,
       minutes, reason, createdBy: currentUser.name, createdAt: Date.now()
     });
     await loadAllData();
@@ -903,15 +805,12 @@ async function deletePermFromModal(permId){
   } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
 }
 
-/* =========================================================
-   الفروع
-   ========================================================= */
+/* ============== الفروع ============== */
 function viewBranches(){
   const rows = DB.branches.map(b=>{
     const u = DB.users.find(x=>x.branchId===b.id);
     const emps = DB.employees.filter(e=>e.branchId===b.id).length;
     const branchShifts = DB.shifts.filter(s => s.branchId === b.id);
-    const defShift = b.defaultShiftId ? branchShifts.find(s => s.id === b.defaultShiftId) : null;
     return `<tr>
       <td><b>${esc(b.name)}</b></td>
       <td>${esc(u?u.username:'—')}</td>
@@ -939,7 +838,7 @@ function viewBranches(){
       <button class="btn btn-success" onclick="addBranch()">➕ إضافة فرع</button>
     </div>
     <div class="alert alert-info" style="font-size:12px">
-      💡 <b>الشفت الافتراضي</b> يتحط على كل عمال الفرع تلقائياً لو مفيش شفت مخصص للعامل.
+      💡 <b>الشفت الافتراضي</b> يتحط على كل عمال الفرع تلقائياً في التسجيل اليومي.
     </div>
     ${DB.branches.length ? `<div class="scroll-x"><table>
       <thead><tr><th>الفرع</th><th>المستخدم</th><th>المسؤول</th><th>عمال</th><th>الشفت الافتراضي</th><th></th></tr></thead>
@@ -1006,31 +905,24 @@ async function editBranchUser(bId){
   } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
 }
 
-/* =========================================================
-   العمال — مع بحث
-   ========================================================= */
+/* ============== العمال ============== */
 function viewEmployees(){
-  const isAdmin = currentUser.role === 'admin';
-  if(!isAdmin) UI.empBranch = currentUser.branchId;
-  const filterB = isAdmin ? UI.empBranch : currentUser.branchId;
+  const filterB = UI.empBranch;
   let list = DB.employees.slice();
   if(filterB !== 'all') list = list.filter(e => e.branchId === filterB);
   list.sort((a,b)=> a.name.localeCompare(b.name,'ar'));
 
-  const branchOptions = isAdmin
-    ? `<div class="field"><label>تصفية بالفرع</label>
+  const branchOptions = `<div class="field"><label>تصفية بالفرع</label>
         <select id="empBranch" onchange="UI.empBranch=this.value;renderTab()">
           <option value="all">كل الفروع</option>
           ${DB.branches.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('')}
-        </select></div>` : '';
+        </select></div>`;
 
-  const addBranchField = isAdmin
-    ? `<div class="field"><label>الفرع</label>
+  const addBranchField = `<div class="field"><label>الفرع</label>
         <select id="empBranchAdd" onchange="loadShiftSelectForAdd()">
           <option value="">— اختر الفرع —</option>
           ${DB.branches.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('')}
-        </select></div>`
-    : `<input type="hidden" id="empBranchAdd" value="${currentUser.branchId}">`;
+        </select></div>`;
 
   const rows = list.map(e=>{
     const sh = getShiftFor(e);
@@ -1064,7 +956,7 @@ function viewEmployees(){
       <div class="field"><label>الشفت</label><select id="empShift"><option value="">— اختر الفرع أولاً —</option></select></div>
       <button class="btn btn-success" onclick="addEmployee()">➕ إضافة</button>
     </div>
-    ${isAdmin ? branchOptions : ''}
+    ${branchOptions}
     <div class="field" style="max-width:300px">
       <label>🔍 بحث</label>
       <input type="text" id="empSearch" placeholder="ابحث بالاسم أو الكود..." oninput="filterEmpRows(this.value)">
@@ -1144,35 +1036,30 @@ async function deleteEmployee(id){
   } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
 }
 
-/* =========================================================
-   الشفتات
-   ========================================================= */
+/* ============== الشفتات ============== */
 function viewShifts(){
-  const isAdmin = currentUser.role === 'admin';
-  const filterB = isAdmin ? UI.shiftBranch : currentUser.branchId;
+  const filterB = UI.shiftBranch;
   let list = DB.shifts.slice();
   if(filterB !== 'all') list = list.filter(s => s.branchId === filterB);
 
-  const branchField = isAdmin
-    ? `<div class="field"><label>الفرع</label>
+  const branchField = `<div class="field"><label>الفرع</label>
         <select id="shBranchAdd">
           <option value="">— اختر الفرع —</option>
           ${DB.branches.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('')}
-        </select></div>`
-    : `<input type="hidden" id="shBranchAdd" value="${currentUser.branchId}">`;
+        </select></div>`;
 
-  const filterField = isAdmin
-    ? `<div class="field"><label>تصفية</label>
+  const filterField = `<div class="field"><label>تصفية</label>
         <select id="shiftBranch" onchange="UI.shiftBranch=this.value;renderTab()">
           <option value="all">كل الفروع</option>
           ${DB.branches.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('')}
-        </select></div>` : '';
+        </select></div>`;
 
   const rows = list.map(s=>{
     const emps = DB.employees.filter(e=>e.shiftId===s.id).length;
     const off = (s.offDays||[]).map(d=>dayNamesAr[d]).join('، ') || '—';
+    const isDefault = DB.branches.some(b => b.defaultShiftId === s.id);
     return `<tr>
-      <td><b>${esc(s.name)}</b></td>
+      <td><b>${esc(s.name)}</b> ${isDefault ? '<span class="badge b-blue" style="font-size:10px">افتراضي</span>' : ''}</td>
       <td>${esc(branchName(s.branchId))}</td>
       <td>${esc(s.start)}</td>
       <td>${esc(s.end)}</td>
@@ -1204,7 +1091,7 @@ function viewShifts(){
         ${dayNamesAr.map((d,i)=>`<label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#f7fafc;border:1px solid #e2e8f0;padding:4px 8px;border-radius:5px;cursor:pointer"><input type="checkbox" class="shDayOff" value="${i}" ${(i===5)?'checked':''}> ${d}</label>`).join('')}
       </div>
     </div>
-    ${isAdmin ? filterField : ''}
+    ${filterField}
     ${list.length ? `<div class="scroll-x"><table>
       <thead><tr><th>الشفت</th><th>الفرع</th><th>من</th><th>إلى</th><th>ساعات</th><th>سماح</th><th>راحة</th><th>عمال</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
@@ -1234,7 +1121,6 @@ async function addShift(){
   showLoader(true);
   try {
     const shift = await fsAdd('shifts', { branchId:bId, name, start, end, hours, graceMins, offDays, createdAt:Date.now() });
-    // لو الفرع ملوش شفت افتراضي، خليه هو
     const br = getBranch(bId);
     if(br && !br.defaultShiftId){
       await fsUpdate('branches', bId, { defaultShiftId: shift.id });
@@ -1270,7 +1156,6 @@ async function deleteShift(id){
     await fsDelete('shifts', id);
     const empsWithShift = DB.employees.filter(e => e.shiftId === id);
     for(const e of empsWithShift){ await fsUpdate('employees', e.id, { shiftId: '' }); }
-    // لو الشفت الافتراضي لفرع، امسحه
     for(const b of DB.branches){
       if(b.defaultShiftId === id) await fsUpdate('branches', b.id, { defaultShiftId: '' });
     }
@@ -1280,9 +1165,7 @@ async function deleteShift(id){
   } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
 }
 
-/* =========================================================
-   رفع الملفات — تبويب موحد
-   ========================================================= */
+/* ============== رفع الملفات ============== */
 function viewFiles(){
   const branchOptions = DB.branches.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('');
   const unm = DB.unmatched || [];
@@ -1309,7 +1192,7 @@ function viewFiles(){
     <h2>📥 رفع ملفات الفرع</h2>
 
     <h3>1️⃣ رفع الموظفين من Excel</h3>
-    <p class="muted" style="margin:0 0 10px">ارفع ملف Excel فيه عمودين: <b>الاسم</b> و <b>رقم البصمة</b>. النظام هينشئ كل الموظفين مرة واحدة.</p>
+    <p class="muted" style="margin:0 0 10px">ارفع ملف Excel فيه عمودين: <b>الاسم</b> و <b>رقم البصمة</b>.</p>
     ${empImportMsg ? `<div class="alert ${empImportMsg.ok?'alert-ok':'alert-err'}">${empImportMsg.text}</div>` : ''}
     <div class="row" style="background:#f0fff4;padding:14px;border-radius:10px;border:1px dashed #38a169">
       <div class="field"><label>الفرع</label>
@@ -1327,7 +1210,7 @@ function viewFiles(){
       <input type="file" id="empExcelFile" accept=".xls,.xlsx,.csv" style="display:none" onchange="handleEmpImport(event)">
     </div>
 
-    <h3 style="margin-top:22px">2️⃣ رفع بصمة الفرع من Excel</h2>
+    <h3 style="margin-top:22px">2️⃣ رفع بصمة الفرع من Excel</h3>
     <p class="muted" style="margin:0 0 10px">ارفع ملف بصمات الجهاز. يحتوي على: <b>No. / Name / Date/Time / Status</b>.</p>
     ${importMsg ? `<div class="alert ${importMsg.ok?'alert-ok':'alert-err'}">${importMsg.text}</div>` : ''}
     <div class="row" style="background:#ebf8ff;padding:14px;border-radius:10px;border:1px dashed #4299e1">
@@ -1506,9 +1389,7 @@ async function mapUnmatched(i){
   } catch(e){ showLoader(false); alert('خطأ: ' + e.message); }
 }
 
-/* =========================================================
-   محرك الحساب
-   ========================================================= */
+/* ============== محرك الحساب ============== */
 function calcEmployee(emp, fromDate, toDate){
   const empShift = getShiftFor(emp);
   const branchDefault = getBranchDefaultShift(emp.branchId);
@@ -1664,24 +1545,15 @@ function buildDayObj(dateKey, dayName, isOffDay, inStr, outStr, workMins, requir
   };
 }
 
-/* =========================================================
-   التقارير
-   ========================================================= */
+/* ============== التقارير ============== */
 function viewReports(){
-  const isAdmin = currentUser.role === 'admin';
-  if(isAdmin && (!UI.repBranch || UI.repBranch === 'all') && DB.branches.length){
-    UI.repBranch = DB.branches[0].id;
-  }
-  if(!isAdmin) UI.repBranch = currentUser.branchId;
-
+  if(!UI.repBranch && DB.branches.length) UI.repBranch = DB.branches[0].id;
   const viewMode = UI.repViewMode || 'detailed';
-  const branchField = isAdmin
-    ? `<div class="field"><label>الفرع</label>
+  const branchField = `<div class="field"><label>الفرع</label>
         <select id="repBranch" onchange="UI.repBranch=this.value;UI.repEmp='all';lastReport=null;renderTab()">
           ${DB.branches.map(b=>`<option value="${b.id}" ${UI.repBranch===b.id?'selected':''}>🏢 ${esc(b.name)}</option>`).join('')}
           <option value="all" ${UI.repBranch==='all'?'selected':''}>📚 كل الفروع</option>
-        </select></div>`
-    : '';
+        </select></div>`;
 
   const filterB = UI.repBranch;
   let emps = [];
@@ -1870,8 +1742,7 @@ function reportCardHtml(r){
 }
 
 function generateReport(){
-  const isAdmin = currentUser.role === 'admin';
-  const branchId = isAdmin ? (document.getElementById('repBranch')?.value || UI.repBranch) : currentUser.branchId;
+  const branchId = document.getElementById('repBranch')?.value || UI.repBranch;
   const empId = document.getElementById('repEmp')?.value || UI.repEmp || 'all';
   const fromDate = document.getElementById('repFrom')?.value || '';
   const toDate = document.getElementById('repTo')?.value || '';
@@ -1926,7 +1797,7 @@ Object.assign(window, {
   autoShiftHours, addShift, editShift, deleteShift,
   handleImport, handleEmpImport, mapUnmatched, loadEmpImportShiftSelect,
   generateReport, exportReport, printReport,
-  saveAllDaily, loadFingerprintsIntoForm, openPermModal,
+  saveAllDaily, openPermModal,
   closePermModal, togglePermModalTimes, savePermFromModal, deletePermFromModal,
   onDailyFieldChange, copyFromYesterday, filterDailyRows, filterEmpRows
 });
