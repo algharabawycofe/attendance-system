@@ -157,7 +157,7 @@ tbody tr:last-child td{border-bottom:none}
 .mt-3{margin-top:12px}
 .mt-4{margin-top:16px}
 .inactive-row{opacity:.55}
-.wa-preview{width:100%;min-height:260px;padding:12px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:inherit;font-size:12.5px;resize:vertical;white-space:pre-wrap;direction:rtl;text-align:right;background:var(--gray-50);line-height:1.7}
+.wa-preview{width:100%;min-height:260px;padding:12px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:inherit;font-size:13px;resize:vertical;white-space:pre-wrap;direction:rtl;text-align:right;background:var(--gray-50);line-height:1.8}
 @media print{.sidebar,.header,.btn,.no-print{display:none !important}.app{display:block}.main{padding:0;overflow:visible}.card,.report-card,.branch-section{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}body{background:#fff}}
 </style>
 </head>
@@ -351,9 +351,7 @@ function startLive(){
     unsubs.push(onSnapshot(collection(db, col), snap => {
       DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       if(currentUser && !['reports','employee'].includes(activePage)) refreshPage();
-    }, err => {
-      console.error('onSnapshot error for', col, err);
-    }));
+    }, err => { console.error('onSnapshot error for', col, err); }));
   });
 }
 function stopLive(){ unsubs.forEach(u => { try{ u(); }catch(e){} }); unsubs = []; }
@@ -746,180 +744,107 @@ async function copyFromYesterday(bId, date){
 }
 
 /* ============================================================
-   ✅ WhatsApp Sharing
+   ✅ WhatsApp Sharing - ملخص مبسط
    ============================================================ */
 
-/** بناء نص تقرير الحضور اليومي */
+/** بناء نص تقرير الحضور اليومي - مبسط جدًا */
 function buildDailyWhatsAppText(bId, date){
   const branch = getBranch(bId);
-  const emps = DB.employees
-    .filter(e => e.branchId === bId && e.active !== false)
-    .sort((a,b) => a.name.localeCompare(b.name,'ar'));
+  const emps = DB.employees.filter(e => e.branchId === bId && e.active !== false);
 
   const dailyMap = {};
   DB.daily.forEach(d => { if(d.dateKey === date && d.branchId === bId) dailyMap[d.empId] = d; });
 
   let present = 0, absent = 0, leave = 0, mission = 0, incomplete = 0;
-  let totalLateMins = 0, totalOver = 0, totalWork = 0, totalExcused = 0;
 
-  const lines = [];
-  emps.forEach((e, i) => {
+  emps.forEach(e => {
     const rec = dailyMap[e.id] || null;
     const punches = DB.punches.filter(p => p.empId === e.id && p.dateKey === date && p.branchId === bId);
     const day = calcDay(e, date, rec, punches, bId);
 
-    let icon = '✅';
-    if(day.status === 'غياب'){ absent++; icon = '❌'; }
-    else if(day.status === 'أجازة'){ leave++; icon = '🏖️'; }
-    else if(day.status === 'مهمة'){ mission++; icon = '🎯'; }
-    else if(day.status === 'بصمة ناقصة'){ incomplete++; icon = '⚠️'; }
+    if(day.status === 'غياب') absent++;
+    else if(day.status === 'أجازة') leave++;
+    else if(day.status === 'مهمة') mission++;
+    else if(day.status === 'بصمة ناقصة') incomplete++;
     else present++;
-
-    totalLateMins += day.lateness;
-    totalOver += day.overtime;
-    totalWork += day.workMins;
-    totalExcused += day.excusedMins;
-
-    const parts = [];
-    if(day.timeIn && day.timeIn !== '—' && day.timeOut && day.timeOut !== '—'){
-      parts.push(`${day.timeIn} ← ${day.timeOut}`);
-    } else if(day.timeIn && day.timeIn !== '—'){
-      parts.push(`دخول ${day.timeIn} (بدون خروج)`);
-    }
-    if(day.status === 'منتظم' || day.status === 'تأخير' || day.status === 'عجز'){
-      parts.push(day.status);
-    } else {
-      parts.push(day.status);
-    }
-    if(day.lateness > 0) parts.push(`⏰ ${fmtMins(day.lateness)}`);
-    if(day.excusedMins > 0) parts.push(`📝 إذن ${fmtMins(day.excusedMins)}`);
-    if((day.overtime > 0) && !['غياب','أجازة','مهمة','بصمة ناقصة'].includes(day.status)){
-      parts.push(`➕ ${fmtMins(day.overtime)}`);
-    }
-    if(rec?.notes){
-      parts.push(`💬 ${rec.notes}`);
-    }
-
-    lines.push(`${i+1}. ${icon} ${e.name}\n   ${parts.join(' | ')}`);
   });
 
-  const totalEmps = emps.length;
-  const header = `📋 *تقرير الحضور اليومي*\n` +
+  let txt = `━━━━━━━━━━━━━━━━━━\n` +
+    `🏢 الفرع: ${branch?.name || '—'}\n` +
+    `📅 التاريخ: ${date}\n` +
+    `🗓️ اليوم: ${dayName(date)}\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `🏢 *الفرع:* ${branch?.name || '—'}\n` +
-    `📅 *التاريخ:* ${date}\n` +
-    `🗓️ *اليوم:* ${dayName(date)}\n` +
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `👥 *إجمالي الموظفين:* ${totalEmps}\n` +
-    `✅ حاضر: ${present}\n` +
-    (absent ? `❌ غائب: ${absent}\n` : '') +
-    (leave ? `🏖️ أجازة: ${leave}\n` : '') +
-    (mission ? `🎯 مهمة: ${mission}\n` : '') +
-    (incomplete ? `⚠️ بصمة ناقصة: ${incomplete}\n` : '') +
-    `━━━━━━━━━━━━━━━━━━\n` +
-    (totalWork ? `⏱️ *إجمالي ساعات العمل:* ${fmtMins(totalWork)}\n` : '') +
-    (totalLateMins ? `⏰ *إجمالي التأخير:* ${fmtMins(totalLateMins)}\n` : '') +
-    (totalExcused ? `📝 *إجمالي الإذن:* ${fmtMins(totalExcused)}\n` : '') +
-    (totalOver !== 0 ? `⚖️ *إضافي/عجز:* ${totalOver > 0 ? '+' : ''}${fmtMins(totalOver)}\n` : '') +
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `📝 *التفاصيل:*\n\n`;
+    `👥 إجمالي الموظفين: ${emps.length}\n` +
+    `✅ حاضر: ${present}\n`;
 
-  return header + lines.join('\n\n');
+  if(absent) txt += `❌ غائب: ${absent}\n`;
+  if(leave) txt += `🏖️ أجازة: ${leave}\n`;
+  if(mission) txt += `🎯 مهمة: ${mission}\n`;
+  if(incomplete) txt += `⚠️ بصمة ناقصة: ${incomplete}\n`;
+
+  txt += `━━━━━━━━━━━━━━━━━━`;
+
+  return txt;
 }
 
-/** بناء نص تقرير التقارير (ملخص) */
+/** بناء نص تقرير التقارير - مبسط */
 function buildReportWhatsAppText(){
   if(!lastReport || !lastReport.rows.length) return '';
   const { rows, branchId, from, to } = lastReport;
 
-  let gP=0, gA=0, gL=0, gM=0, gI=0, gLt=0, gOv=0, gW=0;
+  let gP=0, gA=0, gL=0, gM=0, gI=0;
   rows.forEach(r => {
     gP += r.totals.present;
     gA += r.totals.absent;
     gL += r.totals.leave;
     gM += r.totals.mission;
     gI += r.totals.incomplete;
-    gLt += r.totals.lateness;
-    gOv += r.totals.overtime;
-    gW += r.totals.workMins;
   });
 
-  const header = `📊 *تقرير الحضور والانصراف*\n` +
+  let txt = `━━━━━━━━━━━━━━━━━━\n` +
+    `🏢 الفرع: ${branchName(branchId)}\n` +
+    `📅 الفترة: ${from || 'البداية'} → ${to || 'الآن'}\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `🏢 *الفرع:* ${branchName(branchId)}\n` +
-    `📅 *الفترة:* ${from || 'البداية'} → ${to || 'الآن'}\n` +
-    `👥 *عدد الموظفين:* ${rows.length}\n` +
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `✅ حاضر: ${gP}\n` +
-    `❌ غائب: ${gA}\n` +
-    (gL ? `🏖️ أجازة: ${gL}\n` : '') +
-    (gM ? `🎯 مهمة: ${gM}\n` : '') +
-    (gI ? `⚠️ بصمة ناقصة: ${gI}\n` : '') +
-    `⏱️ *ساعات العمل:* ${fmtMins(gW)}\n` +
-    `⏰ *إجمالي التأخير:* ${fmtMins(gLt)}\n` +
-    `⚖️ *إضافي/عجز:* ${gOv > 0 ? '+' : ''}${fmtMins(gOv)}\n` +
-    `━━━━━━━━━━━━━━━━━━\n\n` +
-    `📝 *تفصيل الموظفين:*\n\n`;
+    `👥 عدد الموظفين: ${rows.length}\n` +
+    `✅ حاضر: ${gP}\n`;
 
-  const lines = rows.map((r, i) => {
-    const t = r.totals;
-    const ov = (t.overtime >= 0 ? '+' : '') + fmtMins(t.overtime);
-    return `${i+1}. *${r.emp.name}* (${r.emp.code})\n` +
-      `   ✅ ${t.present} | ❌ ${t.absent}${t.leave ? ` | 🏖️ ${t.leave}` : ''}${t.mission ? ` | 🎯 ${t.mission}` : ''}\n` +
-      `   ⏱️ ${fmtMins(t.workMins)} | ⏰ ${fmtMins(t.lateness)} | ⚖️ ${ov}`;
-  });
+  if(gA) txt += `❌ غائب: ${gA}\n`;
+  if(gL) txt += `🏖️ أجازة: ${gL}\n`;
+  if(gM) txt += `🎯 مهمة: ${gM}\n`;
+  if(gI) txt += `⚠️ بصمة ناقصة: ${gI}\n`;
 
-  return header + lines.join('\n\n');
+  txt += `━━━━━━━━━━━━━━━━━━`;
+
+  return txt;
 }
 
-/** بناء نص سجل الموظف الكامل */
+/** بناء نص سجل الموظف - مبسط */
 function buildEmployeeWhatsAppText(){
   if(!lastEmpReport) return '';
-  const { emp, from, to, branchStats, grand, transferHistory } = lastEmpReport;
+  const { emp, from, to, grand } = lastEmpReport;
 
-  let txt = `👤 *سجل الموظف*\n` +
+  let txt = `━━━━━━━━━━━━━━━━━━\n` +
+    `👤 الاسم: ${emp.name}\n` +
+    `🔢 رقم البصمة: ${emp.code}\n` +
+    `🏢 الفرع: ${branchName(emp.branchId)}\n` +
+    `📅 الفترة: ${from || 'البداية'} → ${to || 'الآن'}\n` +
     `━━━━━━━━━━━━━━━━━━\n` +
-    `📌 *الاسم:* ${emp.name}\n` +
-    `🔢 *رقم البصمة:* ${emp.code}\n` +
-    `🏢 *الفرع الحالي:* ${branchName(emp.branchId)}\n` +
-    `📅 *الفترة:* ${from || 'البداية'} → ${to || 'الآن'}\n` +
-    `🔘 *الحالة:* ${emp.active === false ? 'منتهي' : 'نشط'}\n` +
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `📊 *الإجمالي الكامل:*\n` +
     `📅 عدد الأيام: ${grand.days}\n` +
-    `✅ حضور: ${grand.present}\n` +
-    `❌ غياب: ${grand.absent}\n` +
-    (grand.leave ? `🏖️ أجازة: ${grand.leave}\n` : '') +
-    (grand.mission ? `🎯 مهمة: ${grand.mission}\n` : '') +
-    (grand.incomplete ? `⚠️ بصمة ناقصة: ${grand.incomplete}\n` : '') +
-    `⏱️ ساعات العمل: ${fmtMins(grand.workMins)}\n` +
-    `⏰ التأخير: ${fmtMins(grand.lateness)}\n` +
-    `⚖️ إضافي/عجز: ${grand.overtime >= 0 ? '+' : ''}${fmtMins(grand.overtime)}\n`;
+    `✅ حضور: ${grand.present}\n`;
 
-  if(transferHistory.length){
-    txt += `\n━━━━━━━━━━━━━━━━━━\n🔄 *سجل التنقلات:*\n\n`;
-    transferHistory.forEach((h, i) => {
-      txt += `${i+1}. ${h.fromName} ← ${h.toName}\n   📅 ${h.date}${h.reason ? ` — ${h.reason}` : ''}\n\n`;
-    });
-  }
+  if(grand.absent) txt += `❌ غياب: ${grand.absent}\n`;
+  if(grand.leave) txt += `🏖️ أجازة: ${grand.leave}\n`;
+  if(grand.mission) txt += `🎯 مهمة: ${grand.mission}\n`;
+  if(grand.incomplete) txt += `⚠️ بصمة ناقصة: ${grand.incomplete}\n`;
 
-  if(branchStats.length > 1){
-    txt += `━━━━━━━━━━━━━━━━━━\n📋 *تفصيل حسب الفرع:*\n\n`;
-    branchStats.forEach((b, i) => {
-      txt += `${i+1}. *${b.branchName}*\n   📅 ${b.firstDate} → ${b.lastDate}\n   📅 ${b.totals.days} يوم | ✅ ${b.totals.present} | ❌ ${b.totals.absent}\n   ⏱️ ${fmtMins(b.totals.workMins)} | ⏰ ${fmtMins(b.totals.lateness)}\n\n`;
-    });
-  }
+  txt += `━━━━━━━━━━━━━━━━━━`;
 
   return txt;
 }
 
 /** فتح نافذة مشاركة الواتساب */
 function openWhatsAppShare(text, title){
-  if(!text){
-    alert('لا يوجد محتوى لمشاركته');
-    return;
-  }
-  // لو الفرع له رقم واتساب افتراضي، استخدمه
+  if(!text){ alert('لا يوجد محتوى لمشاركته'); return; }
   let defaultPhone = '';
   if(UI.dailyBranch){
     const b = getBranch(UI.dailyBranch);
@@ -954,7 +879,6 @@ function openWhatsAppShare(text, title){
     </div>
   `);
 
-  // فوكس على خانة الرقم لو فاضية
   setTimeout(() => {
     const el = $('waPhone');
     if(el && !el.value) el.focus();
@@ -969,12 +893,10 @@ function sendWhatsApp(){
   let phone = ($('waPhone')?.value || '').trim().replace(/[^\d+]/g, '');
   phone = phone.replace(/^\+/, '').replace(/^0+/, '');
 
-  // لو مفيش رقم محدد → جرّب Web Share API (أفضل على الموبايل)
   if(!phone && navigator.share){
     navigator.share({ text, title: 'تقرير الحضور' })
       .then(() => closeModal())
       .catch(err => {
-        // لو المستخدم لغى أو حصل خطأ، نروح wa.me عادي
         if(err.name !== 'AbortError'){
           const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
           window.open(url, '_blank');
@@ -1015,7 +937,6 @@ function copyWhatsAppText(){
   }
 }
 
-/** زر مشاركة اليوم من صفحة التسجيل اليومي */
 function shareDailyWhatsApp(bId, date){
   if(!bId){ alert('اختر الفرع'); return; }
   UI.dailyBranch = bId;
@@ -1023,7 +944,6 @@ function shareDailyWhatsApp(bId, date){
   openWhatsAppShare(text, `تقرير ${getBranch(bId)?.name || ''} - ${date}`);
 }
 
-/** زر مشاركة التقرير من صفحة التقارير */
 function shareReportWhatsApp(){
   const text = buildReportWhatsAppText();
   if(!text){ alert('اعرض التقرير أولاً'); return; }
@@ -1031,7 +951,6 @@ function shareReportWhatsApp(){
   openWhatsAppShare(text, title);
 }
 
-/** زر مشاركة سجل الموظف */
 function shareEmployeeWhatsApp(){
   const text = buildEmployeeWhatsAppText();
   if(!text){ alert('اعرض السجل أولاً'); return; }
@@ -1039,7 +958,7 @@ function shareEmployeeWhatsApp(){
 }
 
 /* ============================================================
-   إعدادات الفروع
+   الإعدادات
    ============================================================ */
 
 function renderSettings(){
@@ -2393,10 +2312,8 @@ Object.assign(window, {
   generateEmployeeReport, exportEmployeeReport,
   selectEmpBranch, selectEmployee, clearEmpSelection,
   setShiftBranchFilter, setEmpBranchFilter, setEmpActiveFilter,
-  // ✅ WhatsApp
   shareDailyWhatsApp, shareReportWhatsApp, shareEmployeeWhatsApp,
-  sendWhatsApp, copyWhatsAppText,
-  editBranchWhatsApp
+  sendWhatsApp, copyWhatsAppText, editBranchWhatsApp
 });
 window.$ = $;
 
