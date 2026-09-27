@@ -52,7 +52,6 @@
   .login-card h1{text-align:center;color:#1a365d;font-size:21px;margin:0 0 22px}
   .login-card input{width:100%;margin-bottom:12px;padding:11px}
   .login-card .btn{width:100%;padding:12px;font-size:15px}
-  .hint{text-align:center;font-size:11.5px;color:#718096;margin-top:12px;background:#f7fafc;padding:8px;border-radius:6px}
   .alert{padding:10px;border-radius:7px;margin-bottom:12px;font-weight:bold;font-size:13px;text-align:center}
   .alert-err{background:#fff5f5;color:#c53030;border:1px solid #fed7d7}
   .alert-ok{background:#f0fff4;color:#22543d;border:1px solid #c6f6d5}
@@ -70,7 +69,6 @@
   .date-nav button.active{background:#2b6cb0;color:#fff;border-color:#2b6cb0}
   .row-saving{background:#fffbeb !important}
   .row-saved{background:#f0fff4 !important;transition:background .3s}
-  .branch-header{background:linear-gradient(135deg,#1a365d,#2b6cb0);color:#fff;padding:16px;margin-top:20px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
   .mini-dash{background:#fff;border-radius:10px;padding:10px 16px;margin-bottom:14px;display:flex;gap:18px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,.04);font-size:13px;align-items:center;border:1px solid #e2e8f0}
   .mini-dash span{display:flex;align-items:center;gap:5px}
   .mini-dash b{color:#1a365d;font-size:14px}
@@ -171,7 +169,6 @@ function dtAt(dateKey, timeStr){
 }
 function dayName(dateKey){ return dayNamesAr[new Date(dateKey+'T00:00:00').getDay()]; }
 function fmtHM(ms){ const d = new Date(ms); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
-function fmtTimeAr(ms){ return new Date(ms).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit',hour12:true}); }
 function parseExcelDate(str){
   if(!str) return null;
   let s = String(str).trim();
@@ -415,7 +412,7 @@ function viewOverview(){
   </div>`;
 }
 
-/* ============ Daily - قلب النظام ============ */
+/* ============ Daily ============ */
 function viewDaily(){
   const isAdmin = currentUser.role === 'admin';
   const date = UI.dailyDate;
@@ -1024,27 +1021,97 @@ async function handleUpload(ev){
   reader.readAsArrayBuffer(file);
 }
 
-/* ============ Reports ============ */
+/* ============ Shift Detection from Punches ============ */
+function detectShiftFromPunches(empId, branchId, excludeDate){
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 45);
+  const cutoffKey = cutoff.toISOString().slice(0,10);
+  const punches = DB.punches.filter(p =>
+    p.empId === empId &&
+    p.dateKey !== excludeDate &&
+    p.dateKey >= cutoffKey
+  );
+  if(punches.length < 4) return null;
+
+  const byDay = {};
+  punches.forEach(p => {
+    (byDay[p.dateKey] = byDay[p.dateKey] || []).push(p);
+  });
+
+  const inHours = [];
+  const outHours = [];
+  Object.values(byDay).forEach(dayPunches => {
+    const sorted = dayPunches.slice().sort((a,b) => a.timeMs - b.timeMs);
+    const cin = sorted.find(p => /in/i.test(p.status||'')) || sorted[0];
+    const couts = sorted.filter(p => /out/i.test(p.status||''));
+    const cout = couts.length ? couts[couts.length-1] : null;
+    if(cin){
+      const d = new Date(cin.timeMs);
+      inHours.push(d.getHours() + d.getMinutes()/60);
+    }
+    if(cout){
+      const d = new Date(cout.timeMs);
+      outHours.push(d.getHours() + d.getMinutes()/60);
+    }
+  });
+
+  if(inHours.length < 3 || outHours.length < 3) return null;
+
+  inHours.sort((a,b) => a-b);
+  outHours.sort((a,b) => a-b);
+  const medIn = inHours[Math.floor(inHours.length / 2)];
+  const medOut = outHours[Math.floor(outHours.length / 2)];
+
+  const toHM = (dec) => {
+    let h = Math.floor(dec);
+    let m = Math.round((dec - h) * 60);
+    if(m === 60){ h++; m = 0; }
+    if(h >= 24) h -= 24;
+    return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+  };
+
+  const start = toHM(medIn);
+  const end = toHM(medOut);
+
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  let mins = (eh*60 + em) - (sh*60 + sm);
+  if(mins <= 0) mins += 1440;
+  const hours = mins / 60;
+
+  if(hours < 4 || hours > 16) return null;
+
+  return { start, end, hours: Math.round(hours * 10) / 10, name: 'مستنتج', graceMins: 15, offDays: [], detected: true };
+}
+
+/* ============ Calc Engine ============ */
 function calcDay(emp, dateKey, dailyRec, punches) {
-  const shId = dailyRec?.shiftId || emp.shiftId || getBranch(emp.branchId)?.defaultShiftId;
-  const sh = getShift(shId) || { start:'09:00', end:'17:00', hours:8, graceMins:15, offDays:[5], name:'افتراضي' };
+  // ترتيب الأولوية للشفت:
+  // 1. الشفت المسجل في اليومي (الفرع)
+  // 2. الشفت المخصص للعامل
+  // 3. الشفت الافتراضي للفرع
+  // 4. الشفت المستنتج من البصمة
+  // 5. الافتراضي 9-5
+  let sh = null;
+  if(dailyRec?.shiftId) sh = getShift(dailyRec.shiftId);
+  if(!sh && emp.shiftId) sh = getShift(emp.shiftId);
+  if(!sh && getBranch(emp.branchId)?.defaultShiftId) sh = getShift(getBranch(emp.branchId).defaultShiftId);
+  if(!sh) sh = detectShiftFromPunches(emp.id, emp.branchId, dateKey);
+  if(!sh) sh = { start:'09:00', end:'17:00', hours:8, graceMins:15, offDays:[5], name:'افتراضي' };
 
   const status = dailyRec?.status || 'present';
   const permType = dailyRec?.permType || 'none';
   const permHours = num(dailyRec?.permHours);
 
-  // إذا أجازة أو غائب
   if(status === 'leave'){
-    return { dateKey, status:'أجازة', workMins:0, requiredMins:0, overtime:0, lateness:0, excusedMins:0, notes: dailyRec?.notes };
+    return { dateKey, status:'أجازة', workMins:0, requiredMins:0, overtime:0, lateness:0, excusedMins:0, shift: sh, notes: dailyRec?.notes };
   }
   if(status === 'absent'){
-    return { dateKey, status:'غياب', workMins:0, requiredMins:0, overtime:0, lateness:0, excusedMins:0, notes: dailyRec?.notes };
+    return { dateKey, status:'غياب', workMins:0, requiredMins:0, overtime:0, lateness:0, excusedMins:0, shift: sh, notes: dailyRec?.notes };
   }
   if(status === 'mission'){
-    return { dateKey, status:'مهمة', workMins:0, requiredMins:0, overtime:0, lateness:0, excusedMins:0, notes: dailyRec?.notes };
+    return { dateKey, status:'مهمة', workMins:0, requiredMins:0, overtime:0, lateness:0, excusedMins:0, shift: sh, notes: dailyRec?.notes };
   }
 
-  // استخدام الأوقات: الأولوية للفرع، وإلا البصمة
   let timeIn = dailyRec?.timeIn || '';
   let timeOut = dailyRec?.timeOut || '';
 
@@ -1058,7 +1125,7 @@ function calcDay(emp, dateKey, dailyRec, punches) {
   }
 
   if(!timeIn || !timeOut){
-    return { dateKey, status:'بصمة ناقصة', workMins:0, requiredMins:0, overtime:0, lateness:0, excusedMins:0, notes: dailyRec?.notes };
+    return { dateKey, status:'بصمة ناقصة', workMins:0, requiredMins:0, overtime:0, lateness:0, excusedMins:0, shift: sh, timeIn, timeOut, notes: dailyRec?.notes };
   }
 
   const dtIn = dtAt(dateKey, timeIn);
@@ -1068,15 +1135,21 @@ function calcDay(emp, dateKey, dailyRec, punches) {
   const workMins = Math.round((dtOut - dtIn) / 60000);
   const shiftMins = Math.round(sh.hours * 60);
 
-  // الإذن بالساعات يخصم من المطلوب
   let excusedMins = 0;
   if(permType === 'hour') excusedMins = Math.round(permHours * 60);
   else if(permType === 'day') excusedMins = shiftMins;
 
-  // التأخير عن بداية الشفت
+  // حساب التأخير بالنسبة لبداية الشفت مع معالجة الشفتات الليلية
   const shiftStart = dtAt(dateKey, sh.start);
-  let lateRaw = Math.round((dtIn - shiftStart) / 60000);
-  if(lateRaw < 0) lateRaw = 0;
+  const shiftStartMs = shiftStart.getTime();
+  const actualInMs = dtIn.getTime();
+  let diff = Math.round((actualInMs - shiftStartMs) / 60000);
+
+  // معالجة الشفتات الليلية: لو الفرق أكبر من 12 ساعة (720 دقيقة)، عدّل
+  if(diff < -720) diff += 1440;
+  if(diff > 720) diff -= 1440;
+
+  let lateRaw = Math.max(0, diff);
   if(lateRaw <= (sh.graceMins||0)) lateRaw = 0;
 
   const requiredMins = Math.max(0, shiftMins - excusedMins);
@@ -1087,7 +1160,7 @@ function calcDay(emp, dateKey, dailyRec, punches) {
   if(netLateness > 0) statusLabel = 'تأخير';
   else if(overtime < -1) statusLabel = 'عجز';
 
-  return { dateKey, status:statusLabel, workMins, requiredMins, overtime, lateness:netLateness, excusedMins, notes: dailyRec?.notes, timeIn, timeOut };
+  return { dateKey, status: statusLabel, workMins, requiredMins, overtime, lateness: netLateness, excusedMins, shift: sh, timeIn, timeOut, notes: dailyRec?.notes };
 }
 
 function calcEmployee(emp, from, to){
@@ -1129,10 +1202,9 @@ function calcEmployee(emp, from, to){
   return { emp, days: dayResults, totals, shift: getShift(emp.shiftId) };
 }
 
+/* ============ Reports ============ */
 function viewReports(){
   const branchOpts = DB.branches.map(b=>`<option value="${b.id}" ${UI.repBranch===b.id?'selected':''}>${esc(b.name)}</option>`).join('');
-  const bId = UI.repBranch || (DB.branches[0]?.id || '');
-  const emps = DB.employees.filter(e => e.branchId === bId);
   const view = UI.repView || 'detailed';
 
   let body = '';
@@ -1180,7 +1252,11 @@ function viewReports(){
     } else {
       content = lastReport.rows.map(r => {
         const t = r.totals;
-        const rows = r.days.map(d => `
+        const rows = r.days.map(d => {
+          const shiftInfo = d.shift ? `🕐 ${d.shift.start} - ${d.shift.end}${d.shift.detected ? ' <span class="badge b-purple" style="font-size:9px">مستنتج</span>' : ''}` : '';
+          return `<tr style="background:#f0f9ff">
+            <td colspan="9" style="text-align:right;font-size:10.5px;padding:3px 8px;color:#718096">${shiftInfo}</td>
+          </tr>
           <tr>
             <td>${d.dateKey}<br><small class="muted">${dayName(d.dateKey)}</small></td>
             <td>${d.timeIn || '—'}</td>
@@ -1191,7 +1267,8 @@ function viewReports(){
             <td>${d.lateness > 0 ? `<b style="color:#c53030">${formatMins(d.lateness)}</b>` : '0'}</td>
             <td>${d.status === 'أجازة' || d.status === 'غياب' || d.status === 'مهمة' ? '—' : (d.overtime > 0 ? `<b style="color:#2b6cb0">+${formatMins(d.overtime)}</b>` : (d.overtime < 0 ? `<b style="color:#c53030">${formatMins(d.overtime)}</b>` : '0'))}</td>
             <td><span class="badge ${d.status==='منتظم'?'b-green':d.status==='تأخير'?'b-red':d.status==='غياب'?'b-gray':d.status==='أجازة'?'b-blue':'b-orange'}">${d.status}</span></td>
-          </tr>`).join('');
+          </tr>`;
+        }).join('');
         return `<div class="card">
           <h3>👤 ${esc(r.emp.name)} — كود: ${esc(r.emp.code)}</h3>
           <div class="row" style="font-size:12.5px;gap:14px">
@@ -1260,6 +1337,7 @@ function exportExcel(){
         'الاسم': r.emp.name,
         'التاريخ': d.dateKey,
         'اليوم': dayName(d.dateKey),
+        'الشفت': d.shift ? `${d.shift.start} - ${d.shift.end}` : '',
         'دخول': d.timeIn || '',
         'خروج': d.timeOut || '',
         'ساعات': formatMins(d.workMins),
