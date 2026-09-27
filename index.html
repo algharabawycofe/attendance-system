@@ -246,9 +246,15 @@ const $ = id => document.getElementById(id);
 const showLoader = v => $('loader').style.display = v ? 'flex' : 'none';
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s==null?'':s).trim().toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/\s+/g,'');
-const today = () => new Date().toISOString().slice(0,10);
-const dayName = dk => DAYS[new Date(dk+'T00:00:00').getDay()];
 const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+
+/* ✅ FIX #2: date helpers use LOCAL time, not UTC */
+const localKey = d => {
+  const dt = (d instanceof Date) ? d : new Date(d);
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+};
+const today = () => localKey(new Date());
+const dayName = dk => DAYS[new Date(dk+'T00:00:00').getDay()];
 const fmtDate = d => d ? new Date(d).toLocaleDateString('ar-EG', { year:'numeric', month:'short', day:'numeric' }) : '—';
 
 function fmtMins(m){
@@ -335,7 +341,7 @@ function startLive(){
   ['daily','punches','employees','shifts','branches','users'].forEach(col => {
     unsubs.push(onSnapshot(collection(db, col), snap => {
       DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      if(currentUser && activePage !== 'reports' && activePage !== 'employee') refreshPage();
+      if(currentUser && !['reports','employee'].includes(activePage)) refreshPage();
     }));
   });
 }
@@ -452,9 +458,11 @@ function navigateTo(page){
   renderPage();
   $('mainContent').scrollTop = 0;
 }
+/* ✅ FIX #5: don't wipe form while a save is pending */
 function refreshPage(){
   const ae = document.activeElement;
-  if(ae && (ae.tagName === 'INPUT' || ae.tagName === 'SELECT' || ae.tagName === 'TEXTAREA')) return;
+  if(ae && ['INPUT','SELECT','TEXTAREA'].includes(ae.tagName)) return;
+  if(document.querySelector('.row-saving')) return;
   renderPage();
 }
 function renderPage(){
@@ -521,17 +529,21 @@ function renderDaily(){
         ${DB.branches.map(b => `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
       </select>
     </div>` : '';
-  const y = new Date(date+'T00:00:00'); y.setDate(y.getDate()-1);
-  const yn = new Date(date+'T00:00:00'); yn.setDate(yn.getDate()+1);
+  /* ✅ FIX #2: use local date keys for prev/next navigation */
+  const base = new Date(date+'T00:00:00');
+  const y = new Date(base); y.setDate(y.getDate()-1);
+  const yn = new Date(base); yn.setDate(yn.getDate()+1);
+  const yKey = localKey(y), ynKey = localKey(yn);
+  const tKey = today();
   const dateNav = `
     <div class="field" style="max-width:200px">
       <label>التاريخ</label>
       <input type="date" value="${date}" onchange="setDailyDate(this.value)">
     </div>
     <div class="date-nav" style="align-self:flex-end">
-      <button class="${date === y.toISOString().slice(0,10) ? 'active' : ''}" onclick="setDailyDate('${y.toISOString().slice(0,10)}')">أمس</button>
-      <button class="${date === today() ? 'active' : ''}" onclick="setDailyDate('${today()}')">اليوم</button>
-      <button class="${date === yn.toISOString().slice(0,10) ? 'active' : ''}" onclick="setDailyDate('${yn.toISOString().slice(0,10)}')">غداً</button>
+      <button class="${date === yKey ? 'active' : ''}" onclick="setDailyDate('${yKey}')">أمس</button>
+      <button class="${date === tKey ? 'active' : ''}" onclick="setDailyDate('${tKey}')">اليوم</button>
+      <button class="${date === ynKey ? 'active' : ''}" onclick="setDailyDate('${ynKey}')">غداً</button>
     </div>`;
   if(!bId){
     return `<div class="card"><div class="card-header"><div class="card-title">التسجيل اليومي</div></div><div class="form-row">${branchField}${dateNav}</div><div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">اختر الفرع</div></div></div>`;
@@ -611,10 +623,9 @@ function saveRow(empId){
     setTimeout(() => tr.classList.remove('row-saved'), 1500);
   }, 400);
 }
-async function persistRow(tr, empId){
-  const bId = tr.dataset.branch;
-  const date = tr.dataset.date;
-  const data = {
+function rowDataFromTr(tr, bId, date){
+  const empId = tr.dataset.empid;
+  return {
     branchId: bId, dateKey: date, empId,
     shiftId: tr.querySelector('.f-shift').value,
     timeIn: tr.querySelector('.f-in').value,
@@ -626,9 +637,19 @@ async function persistRow(tr, empId){
     updatedBy: currentUser.name,
     updatedAt: Date.now()
   };
-  const emp = DB.employees.find(e => e.id === empId);
+}
+function isRowEmpty(data, emp, bId){
   const defShift = emp?.shiftId || getBranch(bId)?.defaultShiftId || '';
-  const isEmpty = !data.timeIn && !data.timeOut && !data.notes && data.status === 'present' && data.permType === 'none' && !data.permHours && data.shiftId === defShift;
+  return !data.timeIn && !data.timeOut && !data.notes
+    && data.status === 'present' && data.permType === 'none'
+    && !data.permHours && data.shiftId === defShift;
+}
+async function persistRow(tr, empId){
+  const bId = tr.dataset.branch;
+  const date = tr.dataset.date;
+  const data = rowDataFromTr(tr, bId, date);
+  const emp = DB.employees.find(e => e.id === empId);
+  const isEmpty = isRowEmpty(data, emp, bId);
   const existing = DB.daily.find(d => d.branchId === bId && d.dateKey === date && d.empId === empId);
   try {
     if(isEmpty && existing){
@@ -643,42 +664,55 @@ async function persistRow(tr, empId){
     }
   } catch(e){ console.error(e); }
 }
+
+/* ✅ FIX #3: saveAll now uses a single atomic batch (with chunked fallback) */
 async function saveAll(bId, date){
   const rows = document.querySelectorAll('tr[data-empid]');
   if(!rows.length) return;
   showLoader(true);
   try {
-    rows.forEach(tr => clearTimeout(tr.__t));
+    // cancel any pending per-row timeouts
+    rows.forEach(tr => { clearTimeout(tr.__t); tr.classList.remove('row-saving'); });
+
     const old = DB.daily.filter(d => d.branchId === bId && d.dateKey === date);
-    for(const d of old) await fsDel('daily', d.id);
-    for(const tr of rows){
+    const newRecords = [];
+    rows.forEach(tr => {
       const empId = tr.dataset.empid;
       const emp = DB.employees.find(e => e.id === empId);
-      const defShift = emp?.shiftId || getBranch(bId)?.defaultShiftId || '';
-      const data = {
-        branchId: bId, dateKey: date, empId,
-        shiftId: tr.querySelector('.f-shift').value,
-        timeIn: tr.querySelector('.f-in').value,
-        timeOut: tr.querySelector('.f-out').value,
-        status: tr.querySelector('.f-status').value,
-        permType: tr.querySelector('.f-ptype').value,
-        permHours: num(tr.querySelector('.f-phours').value),
-        notes: tr.querySelector('.f-notes').value.trim(),
-        updatedBy: currentUser.name,
-        updatedAt: Date.now()
-      };
-      const isEmpty = !data.timeIn && !data.timeOut && !data.notes && data.status === 'present' && data.permType === 'none' && !data.permHours && data.shiftId === defShift;
-      if(isEmpty) continue;
-      await fsAdd('daily', data);
+      const data = rowDataFromTr(tr, bId, date);
+      if(isRowEmpty(data, emp, bId)) return;
+      newRecords.push(data);
+    });
+
+    const totalOps = old.length + newRecords.length;
+    if(totalOps <= 450){
+      const b = writeBatch(db);
+      old.forEach(d => b.delete(doc(db, 'daily', d.id)));
+      newRecords.forEach(data => b.set(doc(collection(db, 'daily')), data));
+      await b.commit();
+    } else {
+      // Chunked fallback (very large branch). Delete then add.
+      for(let i=0; i<old.length; i+=400){
+        const b = writeBatch(db);
+        old.slice(i, i+400).forEach(d => b.delete(doc(db, 'daily', d.id)));
+        await b.commit();
+      }
+      for(let i=0; i<newRecords.length; i+=400){
+        const b = writeBatch(db);
+        newRecords.slice(i, i+400).forEach(data => b.set(doc(collection(db, 'daily')), data));
+        await b.commit();
+      }
     }
+
     await loadAll();
     showLoader(false);
     renderPage();
   } catch(e){ showLoader(false); alert(e.message); }
 }
 async function copyFromYesterday(bId, date){
-  const y = new Date(date+'T00:00:00'); y.setDate(y.getDate()-1);
-  const yKey = y.toISOString().slice(0,10);
+  const base = new Date(date+'T00:00:00');
+  const y = new Date(base); y.setDate(y.getDate()-1);
+  const yKey = localKey(y);
   const prev = DB.daily.filter(d => d.branchId === bId && d.dateKey === yKey);
   if(!prev.length) return;
   if(!confirm(`نسخ ${prev.length} سجل من ${yKey}؟`)) return;
@@ -842,7 +876,7 @@ function renderShiftsTab(){
     <div class="form-row mt-3">
       <div class="field" style="max-width:260px">
         <label>تصفية</label>
-        <select onchange="UI.shiftBranchFilter=this.value;renderPage()">
+        <select onchange="setShiftBranchFilter(this.value)">
           <option value="">كل الفروع</option>
           ${DB.branches.map(b => `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
         </select>
@@ -850,6 +884,7 @@ function renderShiftsTab(){
     </div>
     ${list.length ? `<div class="table-wrap mt-3"><table><thead><tr><th>الاسم</th><th>الفرع</th><th>الوقت</th><th>ساعات</th><th>سماح</th><th>الراحة</th><th>الموظفين</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="empty"><div class="empty-icon">🕐</div><div class="empty-title">لا توجد شفتات</div></div>`}`;
 }
+function setShiftBranchFilter(v){ UI.shiftBranchFilter = v; renderPage(); }
 function autoShiftHours(){
   const s = $('shStart').value, e = $('shEnd').value;
   if(!s || !e) return;
@@ -951,14 +986,14 @@ function renderEmployeesTab(){
     <div class="form-row mt-3">
       <div class="field" style="max-width:240px">
         <label>الفرع</label>
-        <select onchange="UI.empBranchFilter=this.value;renderPage()">
+        <select onchange="setEmpBranchFilter(this.value)">
           <option value="">كل الفروع</option>
           ${DB.branches.map(b => `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
         </select>
       </div>
       <div class="field" style="max-width:200px">
         <label>الحالة</label>
-        <select onchange="UI.empActiveFilter=this.value;renderPage()">
+        <select onchange="setEmpActiveFilter(this.value)">
           <option value="active" ${activeFilter === 'active' ? 'selected' : ''}>النشطين</option>
           <option value="all" ${activeFilter === 'all' ? 'selected' : ''}>الكل</option>
           <option value="inactive" ${activeFilter === 'inactive' ? 'selected' : ''}>المنتهيين</option>
@@ -971,6 +1006,8 @@ function renderEmployeesTab(){
         <tbody>${rows}</tbody></table>
       </div>` : `<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">لا يوجد موظفين</div></div>`}`;
 }
+function setEmpBranchFilter(v){ UI.empBranchFilter = v; renderPage(); }
+function setEmpActiveFilter(v){ UI.empActiveFilter = v; renderPage(); }
 function updateEmpShiftOptions(){
   const bId = $('empBAdd').value;
   const sel = $('empShiftSel');
@@ -1162,15 +1199,21 @@ async function showEmpDetails(empId){
   `);
 }
 
+/* ✅ FIX #6: handle employee transfer when opening history */
 function openEmpHistory(empId){
   const emp = DB.employees.find(e => e.id === empId);
-  if(emp){
-    UI.empBranchFilter = emp.branchId;
-    UI.empReportId = empId;
-  } else {
-    UI.empReportId = empId;
-  }
+  UI.empReportId = empId;
   lastEmpReport = null;
+  if(emp){
+    const validBranch = DB.branches.some(b => b.id === emp.branchId);
+    if(validBranch){
+      UI.empBranchFilter = emp.branchId;
+    } else {
+      const withData = DB.daily.find(d => d.empId === empId)?.branchId
+                    || DB.punches.find(p => p.empId === empId)?.branchId;
+      if(withData) UI.empBranchFilter = withData;
+    }
+  }
   navigateTo('employee');
 }
 
@@ -1276,7 +1319,7 @@ async function handleUpload(ev){
         if(!dtStr){ skipped++; return; }
         const dt = parseDate(dtStr);
         if(!dt){ skipped++; return; }
-        const dateKey = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+        const dateKey = localKey(dt);
         let emp = null;
         if(code){
           emp = emps.find(e => norm(e.code) === norm(code) && norm(e.name) === norm(name)) ||
@@ -1302,7 +1345,7 @@ async function handleUpload(ev){
 
 function detectShift(empId, excludeDate){
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 45);
-  const cutoffKey = cutoff.toISOString().slice(0,10);
+  const cutoffKey = localKey(cutoff);
   const ps = DB.punches.filter(p => p.empId === empId && p.dateKey !== excludeDate && p.dateKey >= cutoffKey);
   if(ps.length < 4) return null;
   const byDay = {};
@@ -1364,7 +1407,8 @@ function calcDay(emp, dateKey, dailyRec, punches, branchId){
   if(!timeIn || !timeOut) return mkDay(dateKey, 'بصمة ناقصة', 0, 0, 0, 0, 0, sh, timeIn, timeOut);
   const dtIn = dtAt(dateKey, timeIn);
   let dtOut = dtAt(dateKey, timeOut);
-  if(dtOut <= dtIn) dtOut = new Date(dtOut.getTime() + 86400000);
+  /* ✅ FIX #4: only roll to next day if out is strictly BEFORE in (not equal) */
+  if(dtOut.getTime() < dtIn.getTime()) dtOut = new Date(dtOut.getTime() + 86400000);
   const workMins = Math.round((dtOut - dtIn) / 60000);
   const shiftMins = Math.round(sh.hours * 60);
   let excusedMins = 0;
@@ -1594,7 +1638,7 @@ function exportReport(){
   const ws = XLSX.utils.json_to_sheet(out);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'تقرير');
-  XLSX.writeFile(wb, `تقرير_${branchName(lastReport.branchId)}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  XLSX.writeFile(wb, `تقرير_${branchName(lastReport.branchId)}_${today()}.xlsx`);
 }
 
 /* ============ سجل الموظف الكامل ============ */
@@ -1603,7 +1647,6 @@ function renderEmployeeHistory(){
   const empId = UI.empReportId || '';
   const emp = empId ? DB.employees.find(e => e.id === empId) : null;
 
-  // ⭐ موظفو الفرع المختار (من التسجيلات + البصمات + الحاليين)
   let branchEmps = [];
   if(filterBranchId){
     const empIds = new Set();
@@ -1618,7 +1661,7 @@ function renderEmployeeHistory(){
 
   const branchField = `<div class="field" style="max-width:300px">
     <label>1️⃣ الفرع</label>
-    <select onchange="UI.empBranchFilter=this.value;UI.empReportId='';lastEmpReport=null;renderPage()">
+    <select onchange="selectEmpBranch(this.value)">
       <option value="">— اختر الفرع —</option>
       ${DB.branches.map(b => `<option value="${b.id}" ${filterBranchId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
     </select>
@@ -1626,7 +1669,7 @@ function renderEmployeeHistory(){
 
   const empField = filterBranchId ? `<div class="field" style="max-width:340px">
     <label>2️⃣ الموظف (${branchEmps.length})</label>
-    <select onchange="UI.empReportId=this.value;lastEmpReport=null;renderPage()">
+    <select onchange="selectEmployee(this.value)">
       <option value="">— اختر الموظف —</option>
       ${branchEmps.map(e => `<option value="${e.id}" ${empId === e.id ? 'selected' : ''}>${esc(e.name)} — ${esc(e.code)}${e.active === false ? ' ⛔' : ''}</option>`).join('')}
     </select>
@@ -1679,7 +1722,7 @@ function renderEmployeeHistory(){
           return `<div class="branch-section" style="cursor:pointer;transition:all .15s;padding:14px"
             onmouseover="this.style.borderColor='var(--primary)';this.style.background='#eff6ff'"
             onmouseout="this.style.borderColor='var(--gray-200)';this.style.background='#fff'"
-            onclick="UI.empReportId='${e.id}';lastEmpReport=null;renderPage()">
+            onclick="selectEmployee('${e.id}')">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
               <div style="flex:1">
                 <div style="font-size:15px;font-weight:700;margin-bottom:4px">${esc(e.name)}</div>
@@ -1862,7 +1905,7 @@ function renderEmployeeHistory(){
   <div class="card">
     <div class="card-header">
       <div><div class="card-title">📋 التفاصيل حسب الفرع</div></div>
-      <button class="btn btn-outline btn-sm" onclick="UI.empReportId='';lastEmpReport=null;renderPage()">← رجوع للقائمة</button>
+      <button class="btn btn-outline btn-sm" onclick="clearEmpSelection()">← رجوع للقائمة</button>
     </div>
     ${branchesHtml}
   </div>`;
@@ -2000,8 +2043,13 @@ function exportEmployeeReport(){
   });
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dailyRows), 'الأيام التفصيلية');
 
-  XLSX.writeFile(wb, `سجل_${emp.name}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  XLSX.writeFile(wb, `سجل_${emp.name}_${today()}.xlsx`);
 }
+
+/* ✅ FIX #1: inline-handler-safe setters (avoid ReferenceError for UI/lastEmpReport) */
+function selectEmpBranch(v){ UI.empBranchFilter = v; UI.empReportId = ''; lastEmpReport = null; renderPage(); }
+function selectEmployee(id){ UI.empReportId = id; lastEmpReport = null; renderPage(); }
+function clearEmpSelection(){ UI.empReportId = ''; lastEmpReport = null; renderPage(); }
 
 Object.assign(window, {
   doLogin, doLogout, toggleSidebar, navigateTo, renderPage,
@@ -2012,7 +2060,10 @@ Object.assign(window, {
   handleUpload, generateReport, exportReport, viewBranchToday,
   transferEmp, confirmTransfer, deactivateEmp, confirmDeactivate, reactivateEmp,
   showEmpDetails, closeModal, openEmpHistory,
-  generateEmployeeReport, exportEmployeeReport
+  generateEmployeeReport, exportEmployeeReport,
+  // new helpers
+  selectEmpBranch, selectEmployee, clearEmpSelection,
+  setShiftBranchFilter, setEmpBranchFilter, setEmpActiveFilter
 });
 window.$ = $;
 
