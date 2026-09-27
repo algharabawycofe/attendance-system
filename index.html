@@ -1165,7 +1165,7 @@ async function showEmpDetails(empId){
 function openEmpHistory(empId){
   const emp = DB.employees.find(e => e.id === empId);
   if(emp){
-    UI.empBranchFilter = emp.branchId; // نجيب الفرع الحالي
+    UI.empBranchFilter = emp.branchId;
     UI.empReportId = empId;
   } else {
     UI.empReportId = empId;
@@ -1597,144 +1597,145 @@ function exportReport(){
   XLSX.writeFile(wb, `تقرير_${branchName(lastReport.branchId)}_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-/* =========================================================
-   سجل الموظف - الفلتر: فرع أولاً ثم موظف
-   ========================================================= */
+/* ============ سجل الموظف الكامل ============ */
 function renderEmployeeHistory(){
   const filterBranchId = UI.empBranchFilter || '';
   const empId = UI.empReportId || '';
   const emp = empId ? DB.employees.find(e => e.id === empId) : null;
 
-  // الفلتر الأول: الفرع
-  const branchField = `<div class="field" style="max-width:260px">
-    <label>الفرع</label>
-    <select onchange="UI.empBranchFilter=this.value;UI.empReportId='';lastEmpReport=null;renderPage()">
-      <option value="">اختر الفرع</option>
-      ${DB.branches.map(b => `<option value="${b.id}" ${filterBranchId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
-    </select>
-  </div>`;
-
-  // الفلتر الثاني: الموظف (معتمد على الفرع المختار)
-  // نعرض كل الموظفين اللي عنده سجلات في الفرع ده (حاليين أو سابقين)
-  let empOptions = [];
+  // ⭐ موظفو الفرع المختار (من التسجيلات + البصمات + الحاليين)
+  let branchEmps = [];
   if(filterBranchId){
-    const empIdsInBranch = new Set();
-    // من التسجيلات اليومية
-    DB.daily.forEach(d => { if(d.branchId === filterBranchId) empIdsInBranch.add(d.empId); });
-    // من البصمات
-    DB.punches.forEach(p => { if(p.branchId === filterBranchId) empIdsInBranch.add(p.empId); });
-    // من الموظفين الحاليين في الفرع
-    DB.employees.forEach(e => { if(e.branchId === filterBranchId) empIdsInBranch.add(e.id); });
-    empOptions = Array.from(empIdsInBranch)
+    const empIds = new Set();
+    DB.daily.forEach(d => { if(d.branchId === filterBranchId) empIds.add(d.empId); });
+    DB.punches.forEach(p => { if(p.branchId === filterBranchId) empIds.add(p.empId); });
+    DB.employees.forEach(e => { if(e.branchId === filterBranchId) empIds.add(e.id); });
+    branchEmps = Array.from(empIds)
       .map(id => DB.employees.find(e => e.id === id))
       .filter(Boolean)
       .sort((a,b) => a.name.localeCompare(b.name,'ar'));
   }
 
-  const empField = `<div class="field" style="max-width:340px">
-    <label>الموظف</label>
-    <select onchange="UI.empReportId=this.value;lastEmpReport=null;renderPage()" ${!filterBranchId ? 'disabled' : ''}>
-      <option value="">${filterBranchId ? 'اختر الموظف' : 'اختر الفرع أولاً'}</option>
-      ${empOptions.map(e => `<option value="${e.id}" ${empId === e.id ? 'selected' : ''}>${esc(e.name)} — ${esc(e.code)}${e.active === false ? ' (منتهي)' : ''}</option>`).join('')}
+  const branchField = `<div class="field" style="max-width:300px">
+    <label>1️⃣ الفرع</label>
+    <select onchange="UI.empBranchFilter=this.value;UI.empReportId='';lastEmpReport=null;renderPage()">
+      <option value="">— اختر الفرع —</option>
+      ${DB.branches.map(b => `<option value="${b.id}" ${filterBranchId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
     </select>
   </div>`;
 
-  const controls = `<div class="form-row">
-    ${branchField}
-    ${empField}
-    <div class="field" style="max-width:170px"><label>من</label><input type="date" id="empRepFrom" value="${UI.empRepFrom || ''}"></div>
-    <div class="field" style="max-width:170px"><label>إلى</label><input type="date" id="empRepTo" value="${UI.empRepTo || ''}"></div>
-    <button class="btn btn-primary" onclick="generateEmployeeReport()" ${!empId ? 'disabled' : ''}>عرض</button>
-    <button class="btn btn-outline" onclick="exportEmployeeReport()" ${!lastEmpReport ? 'disabled' : ''}>Excel</button>
+  const empField = filterBranchId ? `<div class="field" style="max-width:340px">
+    <label>2️⃣ الموظف (${branchEmps.length})</label>
+    <select onchange="UI.empReportId=this.value;lastEmpReport=null;renderPage()">
+      <option value="">— اختر الموظف —</option>
+      ${branchEmps.map(e => `<option value="${e.id}" ${empId === e.id ? 'selected' : ''}>${esc(e.name)} — ${esc(e.code)}${e.active === false ? ' ⛔' : ''}</option>`).join('')}
+    </select>
+  </div>` : '';
+
+  const dateFields = empId ? `
+    <div class="field" style="max-width:160px"><label>من</label><input type="date" id="empRepFrom" value="${UI.empRepFrom || ''}"></div>
+    <div class="field" style="max-width:160px"><label>إلى</label><input type="date" id="empRepTo" value="${UI.empRepTo || ''}"></div>
+    <button class="btn btn-primary" onclick="generateEmployeeReport()">🔄 تحديث</button>
+    <button class="btn btn-outline" onclick="exportEmployeeReport()" ${!lastEmpReport ? 'disabled' : ''}>📥 Excel</button>
+  ` : '';
+
+  const header = `<div class="card">
+    <div class="card-header">
+      <div><div class="card-title">👤 سجل الموظف الكامل</div><div class="card-subtitle">اختر الفرع ثم الموظف لعرض التاريخ الكامل</div></div>
+    </div>
+    <div class="form-row">${branchField}${empField}${dateFields}</div>
   </div>`;
 
-  // لو مفيش فرع مختار
   if(!filterBranchId){
-    return `<div class="card">
-      <div class="card-header">
-        <div><div class="card-title">سجل الموظف الكامل</div><div class="card-subtitle">اختر الفرع ثم الموظف</div></div>
+    return header + `<div class="card">
+      <div class="empty">
+        <div class="empty-icon">🏢</div>
+        <div class="empty-title">اختر الفرع أولاً</div>
+        <div class="muted" style="margin-top:8px">ثم اختر الموظف لعرض سجله الكامل</div>
       </div>
-      ${controls}
-      <div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">اختر الفرع أولاً</div><div class="muted" style="margin-top:6px">ثم اختر الموظف لعرض سجله الكامل</div></div>
     </div>`;
   }
 
-  // لو فرع مختار بس مفيش موظف
   if(!empId){
-    const branchEmps = empOptions;
-    const empsTable = branchEmps.length ? `
-      <div class="table-wrap mt-3">
-        <table>
-          <thead><tr><th>الرقم</th><th>الاسم</th><th>الحالة</th><th>الفرع</th><th>إجراء</th></tr></thead>
-          <tbody>
-            ${branchEmps.map(e => `
-              <tr>
-                <td><span class="badge b-gray">${esc(e.code)}</span></td>
-                <td><b>${esc(e.name)}</b></td>
-                <td>${e.active === false ? '<span class="badge b-red">منتهي</span>' : '<span class="badge b-green">نشط</span>'}</td>
-                <td>${esc(branchName(e.branchId))}</td>
-                <td><button class="btn btn-primary btn-sm" onclick="UI.empReportId='${e.id}';lastEmpReport=null;renderPage()">فتح السجل</button></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>` : `<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">لا يوجد موظفين في هذا الفرع</div></div>`;
-
-    return `<div class="card">
+    if(!branchEmps.length){
+      return header + `<div class="card">
+        <div class="empty">
+          <div class="empty-icon">👥</div>
+          <div class="empty-title">لا يوجد موظفين في هذا الفرع</div>
+          <div class="muted" style="margin-top:8px">اذهب للإعدادات → الموظفين → استورد موظفين لهذا الفرع</div>
+        </div>
+      </div>`;
+    }
+    return header + `<div class="card">
       <div class="card-header">
-        <div><div class="card-title">سجل الموظف الكامل</div><div class="card-subtitle">${branchEmps.length} موظف في ${esc(branchName(filterBranchId))}</div></div>
+        <div><div class="card-title">👥 موظفي ${esc(branchName(filterBranchId))}</div><div class="card-subtitle">${branchEmps.length} موظف — اضغط على أي واحد لعرض سجله</div></div>
       </div>
-      ${controls}
-    </div>
-    <div class="card">
-      <div class="card-header"><div class="card-title">موظفي الفرع</div></div>
-      ${empsTable}
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
+        ${branchEmps.map(e => {
+          const dailyCount = DB.daily.filter(d => d.empId === e.id).length;
+          const punchCount = DB.punches.filter(p => p.empId === e.id).length;
+          const transCount = (e.transferHistory || []).length;
+          const isInactive = e.active === false;
+          return `<div class="branch-section" style="cursor:pointer;transition:all .15s;padding:14px"
+            onmouseover="this.style.borderColor='var(--primary)';this.style.background='#eff6ff'"
+            onmouseout="this.style.borderColor='var(--gray-200)';this.style.background='#fff'"
+            onclick="UI.empReportId='${e.id}';lastEmpReport=null;renderPage()">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+              <div style="flex:1">
+                <div style="font-size:15px;font-weight:700;margin-bottom:4px">${esc(e.name)}</div>
+                <div class="muted">رقم البصمة: ${esc(e.code)}</div>
+                <div class="muted">الفرع الحالي: ${esc(branchName(e.branchId))}</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+                  <span class="badge b-blue">${dailyCount} تسجيل</span>
+                  <span class="badge b-gray">${punchCount} بصمة</span>
+                  ${transCount ? `<span class="badge b-purple">${transCount} نقل</span>` : ''}
+                </div>
+              </div>
+              <span class="badge ${isInactive ? 'b-red' : 'b-green'}">${isInactive ? 'منتهي' : 'نشط'}</span>
+            </div>
+            <button class="btn btn-primary btn-sm" style="width:100%;margin-top:12px">عرض السجل الكامل →</button>
+          </div>`;
+        }).join('')}
+      </div>
     </div>`;
   }
 
   if(!emp){
-    return `<div class="card">${controls}<div class="empty">الموظف غير موجود</div></div>`;
+    return header + `<div class="card"><div class="empty"><div class="empty-icon">❓</div><div class="empty-title">الموظف غير موجود</div></div></div>`;
   }
 
-  // ملخص الموظف
   const empInfo = `
     <div class="card" style="background:linear-gradient(135deg,#1e40af,#2563eb);color:#fff">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
         <div>
-          <div style="font-size:20px;font-weight:800">${esc(emp.name)}</div>
+          <div style="font-size:22px;font-weight:800">${esc(emp.name)}</div>
           <div style="font-size:13px;opacity:.85;margin-top:4px">رقم البصمة: ${esc(emp.code)}</div>
         </div>
         <div style="text-align:left">
-          <div style="font-size:13px;opacity:.85">الحالة الحالية</div>
-          <div style="font-size:15px;font-weight:700">${emp.active === false ? 'منتهي' : 'نشط'}</div>
-          ${emp.active === false ? `<div style="font-size:12px;opacity:.85;margin-top:2px">حتى ${fmtDate(emp.endDate)}</div>` : ''}
+          <div style="font-size:12px;opacity:.85">الحالة</div>
+          <div style="font-size:16px;font-weight:700">${emp.active === false ? 'منتهي' : 'نشط'}</div>
+          ${emp.active === false ? `<div style="font-size:12px;opacity:.85">حتى ${fmtDate(emp.endDate)}</div>` : ''}
           <div style="font-size:12px;opacity:.85;margin-top:4px">الفرع الحالي: ${esc(branchName(emp.branchId))}</div>
         </div>
       </div>
     </div>`;
 
-  // سجل التنقلات
   const history = emp.transferHistory || [];
-  let timelineHtml = '';
-  if(history.length){
-    timelineHtml = `<div class="card">
-      <div class="card-header"><div class="card-title">سجل التنقلات</div></div>
-      <div class="timeline">
-        ${history.map(h => `
-          <div class="timeline-item">
-            <div style="font-weight:700">${esc(h.fromName)} ← ${esc(h.toName)}</div>
-            <div class="muted">${fmtDate(h.date)}${h.reason ? ` — ${esc(h.reason)}` : ''}</div>
-            <div class="muted" style="font-size:11px">بواسطة: ${esc(h.by || '—')}</div>
-          </div>
-        `).join('')}
-      </div>
-    </div>`;
-  }
+  const timelineHtml = history.length ? `<div class="card">
+    <div class="card-header"><div class="card-title">🔄 سجل التنقلات (${history.length})</div></div>
+    <div class="timeline">
+      ${history.map(h => `
+        <div class="timeline-item">
+          <div style="font-weight:700">${esc(h.fromName)} ← ${esc(h.toName)}</div>
+          <div class="muted">${fmtDate(h.date)}${h.reason ? ` — ${esc(h.reason)}` : ''}</div>
+          <div class="muted" style="font-size:11px">بواسطة: ${esc(h.by || '—')}</div>
+        </div>
+      `).join('')}
+    </div>
+  </div>` : '';
 
-  // حساب الأيام مقسمة حسب الفرع
   const from = UI.empRepFrom || '';
   const to = UI.empRepTo || '';
-
   const dayBranchMap = {};
   DB.daily.forEach(d => {
     if(d.empId !== emp.id) return;
@@ -1748,7 +1749,6 @@ function renderEmployeeHistory(){
     if(to && p.dateKey > to) return;
     if(!dayBranchMap[p.dateKey]) dayBranchMap[p.dateKey] = p.branchId;
   });
-
   const byBranch = {};
   Object.keys(dayBranchMap).forEach(dk => {
     (byBranch[dayBranchMap[dk]] = byBranch[dayBranchMap[dk]] || []).push(dk);
@@ -1789,20 +1789,19 @@ function renderEmployeeHistory(){
   });
   const overColor = grand.overtime >= 0 ? 'var(--primary)' : 'var(--danger)';
 
-  const grandSummary = `
-    <div class="card">
-      <div class="card-header">
-        <div><div class="card-title">الإجمالي الكامل</div><div class="card-subtitle">${from || '—'} → ${to || '—'}</div></div>
-      </div>
-      <div class="stats">
-        <div class="stat"><div class="stat-icon blue">📅</div><div class="stat-value">${grand.days}</div><div class="stat-label">أيام</div></div>
-        <div class="stat"><div class="stat-icon green">✅</div><div class="stat-value">${grand.present}</div><div class="stat-label">حضور</div></div>
-        <div class="stat"><div class="stat-icon red">❌</div><div class="stat-value">${grand.absent}</div><div class="stat-label">غياب</div></div>
-        <div class="stat"><div class="stat-icon blue">🏖</div><div class="stat-value">${grand.leave}</div><div class="stat-label">أجازة</div></div>
-        <div class="stat"><div class="stat-icon orange">⏰</div><div class="stat-value" style="font-size:16px">${fmtMins(grand.lateness)}</div><div class="stat-label">تأخير</div></div>
-        <div class="stat"><div class="stat-icon purple">⚖️</div><div class="stat-value" style="font-size:16px;color:${overColor}">${grand.overtime>=0?'+':''}${fmtMins(grand.overtime)}</div><div class="stat-label">إضافي/عجز</div></div>
-      </div>
-    </div>`;
+  const grandSummary = `<div class="card">
+    <div class="card-header">
+      <div><div class="card-title">📊 الإجمالي الكامل</div><div class="card-subtitle">${from || 'البداية'} → ${to || 'الآن'}</div></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-icon blue">📅</div><div class="stat-value">${grand.days}</div><div class="stat-label">أيام</div></div>
+      <div class="stat"><div class="stat-icon green">✅</div><div class="stat-value">${grand.present}</div><div class="stat-label">حضور</div></div>
+      <div class="stat"><div class="stat-icon red">❌</div><div class="stat-value">${grand.absent}</div><div class="stat-label">غياب</div></div>
+      <div class="stat"><div class="stat-icon blue">🏖</div><div class="stat-value">${grand.leave}</div><div class="stat-label">أجازة</div></div>
+      <div class="stat"><div class="stat-icon orange">⏰</div><div class="stat-value" style="font-size:16px">${fmtMins(grand.lateness)}</div><div class="stat-label">تأخير</div></div>
+      <div class="stat"><div class="stat-icon purple">⚖️</div><div class="stat-value" style="font-size:16px;color:${overColor}">${grand.overtime>=0?'+':''}${fmtMins(grand.overtime)}</div><div class="stat-label">إضافي/عجز</div></div>
+    </div>
+  </div>`;
 
   let branchesHtml = '';
   if(branchStats.length === 0){
@@ -1856,18 +1855,15 @@ function renderEmployeeHistory(){
     }).join('');
   }
 
-  return `<div class="card">
-    <div class="card-header">
-      <div><div class="card-title">سجل الموظف الكامل</div><div class="card-subtitle">تاريخ شامل عبر كل الفروع</div></div>
-      <button class="btn btn-outline btn-sm" onclick="UI.empReportId='';lastEmpReport=null;renderPage()">تغيير الموظف</button>
-    </div>
-    ${controls}
-  </div>
+  return `${header}
   ${empInfo}
   ${timelineHtml}
   ${grandSummary}
   <div class="card">
-    <div class="card-header"><div class="card-title">التفاصيل حسب الفرع</div></div>
+    <div class="card-header">
+      <div><div class="card-title">📋 التفاصيل حسب الفرع</div></div>
+      <button class="btn btn-outline btn-sm" onclick="UI.empReportId='';lastEmpReport=null;renderPage()">← رجوع للقائمة</button>
+    </div>
     ${branchesHtml}
   </div>`;
 }
@@ -1943,7 +1939,6 @@ function exportEmployeeReport(){
   const { emp, from, to, branchStats, grand, transferHistory } = lastEmpReport;
   const wb = XLSX.utils.book_new();
 
-  // صفحة 1: الملخص
   const summaryRows = [];
   summaryRows.push({ 'البند': 'الاسم', 'القيمة': emp.name });
   summaryRows.push({ 'البند': 'رقم البصمة', 'القيمة': emp.code });
@@ -1971,7 +1966,6 @@ function exportEmployeeReport(){
   }
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), 'الملخص');
 
-  // صفحة 2: حسب الفرع
   const branchRows = branchStats.map(b => ({
     'الفرع': b.branchName,
     'من': b.firstDate,
@@ -1986,7 +1980,6 @@ function exportEmployeeReport(){
   }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(branchRows), 'حسب الفرع');
 
-  // صفحة 3: الأيام التفصيلية
   const dailyRows = [];
   branchStats.forEach(b => {
     b.days.forEach(d => {
