@@ -744,7 +744,7 @@ async function copyFromYesterday(bId, date){
 }
 
 /* ============================================================
-   ✅ أدوات التعريب — تحويل الأرقام والأسماء والتواريخ للعربية
+   أدوات مساعدة — تحويل الأرقام العربية والتواريخ
    ============================================================ */
 
 const AR_DIGITS = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
@@ -752,11 +752,6 @@ const AR_DIGITS = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
 /** تحويل الأرقام إلى أرقام عربية (٠-٩) */
 function arNum(v){
   return String(v==null?'':v).replace(/[0-9]/g, d => AR_DIGITS[+d]);
-}
-
-/** تحويل المدة إلى نص عربي بأرقام عربية */
-function fmtMinsAr(m){
-  return arNum(fmtMins(m));
 }
 
 /** تاريخ كامل بالعربي: الأحد ٢٧ سبتمبر ٢٠٢٦ */
@@ -770,120 +765,11 @@ function fmtDateArFull(dateKey){
   return `${day} ${arNum(d.getDate())} ${month} ${arNum(d.getFullYear())}`.replace(/\s+/g,' ');
 }
 
-/** تحويل وقت HH:MM إلى صيغة عربية: ٩:٠٥ ص */
-function arTime(hm){
-  if(!hm) return '—';
-  const parts = String(hm).split(':');
-  let h = parseInt(parts[0], 10);
-  const m = parseInt(parts[1] || '0', 10);
-  if(isNaN(h)) return '—';
-  const period = h < 12 ? 'ص' : 'م';
-  let h12 = h % 12;
-  if(h12 === 0) h12 = 12;
-  return `${arNum(h12)}:${arNum(String(m).padStart(2,'0'))} ${period}`;
-}
-
-/* ====== قاموس الأسماء الشائعة (إنجليزي ← عربي) ====== */
-const AR_NAME_DICT = {
-  mohamed:'محمد', mohammed:'محمد', muhammad:'محمد', mohamad:'محمد', muhammed:'محمد', mhmd:'محمد',
-  ahmed:'أحمد', ahmad:'أحمد', ahmd:'أحمد',
-  mahmoud:'محمود', mahmud:'محمود', mahmod:'محمود',
-  mustafa:'مصطفى', mostafa:'مصطفى', moustafa:'مصطفى', mustapha:'مصطفى',
-  ali:'علي', aly:'علي', omar:'عمر', umar:'عمر',
-  khaled:'خالد', khalid:'خالد', hassan:'حسن', hasan:'حسن',
-  hussein:'حسين', hussain:'حسين', husein:'حسين', husain:'حسين',
-  ibrahim:'إبراهيم', ebrahim:'إبراهيم', brahim:'إبراهيم',
-  youssef:'يوسف', yousef:'يوسف', yusuf:'يوسف', joseph:'يوسف', yousif:'يوسف',
-  karim:'كريم', kareem:'كريم', tarek:'طارق', tarik:'طارق', tarek2:'طارق',
-  adel:'عادل', amr:'عمرو', hany:'هاني', hani:'هاني',
-  samer:'سامر', samir:'سمير', sami:'سامي', nader:'نادر', nadir:'نادر', nabil:'نبيل',
-  waleed:'وليد', walid:'وليد', ashraf:'أشرف', atef:'عاطف', ayman:'أيمن',
-  gamal:'جمال', jamal:'جمال', hazem:'حازم', hisham:'هشام', magdy:'مجدي',
-  maged:'ماجد', majed:'ماجد', osama:'أسامة', ramy:'رامي', rami:'رامي',
-  sherif:'شريف', sharif:'شريف', tamer:'تامر', wael:'وائل',
-  yehia:'يحيى', yahia:'يحيى', yahya:'يحيى',
-  abdullah:'عبدالله', abdallah:'عبدالله', abdalla:'عبدالله',
-  abdelrahman:'عبدالرحمن', abdulrahman:'عبدالرحمن', abdulrhman:'عبدالرحمن',
-  abdelaziz:'عبدالعزيز', abdulaziz:'عبدالعزيز',
-  abdelsalam:'عبدالسلام', abdulhamid:'عبدالحميد',
-  abdo:'عبده', abdel:'عبد', salah:'صلاح', saleh:'صالح', said:'سعيد', sayed:'سيد',
-  fares:'فارس', faris:'فارس', fady:'فادي', fadi:'فادي', fouad:'فؤاد', fuad:'فؤاد',
-  nasser:'ناصر', naser:'ناصر', nasr:'نصر', rafat:'رأفت', ragab:'رجاء',
-  rashed:'راشد', rashad:'رشاد', samih:'صامويل', shaaban:'شعبان',
-  adel2:'عادل', zaki:'زكي', zakaria:'زكريا', ramadan:'رمضان',
-  mokhtar:'مختار', moustafa2:'مصطفى', sabry:'صبري', safwat:'صفوت',
-  shaban:'شعبان', sobhy:'صبحي', taher:'طاهر', talaat:'طلعت', thabet:'ثابت',
-  galal:'جلال', gamil:'جميل', gamal2:'جمال', helmy:'حلمي', kamal:'كمال',
-  khairy:'خيري', lotfy:'لطفي', mabrouk:'مبروك', mahrous:'محرص',
-  nour:'نور', noor:'نور', nourhan:'نورهان',
-  fatma:'فاطمة', fatima:'فاطمة', fatema:'فاطمة', aisha:'عائشة', aya:'آية',
-  maryam:'مريم', mariam:'مريم', miriam:'مريم', meriam:'مريم',
-  sara:'سارة', sarah:'سارة', nora:'نورة', noura:'نورة',
-  huda:'هدى', hoda:'هدى', mona:'منى', muna:'منى', mouna:'منى',
-  amira:'أميرة', amera:'أميرة', asmaa:'أسماء', asma:'أسماء',
-  dina:'دينا', rana:'رنا', reem:'ريم', rim:'ريم', salma:'سلمى',
-  yasmin:'ياسمين', yasmeen:'ياسمين', yasmen:'ياسمين',
-  heba:'هبة', hiba:'هبة', nada:'ندى', neda:'ندى',
-  shaimaa:'شيماء', shaima:'شيماء', walaa:'ولاء', wala:'ولاء',
-  eman:'إيمان', iman:'إيمان', amal:'أمل', hanan:'حنان', suha:'سها',
-  layla:'ليلى', laila:'ليلى', nadia:'نادية', nadya:'نادية',
-  rania:'رانيا', ranya:'رانيا', samar:'سمر', sana:'سناء', sanaa:'سناء',
-  soha:'سها', tahani:'تهاني', wafaa:'وفاء', wafa:'وفاء', zahra:'زهراء',
-  zeinab:'زينب', zainab:'زينب', zaynab:'زينب', nihal:'نهال', naglaa:'نجلاء',
-  nesma:'نسمة', nesreen:'نسرين', dalia:'داليا', dalya:'داليا',
-  ghada:'غادة', hala:'هالة', hind:'هند', iman2:'إيمان', jana:'جنى',
-  khadija:'خديجة', lamia:'لمياء', madiha:'مديحة', magda:'ماجدة',
-  maha:'مها', malak:'ملك', marwa:'مروة', maya:'مايا', menna:'منة',
-  nabila:'نبيلة', nahed:'ناهد', rania2:'رانيا', reham:'ريهام',
-  sabreen:'صابرين', safaa:'صفاء', sahar:'سحر', salwa:'سلوى',
-  shahd:'شهد', suzan:'سوزان', tina:'تينا', wala2:'ولاء', yara:'يارا'
-};
-
-/* ====== قواعد النقل الصوتي (للأسماء غير الموجودة في القاموس) ====== */
-const TRANSLIT_RULES = [
-  ['kh','خ'],['sh','ش'],['th','ث'],['gh','غ'],['dh','ذ'],['ch','ش'],['ph','ف'],
-  ['aa','ا'],['ee','ي'],['oo','و'],['ou','و'],['ei','ي'],['ai','اي'],['ay','اي'],
-  ['a','ا'],['b','ب'],['c','ك'],['d','د'],['e','ي'],['f','ف'],['g','ج'],['h','ه'],
-  ['i','ي'],['j','ج'],['k','ك'],['l','ل'],['m','م'],['n','ن'],['o','و'],['p','ب'],
-  ['q','ق'],['r','ر'],['s','س'],['t','ت'],['u','و'],['v','ف'],['w','و'],['x','كس'],
-  ['y','ي'],['z','ز']
-];
-
-function translitWord(w){
-  let out = '', i = 0;
-  while(i < w.length){
-    let matched = false;
-    for(const [en, ar] of TRANSLIT_RULES){
-      if(w.startsWith(en, i)){ out += ar; i += en.length; matched = true; break; }
-    }
-    if(!matched) i++;
-  }
-  return out || w;
-}
-
-/**
- * تحويل الاسم الإنجليزي إلى عربي.
- * - لو الاسم عربي أصلاً → يرجعه كما هو
- * - لو موجود في القاموس → يرجعه بالعربي الصحيح
- * - غير كده → نقل صوتي تقريبي
- */
-function arabizeName(name){
-  const s = String(name == null ? '' : name).trim();
-  if(!s) return '';
-  if(!/[A-Za-z]/.test(s)) return s;
-  return s.replace(/[A-Za-z][A-Za-z'\-]*/g, word => {
-    const key = word.toLowerCase().replace(/[^a-z]/g,'');
-    if(!key) return word;
-    if(AR_NAME_DICT[key]) return AR_NAME_DICT[key];
-    return translitWord(key);
-  });
-}
-
 /* ============================================================
-   ✅ WhatsApp Sharing — الرسائل بالعربي بالكامل
+   WhatsApp Sharing — رسائل مختصرة (الأسماء بالإنجليزية كما هي)
    ============================================================ */
 
-/** تقرير الحضور اليومي — بأسماء الموظفين ومواعيدهم */
+/** تقرير الحضور اليومي — الاسم + الحالة فقط */
 function buildDailyWhatsAppText(bId, date){
   const branch = getBranch(bId);
   const emps = DB.employees
@@ -908,22 +794,14 @@ function buildDailyWhatsAppText(bId, date){
     const punches = punchMap[e.id] || [];
     const day = calcDay(e, date, rec, punches, bId);
 
-    let icon = '✅';
-    if(day.status === 'غياب'){ absent++; icon = '❌'; }
-    else if(day.status === 'أجازة'){ leave++; icon = '🏖️'; }
-    else if(day.status === 'مهمة'){ mission++; icon = '🎯'; }
-    else if(day.status === 'بصمة ناقصة'){ incomplete++; icon = '⚠️'; }
+    if(day.status === 'غياب') absent++;
+    else if(day.status === 'أجازة') leave++;
+    else if(day.status === 'مهمة') mission++;
+    else if(day.status === 'بصمة ناقصة') incomplete++;
     else present++;
 
-    let line = `${icon} ${arabizeName(e.name)}`;
-    if(day.timeIn || day.timeOut){
-      line += `\n     🕐 الدخول: ${arTime(day.timeIn)}  ←  الخروج: ${arTime(day.timeOut)}`;
-    }
-    line += `\n     📌 ${day.status}`;
+    let line = `${e.name}\n     📌 ${day.status}`;
     if(day.lateness > 0) line += ` — تأخير ${arNum(Math.round(day.lateness))} دقيقة`;
-    if(day.excusedMins > 0) line += ` — إذن ${fmtMinsAr(day.excusedMins)}`;
-    const notes = rec?.notes ? String(rec.notes).trim() : '';
-    if(notes) line += `\n     📝 ${notes}`;
     lines.push(line);
   });
 
@@ -938,28 +816,25 @@ function buildDailyWhatsAppText(bId, date){
   if(mission)    txt += `🎯 مهمة: ${arNum(mission)}\n`;
   if(incomplete) txt += `⚠️ بصمة ناقصة: ${arNum(incomplete)}\n`;
   txt += `━━━━━━━━━━━━━━━━━━\n`;
-  txt += `📋 تفاصيل الموظفين:\n`;
+  txt += `📋 تفاصيل الموظفين:\n\n`;
   txt += lines.length ? lines.join('\n\n') : 'لا يوجد موظفون';
   txt += `\n━━━━━━━━━━━━━━━━━━`;
 
   return txt;
 }
 
-/** تقرير التقارير — ملخص + تفاصيل كل موظف */
+/** تقرير التقارير — ملخص + الاسم + الحالة فقط */
 function buildReportWhatsAppText(){
   if(!lastReport || !lastReport.rows.length) return '';
   const { rows, branchId, from, to } = lastReport;
 
-  let gP=0, gA=0, gL=0, gM=0, gI=0, gW=0, gLt=0, gO=0;
+  let gP=0, gA=0, gL=0, gM=0, gI=0;
   rows.forEach(r => {
     gP += r.totals.present;
     gA += r.totals.absent;
     gL += r.totals.leave;
     gM += r.totals.mission;
     gI += r.totals.incomplete;
-    gW += r.totals.workMins;
-    gLt += r.totals.lateness;
-    gO += r.totals.overtime;
   });
 
   const period = `${from ? fmtDateArFull(from) : 'البداية'} ← ${to ? fmtDateArFull(to) : 'الآن'}`;
@@ -974,21 +849,14 @@ function buildReportWhatsAppText(){
   if(gL)  txt += `🏖️ إجمالي الأجازات: ${arNum(gL)}\n`;
   if(gM)  txt += `🎯 إجمالي المهام: ${arNum(gM)}\n`;
   if(gI)  txt += `⚠️ بصمة ناقصة: ${arNum(gI)}\n`;
-  txt += `🕒 إجمالي ساعات العمل: ${fmtMinsAr(gW)}\n`;
-  txt += `⏰ إجمالي التأخير: ${fmtMinsAr(gLt)}\n`;
-  txt += `⚖️ صافي إضافي/عجز: ${gO >= 0 ? '+' : ''}${fmtMinsAr(gO)}\n`;
   txt += `━━━━━━━━━━━━━━━━━━\n`;
   txt += `📋 تفاصيل الموظفين:\n\n`;
 
   const lines = rows.map(r => {
     const t = r.totals;
-    let line = `👤 ${arabizeName(r.emp.name)}`;
-    line += `\n     📅 أيام: ${arNum(t.days)} | ✅ حضور: ${arNum(t.present)} | ❌ غياب: ${arNum(t.absent)}`;
-    if(t.leave)   line += ` | 🏖️ أجازة: ${arNum(t.leave)}`;
-    if(t.mission) line += ` | 🎯 مهمة: ${arNum(t.mission)}`;
-    line += `\n     🕒 ساعات العمل: ${fmtMinsAr(t.workMins)}`;
-    line += `\n     ⏰ تأخير: ${fmtMinsAr(t.lateness)}`;
-    line += `\n     ⚖️ صافي: ${t.overtime >= 0 ? '+' : ''}${fmtMinsAr(t.overtime)}`;
+    let line = `${r.emp.name}\n     📌 أيام: ${arNum(t.days)} | حضور: ${arNum(t.present)} | غياب: ${arNum(t.absent)}`;
+    if(t.leave)   line += ` | أجازة: ${arNum(t.leave)}`;
+    if(t.mission) line += ` | مهمة: ${arNum(t.mission)}`;
     return line;
   });
 
@@ -998,7 +866,7 @@ function buildReportWhatsAppText(){
   return txt;
 }
 
-/** سجل الموظف الكامل — بالعربي */
+/** سجل الموظف — الاسم + الحالة فقط بدون تفاصيل إضافية */
 function buildEmployeeWhatsAppText(){
   if(!lastEmpReport) return '';
   const { emp, from, to, branchStats, grand } = lastEmpReport;
@@ -1006,7 +874,7 @@ function buildEmployeeWhatsAppText(){
   const period = `${from ? fmtDateArFull(from) : 'البداية'} ← ${to ? fmtDateArFull(to) : 'الآن'}`;
 
   let txt = `━━━━━━━━━━━━━━━━━━\n`;
-  txt += `👤 الاسم: ${arabizeName(emp.name)}\n`;
+  txt += `👤 الاسم: ${emp.name}\n`;
   txt += `🔢 رقم البصمة: ${arNum(emp.code)}\n`;
   txt += `🏢 الفرع: ${branchName(emp.branchId)}\n`;
   txt += `📅 الفترة: ${period}\n`;
@@ -1018,9 +886,6 @@ function buildEmployeeWhatsAppText(){
   if(grand.leave)      txt += `🏖️ أجازة: ${arNum(grand.leave)}\n`;
   if(grand.mission)    txt += `🎯 مهمة: ${arNum(grand.mission)}\n`;
   if(grand.incomplete) txt += `⚠️ بصمة ناقصة: ${arNum(grand.incomplete)}\n`;
-  txt += `🕒 إجمالي ساعات العمل: ${fmtMinsAr(grand.workMins)}\n`;
-  txt += `⏰ إجمالي التأخير: ${fmtMinsAr(grand.lateness)}\n`;
-  txt += `⚖️ صافي إضافي/عجز: ${grand.overtime >= 0 ? '+' : ''}${fmtMinsAr(grand.overtime)}\n`;
 
   const history = emp.transferHistory || [];
   if(history.length){
@@ -1038,13 +903,8 @@ function buildEmployeeWhatsAppText(){
   branchStats.forEach(b => {
     lines.push(`🏢 ${b.branchName}  (${fmtDateArFull(b.firstDate)} ← ${fmtDateArFull(b.lastDate)})`);
     b.days.forEach(d => {
-      let line = `   • ${fmtDateArFull(d.dateKey)}`;
-      if(d.timeIn || d.timeOut){
-        line += `\n        🕐 ${arTime(d.timeIn)} ← ${arTime(d.timeOut)}`;
-      }
-      line += `\n        📌 ${d.status}`;
+      let line = `${d.dateKey}\n     📌 ${d.status}`;
       if(d.lateness > 0) line += ` — تأخير ${arNum(Math.round(d.lateness))} دقيقة`;
-      if(d.excusedMins > 0) line += ` — إذن ${fmtMinsAr(d.excusedMins)}`;
       lines.push(line);
     });
     lines.push('');
@@ -1168,7 +1028,7 @@ function shareReportWhatsApp(){
 function shareEmployeeWhatsApp(){
   const text = buildEmployeeWhatsAppText();
   if(!text){ alert('اعرض السجل أولاً'); return; }
-  openWhatsAppShare(text, `سجل ${arabizeName(lastEmpReport.emp.name)}`);
+  openWhatsAppShare(text, `سجل ${lastEmpReport.emp.name}`);
 }
 
 /* ============================================================
@@ -2528,7 +2388,7 @@ Object.assign(window, {
   setShiftBranchFilter, setEmpBranchFilter, setEmpActiveFilter,
   shareDailyWhatsApp, shareReportWhatsApp, shareEmployeeWhatsApp,
   sendWhatsApp, copyWhatsAppText, editBranchWhatsApp,
-  arabizeName, arNum, arTime, fmtDateArFull
+  arNum, fmtDateArFull
 });
 window.$ = $;
 
