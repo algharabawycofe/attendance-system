@@ -10,6 +10,7 @@
 :root{
 --primary:#2563eb;--primary-dark:#1e40af;--primary-light:#dbeafe;
 --success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+--whatsapp:#25D366;--whatsapp-dark:#128C7E;
 --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;
 --gray-500:#6b7280;--gray-700:#374151;--gray-900:#111827;
 --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
@@ -73,6 +74,8 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .btn-success{background:var(--success);color:#fff}
 .btn-danger{background:var(--danger);color:#fff}
 .btn-warning{background:var(--warning);color:#fff}
+.btn-whatsapp{background:var(--whatsapp);color:#fff}
+.btn-whatsapp:hover{background:var(--whatsapp-dark)}
 .btn-outline{background:#fff;color:var(--gray-700);border:1.5px solid var(--gray-200)}
 .btn-outline:hover{border-color:var(--gray-300);background:var(--gray-50)}
 .btn-outline:disabled{opacity:.5;cursor:not-allowed}
@@ -107,6 +110,7 @@ tbody tr:last-child td{border-bottom:none}
 .b-blue{background:var(--primary-light);color:var(--primary-dark)}
 .b-gray{background:var(--gray-100);color:var(--gray-700)}
 .b-purple{background:#e9d5ff;color:#6b21a8}
+.b-wa{background:#dcfce7;color:#166534}
 .alert{padding:12px 14px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .alert-info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
 .alert-success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
@@ -131,10 +135,10 @@ tbody tr:last-child td{border-bottom:none}
 .tab-inline{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:600;color:var(--gray-700);transition:all .15s}
 .tab-inline.active{background:#fff;color:var(--primary);box-shadow:var(--shadow)}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1500}
-.modal{background:#fff;border-radius:16px;padding:24px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.3)}
+.modal{background:#fff;border-radius:16px;padding:24px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.3)}
 .modal-header{font-size:17px;font-weight:800;color:var(--gray-900);margin-bottom:16px}
-.modal-actions{display:flex;gap:10px;margin-top:20px}
-.modal-actions .btn{flex:1;justify-content:center}
+.modal-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.modal-actions .btn{flex:1;justify-content:center;min-width:120px}
 .upload-zone{border:2px dashed var(--gray-300);border-radius:12px;padding:32px 20px;text-align:center;background:var(--gray-50);transition:all .2s;cursor:pointer}
 .upload-zone:hover{border-color:var(--primary);background:var(--primary-light)}
 .report-card{border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:14px;background:#fff}
@@ -153,6 +157,7 @@ tbody tr:last-child td{border-bottom:none}
 .mt-3{margin-top:12px}
 .mt-4{margin-top:16px}
 .inactive-row{opacity:.55}
+.wa-preview{width:100%;min-height:260px;padding:12px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:inherit;font-size:12.5px;resize:vertical;white-space:pre-wrap;direction:rtl;text-align:right;background:var(--gray-50);line-height:1.7}
 @media print{.sidebar,.header,.btn,.no-print{display:none !important}.app{display:block}.main{padding:0;overflow:visible}.card,.report-card,.branch-section{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}body{background:#fff}}
 </style>
 </head>
@@ -249,7 +254,6 @@ const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<'
 const norm = s => String(s==null?'':s).trim().toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/\s+/g,'');
 const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
 
-/* ✅ FIX: date helpers use LOCAL time, not UTC */
 const localKey = d => {
   const dt = (d instanceof Date) ? d : new Date(d);
   return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
@@ -328,7 +332,6 @@ async function fsBatchAdd(n, items){
   }
 }
 
-/* ✅ FIX: loadAll has try/finally so loader never gets stuck */
 async function loadAll(){
   showLoader(true);
   try {
@@ -363,7 +366,6 @@ const getDefaultShift = bId => {
   return b?.defaultShiftId ? getShift(b.defaultShiftId) : null;
 };
 
-/* ✅ FIX: checkSetup has try/finally + shows error instead of stuck loader */
 async function checkSetup(){
   showLoader(true);
   try {
@@ -481,7 +483,6 @@ function navigateTo(page){
   renderPage();
   $('mainContent').scrollTop = 0;
 }
-/* ✅ FIX: don't wipe form while a save is pending */
 function refreshPage(){
   const ae = document.activeElement;
   if(ae && ['INPUT','SELECT','TEXTAREA'].includes(ae.tagName)) return;
@@ -552,7 +553,6 @@ function renderDaily(){
         ${DB.branches.map(b => `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
       </select>
     </div>` : '';
-  /* ✅ FIX: use local date keys for prev/next navigation */
   const base = new Date(date+'T00:00:00');
   const y = new Date(base); y.setDate(y.getDate()-1);
   const yn = new Date(base); yn.setDate(yn.getDate()+1);
@@ -613,8 +613,9 @@ function renderDaily(){
     <div class="card-header">
       <div><div class="card-title">التسجيل اليومي</div><div class="card-subtitle">${emps.length} موظف — ${savedCount} مسجل</div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-outline btn-sm" onclick="copyFromYesterday('${bId}','${date}')">نسخ من الأمس</button>
-        <button class="btn btn-success btn-sm" onclick="saveAll('${bId}','${date}')">حفظ</button>
+        <button class="btn btn-outline btn-sm" onclick="copyFromYesterday('${bId}','${date}')">📋 نسخ من الأمس</button>
+        <button class="btn btn-whatsapp btn-sm" onclick="shareDailyWhatsApp('${bId}','${date}')">📤 إرسال واتساب</button>
+        <button class="btn btn-success btn-sm" onclick="saveAll('${bId}','${date}')">💾 حفظ</button>
       </div>
     </div>
     <div class="form-row">${branchField}${dateNav}</div>
@@ -687,15 +688,12 @@ async function persistRow(tr, empId){
     }
   } catch(e){ console.error(e); }
 }
-
-/* ✅ FIX: saveAll now uses a single atomic batch (with chunked fallback) */
 async function saveAll(bId, date){
   const rows = document.querySelectorAll('tr[data-empid]');
   if(!rows.length) return;
   showLoader(true);
   try {
     rows.forEach(tr => { clearTimeout(tr.__t); tr.classList.remove('row-saving'); });
-
     const old = DB.daily.filter(d => d.branchId === bId && d.dateKey === date);
     const newRecords = [];
     rows.forEach(tr => {
@@ -705,7 +703,6 @@ async function saveAll(bId, date){
       if(isRowEmpty(data, emp, bId)) return;
       newRecords.push(data);
     });
-
     const totalOps = old.length + newRecords.length;
     if(totalOps <= 450){
       const b = writeBatch(db);
@@ -724,7 +721,6 @@ async function saveAll(bId, date){
         await b.commit();
       }
     }
-
     await loadAll();
     renderPage();
   } catch(e){ alert('خطأ في الحفظ: ' + e.message); }
@@ -748,6 +744,303 @@ async function copyFromYesterday(bId, date){
     togglePermHours(p.empId);
   }
 }
+
+/* ============================================================
+   ✅ WhatsApp Sharing
+   ============================================================ */
+
+/** بناء نص تقرير الحضور اليومي */
+function buildDailyWhatsAppText(bId, date){
+  const branch = getBranch(bId);
+  const emps = DB.employees
+    .filter(e => e.branchId === bId && e.active !== false)
+    .sort((a,b) => a.name.localeCompare(b.name,'ar'));
+
+  const dailyMap = {};
+  DB.daily.forEach(d => { if(d.dateKey === date && d.branchId === bId) dailyMap[d.empId] = d; });
+
+  let present = 0, absent = 0, leave = 0, mission = 0, incomplete = 0;
+  let totalLateMins = 0, totalOver = 0, totalWork = 0, totalExcused = 0;
+
+  const lines = [];
+  emps.forEach((e, i) => {
+    const rec = dailyMap[e.id] || null;
+    const punches = DB.punches.filter(p => p.empId === e.id && p.dateKey === date && p.branchId === bId);
+    const day = calcDay(e, date, rec, punches, bId);
+
+    let icon = '✅';
+    if(day.status === 'غياب'){ absent++; icon = '❌'; }
+    else if(day.status === 'أجازة'){ leave++; icon = '🏖️'; }
+    else if(day.status === 'مهمة'){ mission++; icon = '🎯'; }
+    else if(day.status === 'بصمة ناقصة'){ incomplete++; icon = '⚠️'; }
+    else present++;
+
+    totalLateMins += day.lateness;
+    totalOver += day.overtime;
+    totalWork += day.workMins;
+    totalExcused += day.excusedMins;
+
+    const parts = [];
+    if(day.timeIn && day.timeIn !== '—' && day.timeOut && day.timeOut !== '—'){
+      parts.push(`${day.timeIn} ← ${day.timeOut}`);
+    } else if(day.timeIn && day.timeIn !== '—'){
+      parts.push(`دخول ${day.timeIn} (بدون خروج)`);
+    }
+    if(day.status === 'منتظم' || day.status === 'تأخير' || day.status === 'عجز'){
+      parts.push(day.status);
+    } else {
+      parts.push(day.status);
+    }
+    if(day.lateness > 0) parts.push(`⏰ ${fmtMins(day.lateness)}`);
+    if(day.excusedMins > 0) parts.push(`📝 إذن ${fmtMins(day.excusedMins)}`);
+    if((day.overtime > 0) && !['غياب','أجازة','مهمة','بصمة ناقصة'].includes(day.status)){
+      parts.push(`➕ ${fmtMins(day.overtime)}`);
+    }
+    if(rec?.notes){
+      parts.push(`💬 ${rec.notes}`);
+    }
+
+    lines.push(`${i+1}. ${icon} ${e.name}\n   ${parts.join(' | ')}`);
+  });
+
+  const totalEmps = emps.length;
+  const header = `📋 *تقرير الحضور اليومي*\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `🏢 *الفرع:* ${branch?.name || '—'}\n` +
+    `📅 *التاريخ:* ${date}\n` +
+    `🗓️ *اليوم:* ${dayName(date)}\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `👥 *إجمالي الموظفين:* ${totalEmps}\n` +
+    `✅ حاضر: ${present}\n` +
+    (absent ? `❌ غائب: ${absent}\n` : '') +
+    (leave ? `🏖️ أجازة: ${leave}\n` : '') +
+    (mission ? `🎯 مهمة: ${mission}\n` : '') +
+    (incomplete ? `⚠️ بصمة ناقصة: ${incomplete}\n` : '') +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    (totalWork ? `⏱️ *إجمالي ساعات العمل:* ${fmtMins(totalWork)}\n` : '') +
+    (totalLateMins ? `⏰ *إجمالي التأخير:* ${fmtMins(totalLateMins)}\n` : '') +
+    (totalExcused ? `📝 *إجمالي الإذن:* ${fmtMins(totalExcused)}\n` : '') +
+    (totalOver !== 0 ? `⚖️ *إضافي/عجز:* ${totalOver > 0 ? '+' : ''}${fmtMins(totalOver)}\n` : '') +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📝 *التفاصيل:*\n\n`;
+
+  return header + lines.join('\n\n');
+}
+
+/** بناء نص تقرير التقارير (ملخص) */
+function buildReportWhatsAppText(){
+  if(!lastReport || !lastReport.rows.length) return '';
+  const { rows, branchId, from, to } = lastReport;
+
+  let gP=0, gA=0, gL=0, gM=0, gI=0, gLt=0, gOv=0, gW=0;
+  rows.forEach(r => {
+    gP += r.totals.present;
+    gA += r.totals.absent;
+    gL += r.totals.leave;
+    gM += r.totals.mission;
+    gI += r.totals.incomplete;
+    gLt += r.totals.lateness;
+    gOv += r.totals.overtime;
+    gW += r.totals.workMins;
+  });
+
+  const header = `📊 *تقرير الحضور والانصراف*\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `🏢 *الفرع:* ${branchName(branchId)}\n` +
+    `📅 *الفترة:* ${from || 'البداية'} → ${to || 'الآن'}\n` +
+    `👥 *عدد الموظفين:* ${rows.length}\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `✅ حاضر: ${gP}\n` +
+    `❌ غائب: ${gA}\n` +
+    (gL ? `🏖️ أجازة: ${gL}\n` : '') +
+    (gM ? `🎯 مهمة: ${gM}\n` : '') +
+    (gI ? `⚠️ بصمة ناقصة: ${gI}\n` : '') +
+    `⏱️ *ساعات العمل:* ${fmtMins(gW)}\n` +
+    `⏰ *إجمالي التأخير:* ${fmtMins(gLt)}\n` +
+    `⚖️ *إضافي/عجز:* ${gOv > 0 ? '+' : ''}${fmtMins(gOv)}\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `📝 *تفصيل الموظفين:*\n\n`;
+
+  const lines = rows.map((r, i) => {
+    const t = r.totals;
+    const ov = (t.overtime >= 0 ? '+' : '') + fmtMins(t.overtime);
+    return `${i+1}. *${r.emp.name}* (${r.emp.code})\n` +
+      `   ✅ ${t.present} | ❌ ${t.absent}${t.leave ? ` | 🏖️ ${t.leave}` : ''}${t.mission ? ` | 🎯 ${t.mission}` : ''}\n` +
+      `   ⏱️ ${fmtMins(t.workMins)} | ⏰ ${fmtMins(t.lateness)} | ⚖️ ${ov}`;
+  });
+
+  return header + lines.join('\n\n');
+}
+
+/** بناء نص سجل الموظف الكامل */
+function buildEmployeeWhatsAppText(){
+  if(!lastEmpReport) return '';
+  const { emp, from, to, branchStats, grand, transferHistory } = lastEmpReport;
+
+  let txt = `👤 *سجل الموظف*\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📌 *الاسم:* ${emp.name}\n` +
+    `🔢 *رقم البصمة:* ${emp.code}\n` +
+    `🏢 *الفرع الحالي:* ${branchName(emp.branchId)}\n` +
+    `📅 *الفترة:* ${from || 'البداية'} → ${to || 'الآن'}\n` +
+    `🔘 *الحالة:* ${emp.active === false ? 'منتهي' : 'نشط'}\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `📊 *الإجمالي الكامل:*\n` +
+    `📅 عدد الأيام: ${grand.days}\n` +
+    `✅ حضور: ${grand.present}\n` +
+    `❌ غياب: ${grand.absent}\n` +
+    (grand.leave ? `🏖️ أجازة: ${grand.leave}\n` : '') +
+    (grand.mission ? `🎯 مهمة: ${grand.mission}\n` : '') +
+    (grand.incomplete ? `⚠️ بصمة ناقصة: ${grand.incomplete}\n` : '') +
+    `⏱️ ساعات العمل: ${fmtMins(grand.workMins)}\n` +
+    `⏰ التأخير: ${fmtMins(grand.lateness)}\n` +
+    `⚖️ إضافي/عجز: ${grand.overtime >= 0 ? '+' : ''}${fmtMins(grand.overtime)}\n`;
+
+  if(transferHistory.length){
+    txt += `\n━━━━━━━━━━━━━━━━━━\n🔄 *سجل التنقلات:*\n\n`;
+    transferHistory.forEach((h, i) => {
+      txt += `${i+1}. ${h.fromName} ← ${h.toName}\n   📅 ${h.date}${h.reason ? ` — ${h.reason}` : ''}\n\n`;
+    });
+  }
+
+  if(branchStats.length > 1){
+    txt += `━━━━━━━━━━━━━━━━━━\n📋 *تفصيل حسب الفرع:*\n\n`;
+    branchStats.forEach((b, i) => {
+      txt += `${i+1}. *${b.branchName}*\n   📅 ${b.firstDate} → ${b.lastDate}\n   📅 ${b.totals.days} يوم | ✅ ${b.totals.present} | ❌ ${b.totals.absent}\n   ⏱️ ${fmtMins(b.totals.workMins)} | ⏰ ${fmtMins(b.totals.lateness)}\n\n`;
+    });
+  }
+
+  return txt;
+}
+
+/** فتح نافذة مشاركة الواتساب */
+function openWhatsAppShare(text, title){
+  if(!text){
+    alert('لا يوجد محتوى لمشاركته');
+    return;
+  }
+  // لو الفرع له رقم واتساب افتراضي، استخدمه
+  let defaultPhone = '';
+  if(UI.dailyBranch){
+    const b = getBranch(UI.dailyBranch);
+    if(b?.whatsapp) defaultPhone = b.whatsapp;
+  } else if(currentUser?.branchId){
+    const b = getBranch(currentUser.branchId);
+    if(b?.whatsapp) defaultPhone = b.whatsapp;
+  }
+
+  showModal(`
+    <div class="modal-header">📤 إرسال عبر واتساب</div>
+    <div class="field" style="margin-bottom:12px">
+      <label>رقم الواتساب (اختياري)</label>
+      <input id="waPhone" type="tel" dir="ltr" style="text-align:left"
+        placeholder="مثال: 201012345678 — اتركه فارغ لاختيار جهة الاتصال يدويًا"
+        value="${esc(defaultPhone)}">
+      <div class="muted" style="margin-top:4px;font-size:11px">
+        💡 اكتب الرقم بالصيغة الدولية بدون + أو مسافات (مثال: 201012345678)
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>📄 معاينة الرسالة (${esc(title)})</label>
+      <textarea id="waText" class="wa-preview" readonly>${esc(text)}</textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-whatsapp" onclick="sendWhatsApp()">📱 فتح واتساب</button>
+      <button class="btn btn-outline" onclick="copyWhatsAppText()">📋 نسخ النص</button>
+      <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
+    </div>
+    <div class="muted" style="margin-top:12px;font-size:11.5px;text-align:center;padding-top:10px;border-top:1px solid var(--gray-100)">
+      💡 على الموبايل هيظهرلك خيار "مشاركة" مع كل التطبيقات المتاحة
+    </div>
+  `);
+
+  // فوكس على خانة الرقم لو فاضية
+  setTimeout(() => {
+    const el = $('waPhone');
+    if(el && !el.value) el.focus();
+  }, 100);
+}
+
+/** فتح واتساب مع النص */
+function sendWhatsApp(){
+  const text = $('waText')?.value || '';
+  if(!text){ alert('لا يوجد نص'); return; }
+
+  let phone = ($('waPhone')?.value || '').trim().replace(/[^\d+]/g, '');
+  phone = phone.replace(/^\+/, '').replace(/^0+/, '');
+
+  // لو مفيش رقم محدد → جرّب Web Share API (أفضل على الموبايل)
+  if(!phone && navigator.share){
+    navigator.share({ text, title: 'تقرير الحضور' })
+      .then(() => closeModal())
+      .catch(err => {
+        // لو المستخدم لغى أو حصل خطأ، نروح wa.me عادي
+        if(err.name !== 'AbortError'){
+          const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+          window.open(url, '_blank');
+        }
+      });
+    return;
+  }
+
+  const encoded = encodeURIComponent(text);
+  const url = phone
+    ? `https://wa.me/${phone}?text=${encoded}`
+    : `https://wa.me/?text=${encoded}`;
+
+  window.open(url, '_blank');
+  closeModal();
+}
+
+/** نسخ النص للحافظة */
+function copyWhatsAppText(){
+  const text = $('waText')?.value || '';
+  if(!text) return;
+  const done = () => {
+    const btn = document.querySelector('.modal-actions button:nth-child(2)');
+    if(btn){
+      const old = btn.textContent;
+      btn.textContent = '✅ تم النسخ';
+      setTimeout(() => { btn.textContent = old; }, 1500);
+    }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(() => {
+      const ta = $('waText');
+      if(ta){ ta.removeAttribute('readonly'); ta.select(); document.execCommand('copy'); ta.setAttribute('readonly',''); done(); }
+    });
+  } else {
+    const ta = $('waText');
+    if(ta){ ta.removeAttribute('readonly'); ta.select(); document.execCommand('copy'); ta.setAttribute('readonly',''); done(); }
+  }
+}
+
+/** زر مشاركة اليوم من صفحة التسجيل اليومي */
+function shareDailyWhatsApp(bId, date){
+  if(!bId){ alert('اختر الفرع'); return; }
+  UI.dailyBranch = bId;
+  const text = buildDailyWhatsAppText(bId, date);
+  openWhatsAppShare(text, `تقرير ${getBranch(bId)?.name || ''} - ${date}`);
+}
+
+/** زر مشاركة التقرير من صفحة التقارير */
+function shareReportWhatsApp(){
+  const text = buildReportWhatsAppText();
+  if(!text){ alert('اعرض التقرير أولاً'); return; }
+  const title = `تقرير ${branchName(lastReport.branchId)}`;
+  openWhatsAppShare(text, title);
+}
+
+/** زر مشاركة سجل الموظف */
+function shareEmployeeWhatsApp(){
+  const text = buildEmployeeWhatsAppText();
+  if(!text){ alert('اعرض السجل أولاً'); return; }
+  openWhatsAppShare(text, `سجل ${lastEmpReport.emp.name}`);
+}
+
+/* ============================================================
+   إعدادات الفروع
+   ============================================================ */
 
 function renderSettings(){
   const tab = UI.settingsTab || 'branches';
@@ -778,6 +1071,7 @@ function renderBranchesTab(){
       <td><b>${esc(b.name)}</b></td>
       <td>${esc(u?.username || '—')}</td>
       <td>${esc(u?.name || '—')}</td>
+      <td>${b.whatsapp ? `<span class="badge b-wa">📱 ${esc(b.whatsapp)}</span>` : '<span class="muted">—</span>'}</td>
       <td><span class="badge b-blue">${emps}</span></td>
       <td>
         <select onchange="setDefaultShift('${b.id}', this.value)" style="font-size:12px;padding:6px;border:1px solid var(--gray-200);border-radius:7px">
@@ -785,8 +1079,9 @@ function renderBranchesTab(){
           ${bShifts.map(s => `<option value="${s.id}" ${b.defaultShiftId === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}
         </select>
       </td>
-      <td>
-        <button class="btn btn-outline btn-sm" onclick="editBranchPass('${b.id}')">كلمة المرور</button>
+      <td style="white-space:nowrap">
+        <button class="btn btn-outline btn-sm" onclick="editBranchWhatsApp('${b.id}')">📱 واتساب</button>
+        <button class="btn btn-outline btn-sm" onclick="editBranchPass('${b.id}')">🔑 كلمة المرور</button>
         <button class="btn btn-danger btn-sm" onclick="deleteBranch('${b.id}')">حذف</button>
       </td>
     </tr>`;
@@ -799,12 +1094,13 @@ function renderBranchesTab(){
         <div class="field"><label>اسم المستخدم</label><input id="brUser"></div>
         <div class="field"><label>كلمة المرور</label><input id="brPass" type="text"></div>
         <div class="field"><label>اسم المسؤول</label><input id="brMgr"></div>
+        <div class="field"><label>رقم واتساب (اختياري)</label><input id="brWa" type="tel" dir="ltr" style="text-align:left" placeholder="201012345678"></div>
         <button class="btn btn-primary" onclick="addBranch()">إضافة</button>
       </div>
     </div>
     ${DB.branches.length ? `
       <div class="table-wrap mt-3">
-        <table><thead><tr><th>الفرع</th><th>المستخدم</th><th>المسؤول</th><th>الموظفين</th><th>الشفت الافتراضي</th><th></th></tr></thead>
+        <table><thead><tr><th>الفرع</th><th>المستخدم</th><th>المسؤول</th><th>واتساب</th><th>الموظفين</th><th>الشفت الافتراضي</th><th></th></tr></thead>
         <tbody>${rows}</tbody></table>
       </div>` : `<div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">لا توجد فروع</div></div>`}`;
 }
@@ -813,12 +1109,28 @@ async function addBranch(){
   const user = $('brUser').value.trim();
   const pass = $('brPass').value.trim();
   const mgr = $('brMgr').value.trim() || name;
+  const wa = $('brWa').value.trim().replace(/[^\d+]/g,'').replace(/^\+/,'');
   if(!name || !user || !pass){ alert('أكمل الحقول المطلوبة'); return; }
   if(DB.users.some(u => u.username.toLowerCase() === user.toLowerCase())){ alert('اسم المستخدم مستخدم'); return; }
   showLoader(true);
   try {
-    const b = await fsAdd('branches', { name, defaultShiftId:'', createdAt: Date.now() });
+    const b = await fsAdd('branches', { name, defaultShiftId:'', whatsapp: wa, createdAt: Date.now() });
     await fsAdd('users', { username: user, passwordHash: await hash(pass), role: 'branch', name: mgr, branchId: b.id, createdAt: Date.now() });
+    await loadAll();
+    renderPage();
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
+}
+async function editBranchWhatsApp(bId){
+  const b = getBranch(bId);
+  if(!b) return;
+  const cur = b.whatsapp || '';
+  const np = prompt('رقم واتساب الفرع (صيغة دولية بدون + أو مسافات):\nمثال: 201012345678\n\nاتركه فارغ للحذف:', cur);
+  if(np === null) return;
+  const clean = String(np).trim().replace(/[^\d+]/g,'').replace(/^\+/,'');
+  showLoader(true);
+  try {
+    await fsUpd('branches', bId, { whatsapp: clean });
     await loadAll();
     renderPage();
   } catch(e){ alert(e.message); }
@@ -1220,7 +1532,6 @@ async function showEmpDetails(empId){
   `);
 }
 
-/* ✅ FIX: handle employee transfer when opening history */
 function openEmpHistory(empId){
   const emp = DB.employees.find(e => e.id === empId);
   UI.empReportId = empId;
@@ -1426,7 +1737,6 @@ function calcDay(emp, dateKey, dailyRec, punches, branchId){
   if(!timeIn || !timeOut) return mkDay(dateKey, 'بصمة ناقصة', 0, 0, 0, 0, 0, sh, timeIn, timeOut);
   const dtIn = dtAt(dateKey, timeIn);
   let dtOut = dtAt(dateKey, timeOut);
-  /* ✅ FIX: only roll to next day if out is strictly BEFORE in (not equal) */
   if(dtOut.getTime() < dtIn.getTime()) dtOut = new Date(dtOut.getTime() + 86400000);
   const workMins = Math.round((dtOut - dtIn) / 60000);
   const shiftMins = Math.round(sh.hours * 60);
@@ -1601,7 +1911,8 @@ function renderReports(){
         </select>
       </div>
       <button class="btn btn-primary" onclick="generateReport()">عرض</button>
-      <button class="btn btn-outline" onclick="exportReport()">Excel</button>
+      <button class="btn btn-outline" onclick="exportReport()">📥 Excel</button>
+      ${(lastReport && lastReport.rows.length) ? `<button class="btn btn-whatsapp" onclick="shareReportWhatsApp()">📤 واتساب</button>` : ''}
     </div>
   </div>
   ${body}`;
@@ -1699,6 +2010,7 @@ function renderEmployeeHistory(){
     <div class="field" style="max-width:160px"><label>إلى</label><input type="date" id="empRepTo" value="${UI.empRepTo || ''}"></div>
     <button class="btn btn-primary" onclick="generateEmployeeReport()">🔄 تحديث</button>
     <button class="btn btn-outline" onclick="exportEmployeeReport()" ${!lastEmpReport ? 'disabled' : ''}>📥 Excel</button>
+    <button class="btn btn-whatsapp" onclick="shareEmployeeWhatsApp()" ${!lastEmpReport ? 'disabled' : ''}>📤 واتساب</button>
   ` : '';
 
   const header = `<div class="card">
@@ -2065,7 +2377,6 @@ function exportEmployeeReport(){
   XLSX.writeFile(wb, `سجل_${emp.name}_${today()}.xlsx`);
 }
 
-/* ✅ FIX: inline-handler-safe setters (avoid ReferenceError for UI/lastEmpReport) */
 function selectEmpBranch(v){ UI.empBranchFilter = v; UI.empReportId = ''; lastEmpReport = null; renderPage(); }
 function selectEmployee(id){ UI.empReportId = id; lastEmpReport = null; renderPage(); }
 function clearEmpSelection(){ UI.empReportId = ''; lastEmpReport = null; renderPage(); }
@@ -2081,11 +2392,14 @@ Object.assign(window, {
   showEmpDetails, closeModal, openEmpHistory,
   generateEmployeeReport, exportEmployeeReport,
   selectEmpBranch, selectEmployee, clearEmpSelection,
-  setShiftBranchFilter, setEmpBranchFilter, setEmpActiveFilter
+  setShiftBranchFilter, setEmpBranchFilter, setEmpActiveFilter,
+  // ✅ WhatsApp
+  shareDailyWhatsApp, shareReportWhatsApp, shareEmployeeWhatsApp,
+  sendWhatsApp, copyWhatsAppText,
+  editBranchWhatsApp
 });
 window.$ = $;
 
-/* ✅ FIX: init has try/finally + visible error message instead of stuck spinner */
 (async function init(){
   showLoader(true);
   try {
