@@ -163,216 +163,57 @@ tbody tr:last-child td{border-bottom:none}
 .row-error{background:#fef2f2}
 .row-pending{background:#f8fafc}
 .cmp-print-only{display:none}
-
-/* ===== Branch Cards ===== */
-.branch-card{
-  background:#fff;
-  border:1px solid var(--gray-200);
-  border-radius:12px;
-  padding:16px;
-  transition:all .15s;
-}
-.branch-card:hover{
-  border-color:var(--primary);
-  box-shadow:0 4px 12px rgba(37,99,235,.08);
-}
-.branch-card-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:10px;
-  margin-bottom:12px;
-  padding-bottom:12px;
-  border-bottom:1px dashed var(--gray-200);
-}
+.branch-card{background:#fff;border:1px solid var(--gray-200);border-radius:12px;padding:16px;transition:all .15s}
+.branch-card:hover{border-color:var(--primary);box-shadow:0 4px 12px rgba(37,99,235,.08)}
+.branch-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed var(--gray-200)}
 .branch-card-name{font-size:16px;font-weight:800;color:var(--gray-900);line-height:1.2}
-.branch-card-info{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  margin-bottom:12px;
-  font-size:12.5px;
-}
+.branch-card-info{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;font-size:12.5px}
 .branch-card-info .row{display:flex;gap:8px;align-items:center;color:var(--gray-700)}
 .branch-card-info .lbl{color:var(--gray-500);min-width:70px;font-size:11.5px}
-.branch-card-footer{
-  display:flex;
-  gap:6px;
-  flex-wrap:wrap;
-  padding-top:12px;
-  border-top:1px dashed var(--gray-200);
-}
+.branch-card-footer{display:flex;gap:6px;flex-wrap:wrap;padding-top:12px;border-top:1px dashed var(--gray-200)}
 .branch-card-footer .btn{flex:1;min-width:80px;justify-content:center}
-
-/* ===== Daily Cards ===== */
-.daily-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
-  gap:14px;
-}
-.emp-card{
-  background:#fff;
-  border:1.5px solid var(--gray-200);
-  border-radius:14px;
-  padding:14px;
-  transition:all .15s;
-  position:relative;
-}
+.daily-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.emp-card{background:#fff;border:1.5px solid var(--gray-200);border-radius:14px;padding:14px;transition:all .15s;position:relative}
 .emp-card:hover{border-color:var(--gray-300)}
 .emp-card.saving{border-color:var(--warning);background:#fffbeb}
 .emp-card.saved{border-color:var(--success);background:#f0fdf4}
 .emp-card.status-absent{background:#fef2f2;border-color:#fecaca}
 .emp-card.status-leave{background:#eff6ff;border-color:#bfdbfe}
 .emp-card.status-mission{background:#faf5ff;border-color:#e9d5ff}
-
-.emp-card-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:10px;
-  margin-bottom:12px;
-  padding-bottom:10px;
-  border-bottom:1px dashed var(--gray-200);
-}
+.emp-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px dashed var(--gray-200)}
 .emp-name{font-size:15px;font-weight:800;color:var(--gray-900);line-height:1.2}
 .emp-code{font-size:11.5px;color:var(--gray-500);margin-top:3px}
-
-.save-indicator{
-  font-size:10.5px;
-  padding:3px 9px;
-  border-radius:20px;
-  font-weight:700;
-  white-space:nowrap;
-  flex-shrink:0;
-}
+.save-indicator{font-size:10.5px;padding:3px 9px;border-radius:20px;font-weight:700;white-space:nowrap;flex-shrink:0}
 .save-indicator.saving{background:#fef3c7;color:#92400e}
 .save-indicator.saved{background:#d1fae5;color:#065f46}
-
-.status-buttons{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:6px;
-  margin-bottom:12px;
-}
-.status-btn{
-  padding:9px 3px;
-  border-radius:9px;
-  font-size:11.5px;
-  font-weight:700;
-  background:var(--gray-100);
-  color:var(--gray-700);
-  transition:all .15s;
-  border:1.5px solid transparent;
-  text-align:center;
-  cursor:pointer;
-  line-height:1.2;
-}
+.status-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.status-btn{padding:9px 3px;border-radius:9px;font-size:11.5px;font-weight:700;background:var(--gray-100);color:var(--gray-700);transition:all .15s;border:1.5px solid transparent;text-align:center;cursor:pointer;line-height:1.2}
 .status-btn:hover{background:var(--gray-200);transform:translateY(-1px)}
 .status-btn.active[data-status="present"]{background:#d1fae5;color:#065f46;border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.1)}
 .status-btn.active[data-status="absent"]{background:#fee2e2;color:#991b1b;border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.1)}
 .status-btn.active[data-status="leave"]{background:#dbeafe;color:#1e40af;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
 .status-btn.active[data-status="mission"]{background:#e9d5ff;color:#6b21a8;border-color:#9333ea;box-shadow:0 0 0 3px rgba(147,51,234,.1)}
-
-.time-inputs{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-bottom:12px;
-  padding:12px;
-  background:var(--gray-50);
-  border-radius:10px;
-}
+.time-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;padding:12px;background:var(--gray-50);border-radius:10px}
 .time-group{display:flex;flex-direction:column;gap:4px}
 .time-group label{font-size:11px;font-weight:700;color:var(--gray-700);text-align:center}
-.time-group input{
-  padding:10px 8px;
-  border:1.5px solid var(--gray-200);
-  border-radius:8px;
-  font-size:14px;
-  text-align:center;
-  font-weight:700;
-  background:#fff;
-  transition:all .15s;
-}
-.time-group input:focus{
-  border-color:var(--primary);
-  box-shadow:0 0 0 3px var(--primary-light);
-  outline:none;
-}
-
+.time-group input{padding:10px 8px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:14px;text-align:center;font-weight:700;background:#fff;transition:all .15s}
+.time-group input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);outline:none}
 .extra-row{margin-bottom:10px}
-.extra-row select{
-  width:100%;
-  padding:9px 12px;
-  border:1.5px solid var(--gray-200);
-  border-radius:9px;
-  font-size:12.5px;
-  background:#fff;
-  transition:all .15s;
-}
+.extra-row select{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:9px;font-size:12.5px;background:#fff;transition:all .15s}
 .extra-row select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);outline:none}
-
-.perm-row{
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:8px;
-  margin-bottom:10px;
-}
-.perm-row select{
-  padding:9px 12px;
-  border:1.5px solid var(--gray-200);
-  border-radius:9px;
-  font-size:12.5px;
-  background:#fff;
-}
+.perm-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:10px}
+.perm-row select{padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:9px;font-size:12.5px;background:#fff}
 .perm-row select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);outline:none}
-.perm-row input{
-  width:90px;
-  padding:9px 8px;
-  border:1.5px solid var(--gray-200);
-  border-radius:9px;
-  font-size:12.5px;
-  text-align:center;
-}
+.perm-row input{width:90px;padding:9px 8px;border:1.5px solid var(--gray-200);border-radius:9px;font-size:12.5px;text-align:center}
 .perm-row input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);outline:none}
-
-.emp-card .f-notes{
-  width:100%;
-  padding:9px 12px;
-  border:1.5px solid var(--gray-200);
-  border-radius:9px;
-  font-size:12.5px;
-  background:#fff;
-  transition:all .15s;
-}
+.emp-card .f-notes{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:9px;font-size:12.5px;background:#fff;transition:all .15s}
 .emp-card .f-notes:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);outline:none}
-
-.daily-summary-bar{
-  display:flex;
-  gap:20px;
-  flex-wrap:wrap;
-  font-size:13px;
-  padding:10px 14px;
-  background:var(--gray-50);
-  border-radius:10px;
-  margin-top:8px;
-  border:1px solid var(--gray-100);
-}
+.daily-summary-bar{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;padding:10px 14px;background:var(--gray-50);border-radius:10px;margin-top:8px;border:1px solid var(--gray-100)}
 .daily-summary-bar b{font-size:15px}
-
-/* ===== Reset Options ===== */
-.reset-option{
-  display:flex;align-items:flex-start;gap:10px;padding:12px 14px;
-  background:#fff;border:1.5px solid var(--gray-200);border-radius:10px;
-  cursor:pointer;transition:all .15s
-}
+.reset-option{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:#fff;border:1.5px solid var(--gray-200);border-radius:10px;cursor:pointer;transition:all .15s}
 .reset-option:hover{border-color:var(--danger);background:#fef2f2}
-.reset-option input[type="checkbox"]{
-  margin-top:3px;width:18px;height:18px;accent-color:var(--danger);cursor:pointer;flex-shrink:0
-}
+.reset-option input[type="checkbox"]{margin-top:3px;width:18px;height:18px;accent-color:var(--danger);cursor:pointer;flex-shrink:0}
 .reset-option:has(input:checked){border-color:var(--danger);background:#fef2f2;box-shadow:0 0 0 3px rgba(239,68,68,.1)}
-
-/* ===== Comparison Table — Clean ===== */
 .cmp-emp-card .table-wrap{border:1px solid #e5e7eb;border-radius:10px;overflow:hidden}
 .cmp-emp-card th{background:#f9fafb;font-size:11.5px;padding:10px 8px;border-bottom:1px solid #e5e7eb;color:#4b5563;font-weight:700}
 .cmp-emp-card td{padding:10px 8px;font-size:12.5px;vertical-align:middle;border-bottom:1px solid #f3f4f6}
@@ -380,62 +221,21 @@ tbody tr:last-child td{border-bottom:none}
 .cmp-emp-card .report-summary{background:#f9fafb;border-radius:10px;padding:12px 16px;font-size:12px;gap:12px 18px;border:1px solid #f3f4f6}
 .cmp-emp-card .report-summary b{font-size:13.5px;font-weight:800}
 .cmp-emp-card .report-name{font-size:16px;letter-spacing:-.2px}
-
-/* ===== الطباعة ===== */
 .print-header,.print-footer{display:none}
-
 @media print{
   .sidebar,.header,.btn,.no-print{display:none !important}
   .app{display:block}
   .main{padding:0;overflow:visible}
   .card,.report-card,.branch-section,.branch-card{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}
   body{background:#fff;padding-top:74px !important;padding-bottom:44px !important}
-
-  .print-header{
-    display:flex;
-    position:fixed;
-    top:0;left:0;right:0;
-    align-items:center;
-    justify-content:center;
-    padding:10px 16px;
-    border-bottom:2px solid #111;
-    background:#fff;
-    z-index:1000;
-    min-height:60px;
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-  }
-  .print-header .ph-logo{
-    position:absolute;
-    left:16px;
-    top:50%;
-    transform:translateY(-50%);
-    max-height:48px;
-    max-width:130px;
-    object-fit:contain;
-  }
-  .print-header .ph-name{
-    font-size:20px;
-    font-weight:800;
-    letter-spacing:.5px;
-    padding:0 150px;
-    text-align:center;
-    line-height:1.2;
-  }
-
-  .print-footer{
-    display:flex;position:fixed;bottom:0;left:0;right:0;
-    justify-content:space-between;align-items:center;
-    padding:8px 16px;border-top:1px solid #999;
-    background:#fff;font-size:11px;color:#444;z-index:1000;
-    -webkit-print-color-adjust:exact;print-color-adjust:exact;
-  }
+  .print-header{display:flex;position:fixed;top:0;left:0;right:0;align-items:center;justify-content:center;padding:10px 16px;border-bottom:2px solid #111;background:#fff;z-index:1000;min-height:60px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .print-header .ph-logo{position:absolute;left:16px;top:50%;transform:translateY(-50%);max-height:48px;max-width:130px;object-fit:contain}
+  .print-header .ph-name{font-size:20px;font-weight:800;letter-spacing:.5px;padding:0 150px;text-align:center;line-height:1.2}
+  .print-footer{display:flex;position:fixed;bottom:0;left:0;right:0;justify-content:space-between;align-items:center;padding:8px 16px;border-top:1px solid #999;background:#fff;font-size:11px;color:#444;z-index:1000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .print-footer .pf-right{font-weight:700}
-
   .app{position:relative;z-index:1}
   .main{padding-top:0 !important}
   .cmp-emp-card,.report-card,.branch-section,.card{position:relative;z-index:1;background:#fff}
-
   .cmp-emp-card{page-break-after:always;page-break-inside:auto;box-shadow:none !important;border:1px solid #ddd;margin-bottom:0}
   .cmp-emp-card:last-child{page-break-after:auto}
   body.cmp-printing-single .cmp-emp-card:not(.cmp-print-target){display:none !important}
@@ -538,15 +338,14 @@ const UI = {};
 const DAYS = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const STATUS = { present:'حاضر', absent:'غائب', leave:'أجازة', mission:'مهمة' };
 const PERM = { none:'بدون', hour:'إذن ساعات', day:'يوم كامل' };
-
-const DEFAULT_CMP_TOLERANCE = 15;
+const DEFAULT_TOL = 15;
 
 const $ = id => document.getElementById(id);
 const showLoader = v => $('loader').style.display = v ? 'flex' : 'none';
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s==null?'':s).trim().toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/\s+/g,'');
 const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
-const getCmpTolerance = () => num(DB.settings?.cmpTolerance ?? DEFAULT_CMP_TOLERANCE);
+const getTol = () => num(DB.settings?.cmpTolerance ?? DEFAULT_TOL);
 
 const localKey = d => {
   const dt = (d instanceof Date) ? d : new Date(d);
@@ -885,10 +684,6 @@ function renderDashboard(){
 }
 function viewBranchToday(bId){ UI.dailyBranch = bId; navigateTo('daily'); }
 
-/* ============================================================
-   📅 التسجيل اليومي — كروت
-   ============================================================ */
-
 function renderDaily(){
   const isAdmin = currentUser.role === 'admin';
   const date = UI.dailyDate || today();
@@ -1050,19 +845,15 @@ function setDailyFilter(f){ UI.dailyFilter = f; renderPage(); }
 function setStatus(empId, status){
   const card = document.querySelector(`.emp-card[data-empid="${empId}"]`);
   if(!card) return;
-
   card.querySelectorAll('.status-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.status === status);
   });
-
   const timeFields = card.querySelector('.time-fields');
   if(timeFields){
     timeFields.style.display = (status === 'present') ? '' : 'none';
   }
-
   card.classList.remove('status-absent','status-leave','status-mission');
   if(status !== 'present') card.classList.add(`status-${status}`);
-
   saveCard(empId);
 }
 
@@ -1078,7 +869,6 @@ function togglePermField(empId){
 function saveCard(empId){
   const card = document.querySelector(`.emp-card[data-empid="${empId}"]`);
   if(!card) return;
-
   const indicator = card.querySelector('.save-indicator');
   if(indicator){
     indicator.textContent = '⏳ جاري الحفظ';
@@ -1087,7 +877,6 @@ function saveCard(empId){
   }
   card.classList.add('saving');
   card.classList.remove('saved');
-
   clearTimeout(card.__t);
   card.__t = setTimeout(async () => {
     await persistCard(card, empId);
@@ -1229,10 +1018,6 @@ async function copyFromYesterday(bId, date){
   alert('✅ تم النسخ — اضغط «حفظ الكل» للتأكيد');
 }
 
-/* ============================================================
-   أدوات مساعدة — تحويل الأرقام العربية والتواريخ
-   ============================================================ */
-
 const AR_DIGITS = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
 
 function arNum(v){
@@ -1263,11 +1048,7 @@ function arTime(hm){
 
 function fmtMinsAr(m){ return arNum(fmtMins(m)); }
 
-/* ============================================================
-   WhatsApp Sharing
-   ============================================================ */
-
-const NON_PRESENT_STATUSES = ['غياب','أجازة','مهمة','بصمة ناقصة'];
+const NON_PRESENT = ['غياب','أجازة','مهمة','بصمة ناقصة'];
 
 function buildDailyWhatsAppText(bId, date){
   const branch = getBranch(bId);
@@ -1300,7 +1081,7 @@ function buildDailyWhatsAppText(bId, date){
     else present++;
 
     let line = e.name;
-    if(!NON_PRESENT_STATUSES.includes(day.status) && day.timeIn && day.timeOut){
+    if(!NON_PRESENT.includes(day.status) && day.timeIn && day.timeOut){
       line += `\n     🕐 دخول: ${arTime(day.timeIn)}  ←  خروج: ${arTime(day.timeOut)}`;
     } else {
       line += `\n     📌 ${day.status}`;
@@ -1391,7 +1172,7 @@ function buildEmployeeWhatsAppText(){
     lines.push(`🏢 ${b.branchName}  (${fmtDateArFull(b.firstDate)} ← ${fmtDateArFull(b.lastDate)})`);
     b.days.forEach(d => {
       let line = `${d.dateKey}`;
-      if(!NON_PRESENT_STATUSES.includes(d.status) && d.timeIn && d.timeOut){
+      if(!NON_PRESENT.includes(d.status) && d.timeIn && d.timeOut){
         line += `\n     🕐 دخول: ${arTime(d.timeIn)}  ←  خروج: ${arTime(d.timeOut)}`;
       } else {
         line += `\n     📌 ${d.status}`;
@@ -1557,10 +1338,6 @@ function shareCompareWhatsApp(){
   openWhatsAppShare(text, `مقارنة ${branchName(lastComparison.branchId)}`);
 }
 
-/* ============================================================
-   الإعدادات
-   ============================================================ */
-
 function renderSettings(){
   const isAdmin = currentUser.role === 'admin';
   const tab = UI.settingsTab || 'branches';
@@ -1594,12 +1371,8 @@ function renderSettings(){
 }
 function setSettingsTab(t){ UI.settingsTab = t; renderPage(); }
 
-/* ============================================================
-   ⚖️ إعدادات المقارنة
-   ============================================================ */
-
 function renderCompareSettingsTab(){
-  const t = DB.settings?.cmpTolerance ?? DEFAULT_CMP_TOLERANCE;
+  const t = DB.settings?.cmpTolerance ?? DEFAULT_TOL;
   return `
     <div class="card" style="background:var(--gray-50);box-shadow:none;border:1px solid var(--gray-200)">
       <div style="font-size:14px;font-weight:700;margin-bottom:14px">⚖️ إعدادات المقارنة</div>
@@ -1622,8 +1395,7 @@ function renderCompareSettingsTab(){
       </div>
 
       <div class="alert alert-info" style="margin-top:10px;display:block;background:#f0f9ff;border-color:#bae6fd;color:#075985">
-        📌 <b>ملحوظة عن الإذن:</b> الإذن اللي بيتكتب في التسجيل اليومي (مثلاً "تأخير نصف ساعة")
-        بيظهر كـ <b>معلومة فقط</b> في تقرير المقارنة — مش بيأثر على ساعات البصمة، وبيتخصم بس من ساعات الفرع.
+        📌 <b>ملحوظة:</b> الإذن اللي بيتكتب في التسجيل اليومي بيظهر كـ <b>معلومة فقط</b> في تقرير المقارنة — مش بيأثر على ساعات البصمة، وبيتخصم بس من ساعات الفرع.
       </div>
     </div>`;
 }
@@ -1639,10 +1411,6 @@ async function saveCompareTolerance(){
   } catch(e){ alert(e.message); }
   finally { showLoader(false); }
 }
-
-/* ============================================================
-   🎨 هوية الشركة
-   ============================================================ */
 
 function renderBrandingTab(){
   const name = DB.settings?.companyName || '';
@@ -1660,7 +1428,7 @@ function renderBrandingTab(){
       </div>
 
       <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-200)">
-        <div style="font-size:13.5px;font-weight:700;margin-bottom:10px">🖼️ لوجو الشركة (صغير على شمال الهيدر)</div>
+        <div style="font-size:13.5px;font-weight:700;margin-bottom:10px">🖼️ لوجو الشركة</div>
 
         <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
           <div style="flex:1;min-width:250px">
@@ -1669,7 +1437,7 @@ function renderBrandingTab(){
               <div style="font-size:36px;margin-bottom:6px">🖼️</div>
               <div style="font-size:13px;font-weight:700">اختيار لوجو (PNG / JPG / SVG)</div>
               <div class="muted" style="margin-top:4px;font-size:11px">
-                💡 الصورة هتتضغط تلقائيًا لأقصى ٣٥٠ بكسل — الأفضل لوجو عرضي بخلفية شفافة
+                💡 الصورة هتتضغط تلقائيًا لأقصى ٣٥٠ بكسل
               </div>
             </div>
           </div>
@@ -1703,9 +1471,6 @@ function renderBrandingTab(){
               <span>🏢 اسم الفرع</span>
               <span>📅 ${new Date().toLocaleDateString('ar-EG')}</span>
             </div>
-          </div>
-          <div class="muted" style="font-size:11px;margin-top:8px;text-align:center">
-            🔎 المعاينة تقريبية — الطباعة الفعلية بتشتغل على كل صفحة تلقائيًا
           </div>
         </div>
       ` : ''}
@@ -1824,10 +1589,6 @@ function updatePrintBranding(branchNameForPrint){
   }
 }
 
-/* ============================================================
-   🗑️ تهيئة / حذف البيانات
-   ============================================================ */
-
 function renderResetTab(){
   return `
     <div class="card" style="border:2px solid var(--danger);background:#fef2f2">
@@ -1839,7 +1600,7 @@ function renderResetTab(){
       </div>
 
       <div class="alert alert-danger">
-        ⚠️ <b>تحذير:</b> الحذف نهائي! اعمل نسخة احتياطية الأول (من كارت النظام والإدارة تحت).
+        ⚠️ <b>تحذير:</b> الحذف نهائي! اعمل نسخة احتياطية الأول.
       </div>
 
       <div style="background:#fff;border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:14px">
@@ -1856,10 +1617,6 @@ function renderResetTab(){
         <div class="form-row" style="margin-bottom:0">
           <div class="field"><label>من تاريخ (اختياري)</label><input type="date" id="resetFrom"></div>
           <div class="field"><label>إلى تاريخ (اختياري)</label><input type="date" id="resetTo"></div>
-        </div>
-        <div class="muted" style="font-size:11.5px;margin-top:8px">
-          💡 الفترة تنطبق على <b>التسجيل اليومي</b> و<b>البصمات</b> بس.
-          الموظفين والشفتات بيتحذفوا حسب الفرع كامل.
         </div>
       </div>
 
@@ -1974,7 +1731,6 @@ function previewReset(){
       <div style="margin-top:10px;padding-top:10px;border-top:1px solid #bfdbfe;font-weight:700;font-size:14px">
         🗑️ الإجمالي المرشح للحذف: <span style="color:var(--danger)">${arNum(total)} سجل</span>
       </div>
-      ${total === 0 ? '<div class="muted" style="margin-top:8px;font-size:12px">⚠️ مفيش بيانات مطابقة للنطاق المحدد</div>' : ''}
     </div>`;
 }
 
@@ -1984,10 +1740,6 @@ async function executeReset(){
   const counts = countResetRecords(cfg);
   const total = Object.values(counts).reduce((s, n) => s + n, 0);
   if(!total){ alert('مفيش بيانات مطابقة للحذف'); return; }
-
-  if(cfg.targets.includes('employees') && !cfg.targets.includes('daily') && !cfg.targets.includes('punches')){
-    if(!confirm('⚠️ تحذير: هتحذف موظفين بدون حذف تسجيلاتهم وبصماتهم\n\nده هيسيب بيانات orphaned. تحب تختار «التسجيل اليومي» + «البصمات» كمان؟\n\nاضغط Cancel للرجوع.')) return;
-  }
 
   const hasPass = !!DB.settings?.maintenancePasswordHash;
   if(hasPass){
@@ -2003,7 +1755,7 @@ async function executeReset(){
   const labels = { daily:'التسجيل اليومي', punches:'البصمات', employees:'الموظفين', shifts:'الشفتات' };
   const summary = Object.entries(counts).map(([k, n]) => `• ${labels[k]}: ${n}`).join('\n');
   if(!confirm(`⚠️ سيتم حذف نهائي:\n\n${summary}\n\nالإجمالي: ${total}\n\nهل أنت متأكد؟`)) return;
-  if(!confirm('🚨 تأكيد أخير — لا يمكن التراجع!\n\nاضغط OK للتنفيذ.')) return;
+  if(!confirm('🚨 تأكيد أخير — لا يمكن التراجع!')) return;
 
   showLoader(true);
   try {
@@ -2044,10 +1796,6 @@ async function executeReset(){
   }
 }
 
-/* ============================================================
-   كارت النظام والإدارة
-   ============================================================ */
-
 function renderSystemAdminCard(){
   const m = DB.settings?.maintenance || false;
   const hasPass = !!DB.settings?.maintenancePasswordHash;
@@ -2076,7 +1824,7 @@ function renderSystemAdminCard(){
           <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreSystem(event)">
         </div>
         <div class="alert alert-warning" style="margin-top:12px;margin-bottom:0;font-size:12px">
-          ⚠️ الاسترجاع يستبدل كل الداتا الحالية بالكامل — متابعة بحذر
+          ⚠️ الاسترجاع يستبدل كل الداتا الحالية بالكامل
         </div>
       </div>
 
@@ -2087,7 +1835,7 @@ function renderSystemAdminCard(){
               ${m ? '🔴 النظام تحت الصيانة' : '🟢 النظام يعمل بشكل طبيعي'}
             </div>
             <div class="muted" style="font-size:12.5px">
-              ${m ? 'الفروع لا تستطيع تسجيل الدخول — الأدمن فقط' : 'عند تفعيل الصيانة، لن تستطيع الفروع الدخول، وأنت فقط تقدر'}
+              ${m ? 'الفروع لا تستطيع تسجيل الدخول — الأدمن فقط' : 'عند تفعيل الصيانة، لن تستطيع الفروع الدخول'}
             </div>
           </div>
           <button class="btn ${m ? 'btn-success' : 'btn-warning'}" onclick="toggleMaintenance()" style="min-width:180px">
@@ -2098,18 +1846,10 @@ function renderSystemAdminCard(){
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid ${m ? '#fecaca' : 'var(--gray-100)'}">
             <button class="btn btn-outline btn-sm" onclick="changeMaintenancePassword()">🔑 تغيير كلمة مرور الصيانة</button>
           </div>
-        ` : `
-          <div class="muted" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--gray-100);font-size:12px">
-            💡 عند أول تفعيل للصيانة، سيتم طلب كلمة مرور منك
-          </div>
-        `}
+        ` : ''}
       </div>
     </div>`;
 }
-
-/* ============================================================
-   الفروع — كروت + مودال إضافة
-   ============================================================ */
 
 function renderBranchesTab(){
   const cards = DB.branches.map(b => {
@@ -2163,7 +1903,6 @@ function renderBranchesTab(){
         <div class="empty">
           <div class="empty-icon">🏢</div>
           <div class="empty-title">لا توجد فروع</div>
-          <div class="muted mt-2">اضغط "إضافة فرع جديد" للبدء</div>
           <button class="btn btn-primary mt-3" onclick="openAddBranchModal()">➕ إضافة أول فرع</button>
         </div>
       </div>
@@ -2173,10 +1912,6 @@ function renderBranchesTab(){
 function openAddBranchModal(){
   showModal(`
     <div class="modal-header">➕ إضافة فرع جديد</div>
-    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px;margin-bottom:16px;font-size:12.5px;color:#1e40af">
-      💡 كل فرع بياخد حساب دخول خاص بيه — استخدم بيانات الدخول لفتح النظام من الفرع.
-    </div>
-
     <div class="field" style="margin-bottom:12px">
       <label>🏢 اسم الفرع *</label>
       <input id="brName" placeholder="مثال: فرع القاهرة">
@@ -2249,7 +1984,7 @@ async function editBranchWhatsApp(bId){
   const b = getBranch(bId);
   if(!b) return;
   const cur = b.whatsapp || '';
-  const np = prompt('📱 رقم واتساب الفرع (صيغة دولية بدون + أو مسافات):\nمثال: 201012345678\n\nاتركه فارغ للحذف:', cur);
+  const np = prompt('📱 رقم واتساب الفرع:\nمثال: 201012345678\n\nاتركه فارغ للحذف:', cur);
   if(np === null) return;
   const clean = String(np).trim().replace(/[^\d+]/g,'').replace(/^\+/,'');
   showLoader(true);
@@ -2282,7 +2017,7 @@ async function editBranchPass(bId){
 }
 
 async function deleteBranch(id){
-  if(!confirm('⚠️ سيتم حذف الفرع وكل بياناته (موظفين، بصمات، تسجيلات). متابعة؟')) return;
+  if(!confirm('⚠️ سيتم حذف الفرع وكل بياناته. متابعة؟')) return;
   showLoader(true);
   try {
     await fsDel('branches', id);
@@ -2296,10 +2031,6 @@ async function deleteBranch(id){
   } catch(e){ alert(e.message); }
   finally { showLoader(false); }
 }
-
-/* ============================================================
-   الشفتات
-   ============================================================ */
 
 function renderShiftsTab(){
   const branchOpts = DB.branches.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
@@ -2390,10 +2121,6 @@ async function deleteShift(id){
   } catch(e){ alert(e.message); }
   finally { showLoader(false); }
 }
-
-/* ============================================================
-   الموظفين
-   ============================================================ */
 
 function renderEmployeesTab(){
   const bId = UI.empBranchFilter || '';
@@ -2719,10 +2446,6 @@ async function importEmployees(ev){
   reader.readAsArrayBuffer(file);
 }
 
-/* ============================================================
-   رفع البصمة
-   ============================================================ */
-
 function renderUploads(){
   const branchOpts = DB.branches.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
   return `
@@ -2812,10 +2535,6 @@ async function handleUpload(ev){
   };
   reader.readAsArrayBuffer(file);
 }
-
-/* ============================================================
-   حساب اليوم
-   ============================================================ */
 
 function detectShift(empId, excludeDate){
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 45);
@@ -2939,10 +2658,6 @@ function calcEmp(emp, from, to, branchId){
   });
   return { emp, days: results, totals: t };
 }
-
-/* ============================================================
-   التقارير
-   ============================================================ */
 
 function renderReports(){
   const bId = UI.repBranch || (DB.branches[0]?.id || '');
@@ -3119,9 +2834,6 @@ function exportReport(){
   XLSX.writeFile(wb, `تقرير_${branchName(lastReport.branchId)}_${today()}.xlsx`);
 }
 
-/* ============================================================
-   سجل الموظف الكامل
-   ============================================================ */
 function renderEmployeeHistory(){
   const filterBranchId = UI.empBranchFilter || '';
   const empId = UI.empReportId || '';
@@ -3461,7 +3173,7 @@ function exportEmployeeReport(){
   summaryRows.push({ 'البند': 'الفرع الحالي', 'القيمة': branchName(emp.branchId) });
   summaryRows.push({ 'البند': 'الفترة', 'القيمة': `${from || '—'} → ${to || '—'}` });
   summaryRows.push({ 'البند': '', 'القيمة': '' });
-  summaryRows.push({ 'البند': '📊 الإجمالي الكامل', 'القيمة': '' });
+  summaryRows.push({ 'البند': 'الإجمالي', 'القيمة': '' });
   summaryRows.push({ 'البند': 'عدد الأيام', 'القيمة': grand.days });
   summaryRows.push({ 'البند': 'حضور', 'القيمة': grand.present });
   summaryRows.push({ 'البند': 'غياب', 'القيمة': grand.absent });
@@ -3474,7 +3186,7 @@ function exportEmployeeReport(){
 
   if(transferHistory.length){
     summaryRows.push({ 'البند': '', 'القيمة': '' });
-    summaryRows.push({ 'البند': '🔄 سجل التنقلات', 'القيمة': '' });
+    summaryRows.push({ 'البند': 'سجل التنقلات', 'القيمة': '' });
     transferHistory.forEach(h => {
       summaryRows.push({ 'البند': `${h.fromName} ← ${h.toName}`, 'القيمة': `${h.date}${h.reason ? ' — ' + h.reason : ''}` });
     });
@@ -3522,10 +3234,6 @@ function selectEmpBranch(v){ UI.empBranchFilter = v; UI.empReportId = ''; lastEm
 function selectEmployee(id){ UI.empReportId = id; lastEmpReport = null; renderPage(); }
 function clearEmpSelection(){ UI.empReportId = ''; lastEmpReport = null; renderPage(); }
 
-/* ============================================================
-   🔍 المقارنة
-   ============================================================ */
-
 function timeToMins(t){
   if(!t || t === '—') return null;
   const [h,m] = String(t).split(':').map(Number);
@@ -3557,7 +3265,7 @@ function calcPunchMins(pIn, pOut){
 }
 
 function compareDayFull(emp, dateKey, dailyRec, punches){
-  const TOL = getCmpTolerance();
+  const TOL = getTol();
   const r = {
     empId: emp.id, empName: emp.name, empCode: emp.code,
     dateKey, day: dayName(dateKey),
@@ -3596,7 +3304,7 @@ function compareDayFull(emp, dateKey, dailyRec, punches){
 
   if(!dailyRec && r.hasPunch){
     r.level = 'pending';
-    r.issues.push('الفرع لم يسجل — في انتظار التسجيل');
+    r.issues.push('الفرع لم يسجل');
     return r;
   }
   if(!dailyRec && !r.hasPunch){
@@ -3654,7 +3362,6 @@ function compareDayFull(emp, dateKey, dailyRec, punches){
     }
   }
 
-  // الإذن — معلومة فقط، مش بيدخل في "المشاكل"
   if(r.branchPermType === 'hour' && r.branchPermHours > 0){
     r.permInfo = `إذن ${r.branchPermHours} س`;
   } else if(r.branchPermType === 'day'){
@@ -3801,7 +3508,6 @@ function renderCompare(){
   if(lastComparison && lastComparison.rows.length){
     const { rows, summary } = lastComparison;
 
-    // لو الفرع مكتبش خالص — بانر تحذيري
     const branchRecCount = rows.filter(r => r.branchIn || r.branchOut).length;
     const noBranchData = branchRecCount === 0;
 
@@ -3836,7 +3542,7 @@ function renderCompare(){
       const byEmp = buildComparisonByEmployee(filtered);
       const cardsHtml = byEmp.length ? byEmp.map(m => {
         const netDiff = m.totals.branchNetTotal - m.totals.punchTotal;
-        const tol = getCmpTolerance();
+        const tol = getTol();
         const diffColor = Math.abs(netDiff) <= tol ? 'var(--success)'
           : netDiff > 0 ? 'var(--primary)' : 'var(--danger)';
 
@@ -3885,7 +3591,7 @@ function renderCompare(){
 
         return `<div class="cmp-emp-card report-card" data-cmp-emp="${m.empId}">
           <div class="cmp-print-only">
-            تقرير المقارنة — ${esc(branchName(lastComparison.branchId))} — الفترة: ${from || 'البداية'} ← ${to || 'الآن'} — سماحية ${arNum(getCmpTolerance())} دقيقة
+            تقرير المقارنة — ${esc(branchName(lastComparison.branchId))} — الفترة: ${from || 'البداية'} ← ${to || 'الآن'} — سماحية ${arNum(getTol())} دقيقة
           </div>
           <div class="report-header">
             <div>
@@ -3910,8 +3616,8 @@ function renderCompare(){
           <div class="table-wrap"><table>
             <thead><tr>
               <th>التاريخ</th>
-              <th>جدول الفرع<br><span style="font-weight:400;font-size:10px">دخول ← خروج + إذن</span></th>
-              <th>البصمة<br><span style="font-weight:400;font-size:10px">دخول ← خروج</span></th>
+              <th>جدول الفرع</th>
+              <th>البصمة</th>
               <th>صافي الفرع</th>
               <th>ساعات البصمة</th>
               <th>الفرق</th>
@@ -3944,7 +3650,7 @@ function renderCompare(){
       const sumRows = buildSummaryRows(rows);
       const rowsHtml = sumRows.length ? sumRows.map(m => {
         const netDiff = m.totalBranchNet - m.totalPunch;
-        const tol = getCmpTolerance();
+        const tol = getTol();
         const diffColor = Math.abs(netDiff) <= tol ? 'var(--success)' :
           netDiff > 0 ? 'var(--primary)' : 'var(--danger)';
         return `<tr>
@@ -4000,7 +3706,7 @@ function renderCompare(){
     <div class="card-header">
       <div>
         <div class="card-title">🔍 مقارنة جدول الفرع مع البصمة</div>
-        <div class="card-subtitle">السماحية: ${arNum(getCmpTolerance())} دقيقة — الإذن يظهر في الفرع فقط، ولا يؤثر على البصمة</div>
+        <div class="card-subtitle">السماحية: ${arNum(getTol())} دقيقة — الإذن يظهر في الفرع فقط، ولا يؤثر على البصمة</div>
       </div>
     </div>
     <div class="form-row">
@@ -4079,10 +3785,6 @@ function exportComparison(){
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summary), 'ملخص');
   XLSX.writeFile(wb, `مقارنة_${branchName(branchId)}_${today()}.xlsx`);
 }
-
-/* ============================================================
-   النسخ الاحتياطي والصيانة
-   ============================================================ */
 
 async function backupSystem(){
   showLoader(true);
@@ -4232,10 +3934,7 @@ async function changeMaintenancePassword(){
   alert('✅ تم تغيير كلمة المرور');
 }
 
-/* ============================================================
-   تصدير الدوال للنطاق العام — نسخة آمنة
-   ============================================================ */
-const __exports = {
+const api = {
   doLogin, doLogout, toggleSidebar, navigateTo, renderPage,
   setSettingsTab, submitAddBranch, openAddBranchModal, setDefaultShift, editBranchPass, deleteBranch,
   autoShiftHours, addShift, deleteShift,
@@ -4253,16 +3952,13 @@ const __exports = {
   setCmpFilter, setCmpTab, generateComparison, exportComparison, shareCompareWhatsApp,
   printComparison,
   saveCompanyIdentity, uploadLogo, removeLogo, updatePrintBranding,
-  saveCompareTolerance,
-  previewReset, executeReset,
+  saveCompareTolerance, previewReset, executeReset,
   backupSystem, restoreSystem, toggleMaintenance, changeMaintenancePassword, renderSystemAdminCard
 };
-for(const k in __exports){
-  if(typeof __exports[k] === 'function') window[k] = __exports[k];
-}
+Object.keys(api).forEach(k => { if(typeof api[k] === 'function') window[k] = api[k]; });
 window.$ = $;
 
-(async function init(){
+(async function(){
   showLoader(true);
   try {
     await checkSetup();
