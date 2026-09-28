@@ -158,6 +158,9 @@ tbody tr:last-child td{border-bottom:none}
 .mt-4{margin-top:16px}
 .inactive-row{opacity:.55}
 .wa-preview{width:100%;min-height:320px;padding:12px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:inherit;font-size:13px;resize:vertical;white-space:pre-wrap;direction:rtl;text-align:right;background:var(--gray-50);line-height:1.9}
+.row-match{background:#f0fdf4}
+.row-warn{background:#fffbeb}
+.row-error{background:#fef2f2}
 @media print{.sidebar,.header,.btn,.no-print{display:none !important}.app{display:block}.main{padding:0;overflow:visible}.card,.report-card,.branch-section{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}body{background:#fff}}
 </style>
 </head>
@@ -241,6 +244,7 @@ let currentUser = null;
 let activePage = 'dashboard';
 let lastReport = null;
 let lastEmpReport = null;
+let lastComparison = null;
 let unsubs = [];
 const UI = {};
 
@@ -350,7 +354,7 @@ function startLive(){
   ['daily','punches','employees','shifts','branches','users'].forEach(col => {
     unsubs.push(onSnapshot(collection(db, col), snap => {
       DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      if(currentUser && !['reports','employee'].includes(activePage)) refreshPage();
+      if(currentUser && !['reports','employee','compare'].includes(activePage)) refreshPage();
     }, err => { console.error('onSnapshot error for', col, err); }));
   });
 }
@@ -444,7 +448,7 @@ function enterApp(){
   $('userAvatar').textContent = (currentUser.name || 'م').charAt(0).toUpperCase();
   $('sidebarRole').textContent = role;
   if(currentUser.role === 'admin'){
-    if(!['dashboard','daily','settings','uploads','reports','employee'].includes(activePage)) activePage = 'dashboard';
+    if(!['dashboard','daily','settings','uploads','reports','employee','compare'].includes(activePage)) activePage = 'dashboard';
   } else {
     activePage = 'daily';
   }
@@ -461,7 +465,8 @@ function buildNav(){
     { id:'settings', icon:'⚙️', label:'الإعدادات' },
     { id:'uploads', icon:'📥', label:'رفع البصمة' },
     { id:'reports', icon:'📈', label:'التقارير' },
-    { id:'employee', icon:'👤', label:'سجل الموظف' }
+    { id:'employee', icon:'👤', label:'سجل الموظف' },
+    { id:'compare', icon:'🔍', label:'المقارنة' }
   ] : [{ id:'daily', icon:'📅', label:'التسجيل اليومي' }];
   $('navMenu').innerHTML = `
     <div class="nav-group">
@@ -488,9 +493,9 @@ function refreshPage(){
   renderPage();
 }
 function renderPage(){
-  const titles = { dashboard:'الرئيسية', daily:'التسجيل اليومي', settings:'الإعدادات', uploads:'رفع البصمة', reports:'التقارير', employee:'سجل الموظف' };
+  const titles = { dashboard:'الرئيسية', daily:'التسجيل اليومي', settings:'الإعدادات', uploads:'رفع البصمة', reports:'التقارير', employee:'سجل الموظف', compare:'🔍 المقارنة' };
   $('pageTitle').textContent = titles[activePage] || '';
-  const content = { dashboard: renderDashboard, daily: renderDaily, settings: renderSettings, uploads: renderUploads, reports: renderReports, employee: renderEmployeeHistory };
+  const content = { dashboard: renderDashboard, daily: renderDaily, settings: renderSettings, uploads: renderUploads, reports: renderReports, employee: renderEmployeeHistory, compare: renderCompare };
   $('mainContent').innerHTML = content[activePage]?.() || '';
 }
 
@@ -775,13 +780,16 @@ function arTime(hm){
   return `${arNum(h12)}:${arNum(String(m).padStart(2,'0'))} ${period}`;
 }
 
+function fmtMinsAr(m){
+  return arNum(fmtMins(m));
+}
+
 /* ============================================================
-   WhatsApp Sharing — الشكل المبسط المطلوب
+   WhatsApp Sharing
    ============================================================ */
 
 const NON_PRESENT_STATUSES = ['غياب','أجازة','مهمة','بصمة ناقصة'];
 
-/** تقرير الحضور اليومي — الاسم + (دخول/خروج أو الحالة) */
 function buildDailyWhatsAppText(bId, date){
   const branch = getBranch(bId);
   const emps = DB.employees
@@ -839,7 +847,6 @@ function buildDailyWhatsAppText(bId, date){
   return txt;
 }
 
-/** تقرير التقارير — ملخص + كل موظف بأيامه */
 function buildReportWhatsAppText(){
   if(!lastReport || !lastReport.rows.length) return '';
   const { rows, branchId, from, to } = lastReport;
@@ -879,15 +886,12 @@ function buildReportWhatsAppText(){
 
   txt += lines.length ? lines.join('\n\n') : 'لا توجد بيانات';
   txt += `\n━━━━━━━━━━━━━━━━━━`;
-
   return txt;
 }
 
-/** سجل الموظف — تفاصيل يومية (دخول/خروج أو الحالة) */
 function buildEmployeeWhatsAppText(){
   if(!lastEmpReport) return '';
   const { emp, from, to, branchStats, grand } = lastEmpReport;
-
   const period = `${from ? fmtDateArFull(from) : 'البداية'} ← ${to ? fmtDateArFull(to) : 'الآن'}`;
 
   let txt = `━━━━━━━━━━━━━━━━━━\n`;
@@ -915,7 +919,6 @@ function buildEmployeeWhatsAppText(){
 
   txt += `━━━━━━━━━━━━━━━━━━\n`;
   txt += `📋 التفاصيل اليومية:\n\n`;
-
   const lines = [];
   branchStats.forEach(b => {
     lines.push(`🏢 ${b.branchName}  (${fmtDateArFull(b.firstDate)} ← ${fmtDateArFull(b.lastDate)})`);
@@ -930,14 +933,54 @@ function buildEmployeeWhatsAppText(){
     });
     lines.push('');
   });
-
   txt += lines.length ? lines.join('\n') : 'لا توجد سجلات';
   txt += `\n━━━━━━━━━━━━━━━━━━`;
-
   return txt;
 }
 
-/** فتح نافذة مشاركة الواتساب */
+function buildCompareWhatsAppText(){
+  if(!lastComparison || !lastComparison.rows.length) return '';
+  const { rows, summary, branchId, from, to } = lastComparison;
+  const period = `${from ? fmtDateArFull(from) : 'البداية'} ← ${to ? fmtDateArFull(to) : 'الآن'}`;
+
+  let txt = `━━━━━━━━━━━━━━━━━━\n`;
+  txt += `🔍 تقرير المقارنة\n`;
+  txt += `🏢 الفرع: ${branchName(branchId)}\n`;
+  txt += `📅 الفترة: ${period}\n`;
+  txt += `━━━━━━━━━━━━━━━━━━\n`;
+  txt += `📊 الملخص:\n`;
+  txt += `✅ مطابق: ${arNum(summary.match)}\n`;
+  txt += `⚠️ فروقات: ${arNum(summary.warn)}\n`;
+  txt += `❌ تناقضات: ${arNum(summary.error)}\n`;
+  txt += `━━━━━━━━━━━━━━━━━━\n`;
+
+  const issues = rows.filter(r => r.level === 'error' || r.level === 'warn');
+  if(!issues.length){
+    txt += `🎉 لا توجد فروقات — كل حاجة مطابقة\n`;
+  } else {
+    txt += `⚠️ الفروقات والتناقضات:\n\n`;
+    const lines = issues.slice(0, 60).map(r => {
+      let line = `${r.empName} — ${r.dateKey}`;
+      line += `\n     📌 ${r.issues.join(' | ')}`;
+      if(r.branchIn || r.branchOut){
+        line += `\n     🏢 الفرع: ${arTime(r.branchIn) || '—'} ← ${arTime(r.branchOut) || '—'}`;
+        if(r.branchNetMins !== null) line += ` (صافي ${fmtMinsAr(r.branchNetMins)})`;
+      } else if(r.branchStatus !== 'present'){
+        line += `\n     🏢 الفرع: ${STATUS[r.branchStatus] || r.branchStatus}`;
+      }
+      if(r.hasPunch){
+        line += `\n     📥 البصمة: ${arTime(r.punchIn) || '—'} ← ${arTime(r.punchOut) || '—'}`;
+        if(r.punchMins !== null) line += ` (${fmtMinsAr(r.punchMins)})`;
+      }
+      return line;
+    });
+    txt += lines.join('\n\n');
+    if(issues.length > 60) txt += `\n\n... و${arNum(issues.length - 60)} صف إضافي`;
+  }
+  txt += `\n━━━━━━━━━━━━━━━━━━`;
+  return txt;
+}
+
 function openWhatsAppShare(text, title){
   if(!text){ alert('لا يوجد محتوى لمشاركته'); return; }
   let defaultPhone = '';
@@ -980,7 +1023,6 @@ function openWhatsAppShare(text, title){
   }, 100);
 }
 
-/** فتح واتساب مع النص */
 function sendWhatsApp(){
   const text = $('waText')?.value || '';
   if(!text){ alert('لا يوجد نص'); return; }
@@ -1009,7 +1051,6 @@ function sendWhatsApp(){
   closeModal();
 }
 
-/** نسخ النص للحافظة */
 function copyWhatsAppText(){
   const text = $('waText')?.value || '';
   if(!text) return;
@@ -1042,14 +1083,19 @@ function shareDailyWhatsApp(bId, date){
 function shareReportWhatsApp(){
   const text = buildReportWhatsAppText();
   if(!text){ alert('اعرض التقرير أولاً'); return; }
-  const title = `تقرير ${branchName(lastReport.branchId)}`;
-  openWhatsAppShare(text, title);
+  openWhatsAppShare(text, `تقرير ${branchName(lastReport.branchId)}`);
 }
 
 function shareEmployeeWhatsApp(){
   const text = buildEmployeeWhatsAppText();
   if(!text){ alert('اعرض السجل أولاً'); return; }
   openWhatsAppShare(text, `سجل ${lastEmpReport.emp.name}`);
+}
+
+function shareCompareWhatsApp(){
+  const text = buildCompareWhatsAppText();
+  if(!text){ alert('اعرض المقارنة أولاً'); return; }
+  openWhatsAppShare(text, `مقارنة ${branchName(lastComparison.branchId)}`);
 }
 
 /* ============================================================
@@ -2395,6 +2441,472 @@ function selectEmpBranch(v){ UI.empBranchFilter = v; UI.empReportId = ''; lastEm
 function selectEmployee(id){ UI.empReportId = id; lastEmpReport = null; renderPage(); }
 function clearEmpSelection(){ UI.empReportId = ''; lastEmpReport = null; renderPage(); }
 
+/* ============================================================
+   🔍 صفحة المقارنة — جدول الفرع vs شيت البصمة
+   ============================================================ */
+
+const CMP_TOLERANCE = 10; // سماحية الفرق بالدقايق
+
+function timeToMins(t){
+  if(!t || t === '—') return null;
+  const [h,m] = String(t).split(':').map(Number);
+  if(isNaN(h) || isNaN(m)) return null;
+  return h*60 + m;
+}
+
+/** حساب صافي ساعات الفرع بعد خصم الإذن */
+function calcBranchNetMins(dailyRec){
+  const inM = timeToMins(dailyRec.timeIn);
+  const outM = timeToMins(dailyRec.timeOut);
+  if(inM === null || outM === null) return null;
+  let workMins = outM - inM;
+  if(workMins < 0) workMins += 1440;
+  const perm = dailyRec.permType || 'none';
+  const permHours = num(dailyRec.permHours);
+  let permMins = 0;
+  if(perm === 'hour') permMins = Math.round(permHours * 60);
+  else if(perm === 'day') permMins = workMins;
+  return Math.max(0, workMins - permMins);
+}
+
+function calcPunchMins(pIn, pOut){
+  const inM = timeToMins(pIn);
+  const outM = timeToMins(pOut);
+  if(inM === null || outM === null) return null;
+  let workMins = outM - inM;
+  if(workMins < 0) workMins += 1440;
+  return workMins;
+}
+
+function compareDayFull(emp, dateKey, dailyRec, punches){
+  const r = {
+    empId: emp.id, empName: emp.name, empCode: emp.code,
+    dateKey, day: dayName(dateKey),
+    branchIn: '', branchOut: '', branchStatus: 'present',
+    branchPermType: 'none', branchPermHours: 0,
+    branchRawMins: null, branchNetMins: null,
+    punchIn: '', punchOut: '', hasPunch: false,
+    punchMins: null,
+    inDiff: null, outDiff: null, netDiff: null,
+    issues: [], level: 'match'
+  };
+
+  if(dailyRec){
+    r.branchIn = dailyRec.timeIn || '';
+    r.branchOut = dailyRec.timeOut || '';
+    r.branchStatus = dailyRec.status || 'present';
+    r.branchPermType = dailyRec.permType || 'none';
+    r.branchPermHours = num(dailyRec.permHours);
+    if(r.branchIn && r.branchOut){
+      r.branchRawMins = calcPunchMins(r.branchIn, r.branchOut);
+      r.branchNetMins = calcBranchNetMins(dailyRec);
+    }
+  }
+
+  if(punches && punches.length){
+    const sorted = punches.slice().sort((a,b) => a.timeMs - b.timeMs);
+    const cin = sorted.find(p => /in/i.test(p.status||'')) || sorted[0];
+    const couts = sorted.filter(p => /out/i.test(p.status||''));
+    const cout = couts.length ? couts[couts.length-1] : null;
+    if(cin) r.punchIn = fmtHM(cin.timeMs);
+    if(cout) r.punchOut = fmtHM(cout.timeMs);
+    r.hasPunch = !!(cin || cout);
+    if(r.punchIn && r.punchOut) r.punchMins = calcPunchMins(r.punchIn, r.punchOut);
+  }
+
+  if(!dailyRec && r.hasPunch){
+    r.level = 'error';
+    r.issues.push('الفرع مكتبش (فيه بصمة)');
+    return r;
+  }
+  if(!dailyRec && !r.hasPunch){
+    r.level = 'missing';
+    r.issues.push('مفيش بيانات');
+    return r;
+  }
+
+  const bStatus = r.branchStatus;
+
+  if(bStatus === 'absent' || bStatus === 'leave' || bStatus === 'mission'){
+    if(r.hasPunch){
+      r.level = 'error';
+      r.issues.push(`الفرع قال «${STATUS[bStatus] || bStatus}» لكن فيه بصمة`);
+    } else {
+      r.level = 'match';
+    }
+    return r;
+  }
+
+  if(!r.hasPunch){
+    r.level = 'error';
+    r.issues.push('الفرع قال «حاضر» لكن مفيش بصمة');
+    return r;
+  }
+
+  const inDiffRaw = (timeToMins(r.branchIn) !== null && timeToMins(r.punchIn) !== null)
+    ? timeToMins(r.branchIn) - timeToMins(r.punchIn) : null;
+  const outDiffRaw = (timeToMins(r.branchOut) !== null && timeToMins(r.punchOut) !== null)
+    ? timeToMins(r.branchOut) - timeToMins(r.punchOut) : null;
+  r.inDiff = inDiffRaw;
+  r.outDiff = outDiffRaw;
+
+  if(inDiffRaw === null){
+    r.level = 'warn';
+    r.issues.push('دخول ناقص');
+  } else if(Math.abs(inDiffRaw) > CMP_TOLERANCE){
+    r.level = 'warn';
+    r.issues.push(`فرق دخول ${inDiffRaw > 0 ? '+' : ''}${Math.abs(inDiffRaw)} دقيقة`);
+  }
+
+  if(outDiffRaw === null){
+    if(r.level !== 'error') r.level = 'warn';
+    r.issues.push('خروج ناقص');
+  } else if(Math.abs(outDiffRaw) > CMP_TOLERANCE){
+    if(r.level !== 'error') r.level = 'warn';
+    r.issues.push(`فرق خروج ${outDiffRaw > 0 ? '+' : ''}${Math.abs(outDiffRaw)} دقيقة`);
+  }
+
+  if(r.branchNetMins !== null && r.punchMins !== null){
+    r.netDiff = r.branchNetMins - r.punchMins;
+    if(Math.abs(r.netDiff) > CMP_TOLERANCE){
+      if(r.level !== 'error') r.level = 'warn';
+      r.issues.push(`فرق صافي ${r.netDiff > 0 ? '+' : ''}${Math.abs(r.netDiff)} دقيقة`);
+    }
+  }
+
+  if(r.branchPermType === 'hour' && r.branchPermHours > 0){
+    r.issues.push(`إذن ${arNum(r.branchPermHours)} ساعة`);
+  } else if(r.branchPermType === 'day'){
+    r.issues.push('إذن يوم كامل');
+  }
+
+  return r;
+}
+
+function buildComparisonRows(branchId, from, to){
+  const emps = DB.employees.filter(e => e.branchId === branchId && e.active !== false);
+  const rows = [];
+  const allDates = new Set();
+
+  DB.daily.forEach(d => {
+    if(d.branchId !== branchId) return;
+    if(from && d.dateKey < from) return;
+    if(to && d.dateKey > to) return;
+    allDates.add(d.dateKey);
+  });
+  DB.punches.forEach(p => {
+    if(p.branchId !== branchId) return;
+    if(from && p.dateKey < from) return;
+    if(to && p.dateKey > to) return;
+    allDates.add(p.dateKey);
+  });
+
+  const sortedDates = Array.from(allDates).sort();
+  emps.forEach(emp => {
+    sortedDates.forEach(dateKey => {
+      const rec = DB.daily.find(d =>
+        d.empId === emp.id && d.dateKey === dateKey && d.branchId === branchId
+      ) || null;
+      const punches = DB.punches.filter(p =>
+        p.empId === emp.id && p.dateKey === dateKey && p.branchId === branchId
+      );
+      const cmp = compareDayFull(emp, dateKey, rec, punches);
+      if(cmp.level === 'missing' && !rec && !punches.length) return;
+      rows.push(cmp);
+    });
+  });
+
+  return rows.sort((a,b) => {
+    if(a.dateKey !== b.dateKey) return b.dateKey.localeCompare(a.dateKey);
+    return a.empName.localeCompare(b.empName,'ar');
+  });
+}
+
+function buildSummaryRows(rows){
+  const map = {};
+  rows.forEach(r => {
+    if(!map[r.empId]){
+      map[r.empId] = {
+        empId: r.empId, empName: r.empName, empCode: r.empCode,
+        days: 0, match: 0, warn: 0, error: 0,
+        totalBranchNet: 0, totalPunch: 0,
+        totalPermMins: 0
+      };
+    }
+    const m = map[r.empId];
+    m.days++;
+    if(r.level === 'match') m.match++;
+    else if(r.level === 'warn') m.warn++;
+    else if(r.level === 'error') m.error++;
+    if(r.branchNetMins !== null) m.totalBranchNet += r.branchNetMins;
+    if(r.punchMins !== null) m.totalPunch += r.punchMins;
+    if(r.branchPermType === 'hour') m.totalPermMins += Math.round(r.branchPermHours*60);
+    else if(r.branchPermType === 'day' && r.branchRawMins) m.totalPermMins += r.branchRawMins;
+  });
+  return Object.values(map).sort((a,b) => a.empName.localeCompare(b.empName,'ar'));
+}
+
+function renderCompare(){
+  const bId = UI.cmpBranch || '';
+  const from = UI.cmpFrom || '';
+  const to = UI.cmpTo || '';
+  const tab = UI.cmpTab || 'detailed';
+  const filter = UI.cmpFilter || 'all';
+
+  const branchOpts = DB.branches.map(b =>
+    `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`
+  ).join('');
+
+  let body = '';
+  if(lastComparison && lastComparison.rows.length){
+    const { rows, summary, branchId } = lastComparison;
+
+    const summaryHtml = `
+      <div class="stats">
+        <div class="stat"><div class="stat-icon blue">📊</div><div class="stat-value">${arNum(summary.total)}</div><div class="stat-label">إجمالي الصفوف</div></div>
+        <div class="stat"><div class="stat-icon green">✅</div><div class="stat-value">${arNum(summary.match)}</div><div class="stat-label">مطابق</div></div>
+        <div class="stat"><div class="stat-icon orange">⚠️</div><div class="stat-value">${arNum(summary.warn)}</div><div class="stat-label">فروقات</div></div>
+        <div class="stat"><div class="stat-icon red">❌</div><div class="stat-value">${arNum(summary.error)}</div><div class="stat-label">تناقضات</div></div>
+      </div>`;
+
+    let content = '';
+    if(tab === 'detailed'){
+      const filtered = filter === 'all' ? rows
+        : filter === 'issues' ? rows.filter(r => r.level === 'error' || r.level === 'warn')
+        : filter === 'match' ? rows.filter(r => r.level === 'match')
+        : filter === 'error' ? rows.filter(r => r.level === 'error')
+        : rows;
+
+      const rowsHtml = filtered.length ? filtered.map(r => {
+        const cls = r.level === 'match' ? 'row-match' : r.level === 'warn' ? 'row-warn' : 'row-error';
+        const badge = r.level === 'match' ? '<span class="badge b-green">✅ مطابق</span>'
+          : r.level === 'warn' ? '<span class="badge b-orange">⚠️ فرق</span>'
+          : r.level === 'error' ? '<span class="badge b-red">❌ تناقض</span>'
+          : '<span class="badge b-gray">—</span>';
+
+        let branchCell = '';
+        if(r.branchStatus !== 'present' && !r.branchIn){
+          branchCell = `<span class="badge b-gray">${STATUS[r.branchStatus] || r.branchStatus}</span>`;
+        } else if(r.branchIn || r.branchOut){
+          branchCell = `${arTime(r.branchIn) || '—'} ← ${arTime(r.branchOut) || '—'}`;
+          if(r.branchPermType === 'hour' && r.branchPermHours > 0){
+            branchCell += `<br><span class="badge b-blue" style="font-size:10px">إذن ${arNum(r.branchPermHours)} س</span>`;
+          } else if(r.branchPermType === 'day'){
+            branchCell += `<br><span class="badge b-blue" style="font-size:10px">إذن يوم</span>`;
+          }
+        } else {
+          branchCell = '<span class="muted">—</span>';
+        }
+
+        const branchHrs = r.branchNetMins !== null ? fmtMinsAr(r.branchNetMins) : '—';
+        const punchHrs = r.punchMins !== null ? fmtMinsAr(r.punchMins) : '—';
+        const netDiffTxt = r.netDiff !== null
+          ? (r.netDiff > 0 ? `<b style="color:var(--primary)">+${arNum(Math.abs(r.netDiff))} د</b>` :
+             r.netDiff < 0 ? `<b style="color:var(--danger)">${arNum(Math.abs(r.netDiff))} د</b>` : '0')
+          : '—';
+
+        const punchCell = r.hasPunch
+          ? `${arTime(r.punchIn) || '—'} ← ${arTime(r.punchOut) || '—'}`
+          : '<span class="badge b-gray">مفيش</span>';
+
+        const issuesTxt = r.issues.length
+          ? r.issues.map(i => `<div class="muted" style="font-size:11.5px">• ${esc(i)}</div>`).join('')
+          : '—';
+
+        return `<tr class="${cls}">
+          <td style="text-align:right;min-width:150px"><b>${esc(r.empName)}</b><br><span class="muted">${esc(r.empCode)}</span></td>
+          <td>${arNum(r.dateKey)}<br><span class="muted" style="font-size:11px">${r.day}</span></td>
+          <td>${branchCell}</td>
+          <td>${punchCell}</td>
+          <td>${branchHrs}</td>
+          <td>${punchHrs}</td>
+          <td>${netDiffTxt}</td>
+          <td>${issuesTxt}</td>
+          <td>${badge}</td>
+        </tr>`;
+      }).join('') : `<tr><td colspan="9" class="empty"><div class="empty-icon">🔍</div><div class="empty-title">لا توجد نتائج للفلتر المحدد</div></td></tr>`;
+
+      content = `
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📋 التفصيل اليومي</div>
+              <div class="card-subtitle">${arNum(filtered.length)} من ${arNum(rows.length)} صف — سماحية ${arNum(CMP_TOLERANCE)} دقيقة</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-outline btn-sm" onclick="setCmpFilter('all')" ${filter === 'all' ? 'disabled' : ''}>الكل</button>
+              <button class="btn btn-outline btn-sm" onclick="setCmpFilter('issues')" ${filter === 'issues' ? 'disabled' : ''}>الفروقات</button>
+              <button class="btn btn-outline btn-sm" onclick="setCmpFilter('error')" ${filter === 'error' ? 'disabled' : ''}>التناقضات</button>
+              <button class="btn btn-outline btn-sm" onclick="setCmpFilter('match')" ${filter === 'match' ? 'disabled' : ''}>المطابق</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr>
+              <th>الموظف</th>
+              <th>التاريخ</th>
+              <th>جدول الفرع<br><span style="font-weight:400;font-size:10px">دخول ← خروج + إذن</span></th>
+              <th>البصمة<br><span style="font-weight:400;font-size:10px">دخول ← خروج</span></th>
+              <th>صافي الفرع<br><span style="font-weight:400;font-size:10px">بعد الإذن</span></th>
+              <th>ساعات البصمة</th>
+              <th>الفرق</th>
+              <th>الملاحظات</th>
+              <th>النتيجة</th>
+            </tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table></div>
+        </div>`;
+    } else {
+      const sumRows = buildSummaryRows(rows);
+      const rowsHtml = sumRows.length ? sumRows.map(m => {
+        const netDiff = m.totalBranchNet - m.totalPunch;
+        const diffColor = Math.abs(netDiff) <= CMP_TOLERANCE ? 'var(--success)' :
+          netDiff > 0 ? 'var(--primary)' : 'var(--danger)';
+        return `<tr>
+          <td style="text-align:right"><b>${esc(m.empName)}</b><br><span class="muted">${esc(m.empCode)}</span></td>
+          <td>${arNum(m.days)}</td>
+          <td style="color:var(--success);font-weight:700">${arNum(m.match)}</td>
+          <td style="color:var(--warning);font-weight:700">${arNum(m.warn)}</td>
+          <td style="color:var(--danger);font-weight:700">${arNum(m.error)}</td>
+          <td>${fmtMinsAr(m.totalBranchNet)}</td>
+          <td>${fmtMinsAr(m.totalPunch)}</td>
+          <td style="color:${diffColor};font-weight:700">${netDiff > 0 ? '+' : ''}${fmtMinsAr(netDiff)}</td>
+          ${m.totalPermMins > 0 ? `<td><span class="badge b-blue">${fmtMinsAr(m.totalPermMins)}</span></td>` : '<td>—</td>'}
+        </tr>`;
+      }).join('') : `<tr><td colspan="9" class="empty">لا توجد بيانات</td></tr>`;
+
+      content = `
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📊 ملخص الفترة</div>
+              <div class="card-subtitle">${arNum(sumRows.length)} موظف — الإجماليات بعد خصم الإذن</div>
+            </div>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr>
+              <th>الموظف</th>
+              <th>أيام</th>
+              <th>مطابق</th>
+              <th>فروقات</th>
+              <th>تناقضات</th>
+              <th>صافي ساعات الفرع</th>
+              <th>إجمالي ساعات البصمة</th>
+              <th>الفرق</th>
+              <th>إجمالي الإذن</th>
+            </tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table></div>
+        </div>`;
+    }
+
+    body = summaryHtml + `
+      <div class="tabs-inline">
+        <button class="tab-inline ${tab === 'detailed' ? 'active' : ''}" onclick="setCmpTab('detailed')">📋 تفصيلي</button>
+        <button class="tab-inline ${tab === 'summary' ? 'active' : ''}" onclick="setCmpTab('summary')">📊 ملخص</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="btn btn-outline" onclick="exportComparison()">📥 Excel</button>
+        <button class="btn btn-whatsapp" onclick="shareCompareWhatsApp()">📤 واتساب</button>
+      </div>
+    ` + content;
+  } else {
+    body = `<div class="card"><div class="empty">
+      <div class="empty-icon">🔍</div>
+      <div class="empty-title">اختر الفرع والفترة واضغط «مقارنة»</div>
+      <div class="muted mt-2">هيتم مقارنة جدول الفرع مع شيت البصمة المرفوع</div>
+    </div></div>`;
+  }
+
+  return `<div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">🔍 مقارنة جدول الفرع مع البصمة</div>
+        <div class="card-subtitle">السماحية: ${arNum(CMP_TOLERANCE)} دقيقة — الإذن يُخصم من ساعات الفرع</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field" style="max-width:260px">
+        <label>الفرع</label>
+        <select id="cmpBranch"><option value="">اختر الفرع</option>${branchOpts}</select>
+      </div>
+      <div class="field" style="max-width:180px"><label>من</label><input type="date" id="cmpFrom" value="${from}"></div>
+      <div class="field" style="max-width:180px"><label>إلى</label><input type="date" id="cmpTo" value="${to}"></div>
+      <button class="btn btn-primary" onclick="generateComparison()">🔍 مقارنة</button>
+    </div>
+  </div>
+  ${body}`;
+}
+
+function setCmpFilter(f){ UI.cmpFilter = f; renderPage(); }
+function setCmpTab(t){ UI.cmpTab = t; renderPage(); }
+
+function generateComparison(){
+  const bId = $('cmpBranch').value;
+  const from = $('cmpFrom').value;
+  const to = $('cmpTo').value;
+  if(!bId){ alert('اختر الفرع'); return; }
+  UI.cmpBranch = bId; UI.cmpFrom = from; UI.cmpTo = to;
+  UI.cmpTab = UI.cmpTab || 'detailed';
+  UI.cmpFilter = UI.cmpFilter || 'all';
+
+  showLoader(true);
+  try {
+    const rows = buildComparisonRows(bId, from, to);
+    const summary = { total: rows.length, match: 0, warn: 0, error: 0, missing: 0 };
+    rows.forEach(r => {
+      if(r.level === 'match') summary.match++;
+      else if(r.level === 'warn') summary.warn++;
+      else if(r.level === 'error') summary.error++;
+      else summary.missing++;
+    });
+    lastComparison = { rows, summary, branchId: bId, from, to };
+    renderPage();
+  } finally {
+    showLoader(false);
+  }
+}
+
+function exportComparison(){
+  if(!lastComparison || !lastComparison.rows.length){ alert('لا يوجد تقرير'); return; }
+  const { rows, branchId } = lastComparison;
+  const wb = XLSX.utils.book_new();
+
+  const detailed = rows.map(r => ({
+    'رقم البصمة': r.empCode,
+    'الاسم': r.empName,
+    'التاريخ': r.dateKey,
+    'اليوم': r.day,
+    'فرع — دخول': r.branchIn || '',
+    'فرع — خروج': r.branchOut || '',
+    'فرع — إذن': r.branchPermType === 'hour' ? `${r.branchPermHours} س` :
+                 r.branchPermType === 'day' ? 'يوم' : '',
+    'فرع — صافي (دقيقة)': r.branchNetMins ?? '',
+    'بصمة — دخول': r.punchIn || '',
+    'بصمة — خروج': r.punchOut || '',
+    'بصمة — ساعات (دقيقة)': r.punchMins ?? '',
+    'الفرق (دقيقة)': r.netDiff ?? '',
+    'النتيجة': r.level === 'match' ? 'مطابق' : r.level === 'warn' ? 'فرق' : r.level === 'error' ? 'تناقض' : 'غير مكتمل',
+    'الملاحظات': r.issues.join(' | ')
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detailed), 'تفصيلي');
+
+  const summary = buildSummaryRows(rows).map(m => ({
+    'رقم البصمة': m.empCode,
+    'الاسم': m.empName,
+    'أيام': m.days,
+    'مطابق': m.match,
+    'فروقات': m.warn,
+    'تناقضات': m.error,
+    'صافي ساعات الفرع (دقيقة)': m.totalBranchNet,
+    'ساعات البصمة (دقيقة)': m.totalPunch,
+    'الفرق (دقيقة)': m.totalBranchNet - m.totalPunch,
+    'إجمالي الإذن (دقيقة)': m.totalPermMins
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summary), 'ملخص');
+
+  XLSX.writeFile(wb, `مقارنة_${branchName(branchId)}_${today()}.xlsx`);
+}
+
 Object.assign(window, {
   doLogin, doLogout, toggleSidebar, navigateTo, renderPage,
   setSettingsTab, addBranch, setDefaultShift, editBranchPass, deleteBranch,
@@ -2409,7 +2921,8 @@ Object.assign(window, {
   setShiftBranchFilter, setEmpBranchFilter, setEmpActiveFilter,
   shareDailyWhatsApp, shareReportWhatsApp, shareEmployeeWhatsApp,
   sendWhatsApp, copyWhatsAppText, editBranchWhatsApp,
-  arNum, arTime, fmtDateArFull
+  arNum, arTime, fmtDateArFull,
+  setCmpFilter, setCmpTab, generateComparison, exportComparison, shareCompareWhatsApp
 });
 window.$ = $;
 
