@@ -239,7 +239,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const DB = { branches:[], users:[], shifts:[], employees:[], punches:[], daily:[] };
+const DB = { branches:[], users:[], shifts:[], employees:[], punches:[], daily:[], settings:{}, settingsId:null };
 let currentUser = null;
 let activePage = 'dashboard';
 let lastReport = null;
@@ -335,15 +335,29 @@ async function fsBatchAdd(n, items){
     await b.commit();
   }
 }
+async function fsRestore(n, items){
+  const CH = 400;
+  for(let i=0; i<items.length; i+=CH){
+    const b = writeBatch(db);
+    items.slice(i, i+CH).forEach(it => {
+      const { id, ...data } = it;
+      if(id) b.set(doc(db, n, id), data);
+    });
+    await b.commit();
+  }
+}
 
 async function loadAll(){
   showLoader(true);
   try {
-    const [b, u, s, e, p, d] = await Promise.all([
+    const [b, u, s, e, p, d, st] = await Promise.all([
       fsAll('branches'), fsAll('users'), fsAll('shifts'),
-      fsAll('employees'), fsAll('punches'), fsAll('daily')
+      fsAll('employees'), fsAll('punches'), fsAll('daily'),
+      fsAll('settings')
     ]);
     Object.assign(DB, { branches:b, users:u, shifts:s, employees:e, punches:p, daily:d });
+    DB.settings = st.length ? st[0] : {};
+    DB.settingsId = st.length ? st[0].id : null;
   } finally {
     showLoader(false);
   }
@@ -357,6 +371,12 @@ function startLive(){
       if(currentUser && !['reports','employee','compare'].includes(activePage)) refreshPage();
     }, err => { console.error('onSnapshot error for', col, err); }));
   });
+  unsubs.push(onSnapshot(collection(db, 'settings'), snap => {
+    const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    DB.settings = list.length ? list[0] : {};
+    DB.settingsId = list.length ? list[0].id : null;
+    if(currentUser) refreshPage();
+  }, err => { console.error('settings live error', err); }));
 }
 function stopLive(){ unsubs.forEach(u => { try{ u(); }catch(e){} }); unsubs = []; }
 
@@ -419,6 +439,16 @@ async function doLogin(){
     const ph = await hash(p);
     const user = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.passwordHash === ph);
     if(!user){ err.textContent = 'بيانات الدخول غير صحيحة'; err.style.display = 'block'; return; }
+
+    // 🔒 فحص وضع الصيانة
+    const stArr = await fsAll('settings');
+    const st = stArr.length ? stArr[0] : {};
+    if(st.maintenance && user.role !== 'admin'){
+      err.innerHTML = '🔧 <b>النظام تحت الصيانة حالياً</b><br><span style="font-size:12px;font-weight:400">يرجى المحاولة لاحقاً</span>';
+      err.style.display = 'block';
+      return;
+    }
+
     currentUser = user;
     sessionStorage.setItem('uid', user.id);
     await loadAll();
@@ -496,7 +526,13 @@ function renderPage(){
   const titles = { dashboard:'الرئيسية', daily:'التسجيل اليومي', settings:'الإعدادات', uploads:'رفع البصمة', reports:'التقارير', employee:'سجل الموظف', compare:'🔍 المقارنة' };
   $('pageTitle').textContent = titles[activePage] || '';
   const content = { dashboard: renderDashboard, daily: renderDaily, settings: renderSettings, uploads: renderUploads, reports: renderReports, employee: renderEmployeeHistory, compare: renderCompare };
-  $('mainContent').innerHTML = content[activePage]?.() || '';
+  let banner = '';
+  if(DB.settings?.maintenance){
+    banner = `<div class="alert alert-danger" style="margin-bottom:16px;font-size:14px">
+      🔴 <b>النظام تحت الصيانة</b> — الفروع لا تستطيع تسجيل الدخول حالياً
+    </div>`;
+  }
+  $('mainContent').innerHTML = banner + (content[activePage]?.() || '');
 }
 
 function renderDashboard(){
@@ -1118,9 +1154,73 @@ function renderSettings(){
       ${tab === 'shifts' ? renderShiftsTab() : ''}
       ${tab === 'employees' ? renderEmployeesTab() : ''}
     </div>
-  </div>`;
+  </div>
+  ${currentUser.role === 'admin' ? renderSystemAdminCard() : ''}`;
 }
 function setSettingsTab(t){ UI.settingsTab = t; renderPage(); }
+
+function renderSystemAdminCard(){
+  const m = DB.settings?.maintenance || false;
+  const hasPass = !!DB.settings?.maintenancePasswordHash;
+  return `
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">🔒 النظام والإدارة</div>
+          <div class="card-subtitle">النسخ الاحتياطي ووضع الصيانة</div>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--gray-200);border-radius:12px;padding:18px;margin-bottom:14px;background:var(--gray-50)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:6px">💾 النسخ الاحتياطي الكامل</div>
+            <div class="muted" style="font-size:12.5px;line-height:1.7">
+              ملف JSON يحتوي على <b>كل الداتا</b>:<br>
+              • الفروع (${DB.branches.length}) • المستخدمين (${DB.users.length})<br>
+              • الموظفين (${DB.employees.length}) • الشفتات (${DB.shifts.length})<br>
+              • البصمات (${DB.punches.length}) • التسجيل اليومي (${DB.daily.length})
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+          <button class="btn btn-primary" onclick="backupSystem()">📥 تنزيل نسخة احتياطية</button>
+          <button class="btn btn-outline" onclick="$('restoreFile').click()">📤 استرجاع نسخة</button>
+          <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreSystem(event)">
+        </div>
+        <div class="alert alert-warning" style="margin-top:12px;margin-bottom:0;font-size:12px">
+          ⚠️ الاسترجاع يستبدل كل الداتا الحالية بالكامل — متابعة بحذر
+        </div>
+      </div>
+
+      <div style="border:2px solid ${m ? 'var(--danger)' : 'var(--gray-200)'};border-radius:12px;padding:18px;background:${m ? '#fef2f2' : '#fff'}">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px">
+          <div style="flex:1;min-width:220px">
+            <div style="font-size:15px;font-weight:700;margin-bottom:6px;color:${m ? 'var(--danger)' : 'var(--gray-900)'}">
+              ${m ? '🔴 النظام تحت الصيانة' : '🟢 النظام يعمل بشكل طبيعي'}
+            </div>
+            <div class="muted" style="font-size:12.5px">
+              ${m
+                ? 'الفروع لا تستطيع تسجيل الدخول — الأدمن فقط'
+                : 'عند تفعيل الصيانة، لن تستطيع الفروع الدخول، وأنت فقط تقدر'}
+            </div>
+          </div>
+          <button class="btn ${m ? 'btn-success' : 'btn-warning'}" onclick="toggleMaintenance()" style="min-width:180px">
+            ${m ? '✅ إيقاف الصيانة' : '🔧 تفعيل الصيانة'}
+          </button>
+        </div>
+        ${hasPass ? `
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid ${m ? '#fecaca' : 'var(--gray-100)'}">
+            <button class="btn btn-outline btn-sm" onclick="changeMaintenancePassword()">🔑 تغيير كلمة مرور الصيانة</button>
+          </div>
+        ` : `
+          <div class="muted" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--gray-100);font-size:12px">
+            💡 عند أول تفعيل للصيانة، سيتم طلب كلمة مرور منك (لأنه لا توجد كلمة مرور بعد)
+          </div>
+        `}
+      </div>
+    </div>`;
+}
 
 function renderBranchesTab(){
   const rows = DB.branches.map(b => {
@@ -2445,7 +2545,7 @@ function clearEmpSelection(){ UI.empReportId = ''; lastEmpReport = null; renderP
    🔍 صفحة المقارنة — جدول الفرع vs شيت البصمة
    ============================================================ */
 
-const CMP_TOLERANCE = 10; // سماحية الفرق بالدقايق
+const CMP_TOLERANCE = 10;
 
 function timeToMins(t){
   if(!t || t === '—') return null;
@@ -2454,7 +2554,6 @@ function timeToMins(t){
   return h*60 + m;
 }
 
-/** حساب صافي ساعات الفرع بعد خصم الإذن */
 function calcBranchNetMins(dailyRec){
   const inM = timeToMins(dailyRec.timeIn);
   const outM = timeToMins(dailyRec.timeOut);
@@ -2659,7 +2758,7 @@ function renderCompare(){
 
   let body = '';
   if(lastComparison && lastComparison.rows.length){
-    const { rows, summary, branchId } = lastComparison;
+    const { rows, summary } = lastComparison;
 
     const summaryHtml = `
       <div class="stats">
@@ -2907,6 +3006,189 @@ function exportComparison(){
   XLSX.writeFile(wb, `مقارنة_${branchName(branchId)}_${today()}.xlsx`);
 }
 
+/* ============================================================
+   💾 النسخ الاحتياطي والاسترجاع
+   ============================================================ */
+
+async function backupSystem(){
+  showLoader(true);
+  try {
+    const backup = {
+      version: '1.0',
+      app: 'attendance-system',
+      exportedAt: Date.now(),
+      exportedBy: currentUser.name,
+      counts: {
+        branches: DB.branches.length,
+        users: DB.users.length,
+        shifts: DB.shifts.length,
+        employees: DB.employees.length,
+        punches: DB.punches.length,
+        daily: DB.daily.length
+      },
+      data: {
+        branches: DB.branches,
+        users: DB.users,
+        shifts: DB.shifts,
+        employees: DB.employees,
+        punches: DB.punches,
+        daily: DB.daily,
+        settings: DB.settings || {}
+      }
+    };
+
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const now = new Date();
+    const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+    a.href = url;
+    a.download = `backup_${ts}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  } catch(e){
+    alert('خطأ في النسخ الاحتياطي: ' + e.message);
+  } finally {
+    showLoader(false);
+  }
+}
+
+async function restoreSystem(ev){
+  const file = ev.target.files[0];
+  if(!file){ return; }
+
+  const hasPass = !!DB.settings?.maintenancePasswordHash;
+  if(hasPass){
+    const pass1 = prompt('🔑 أدخل كلمة مرور الصيانة لتأكيد الاسترجاع:');
+    if(!pass1){ ev.target.value = ''; return; }
+    const passHash = await hash(pass1);
+    if(passHash !== DB.settings.maintenancePasswordHash){
+      alert('❌ كلمة المرور غير صحيحة');
+      ev.target.value = '';
+      return;
+    }
+  }
+
+  if(!confirm('⚠️ سيتم حذف كل البيانات الحالية واستبدالها بالنسخة الاحتياطية.\n\nهل أنت متأكد؟')){
+    ev.target.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async e => {
+    showLoader(true);
+    try {
+      const backup = JSON.parse(e.target.result);
+      if(!backup.data || backup.app !== 'attendance-system'){
+        alert('❌ ملف النسخة الاحتياطية غير صالح');
+        return;
+      }
+
+      await fsBatchDel('branches', () => true);
+      await fsBatchDel('users', () => true);
+      await fsBatchDel('shifts', () => true);
+      await fsBatchDel('employees', () => true);
+      await fsBatchDel('punches', () => true);
+      await fsBatchDel('daily', () => true);
+      await fsBatchDel('settings', () => true);
+
+      if(backup.data.branches?.length)  await fsRestore('branches',  backup.data.branches);
+      if(backup.data.users?.length)     await fsRestore('users',     backup.data.users);
+      if(backup.data.shifts?.length)    await fsRestore('shifts',    backup.data.shifts);
+      if(backup.data.employees?.length) await fsRestore('employees', backup.data.employees);
+      if(backup.data.punches?.length)   await fsRestore('punches',   backup.data.punches);
+      if(backup.data.daily?.length)     await fsRestore('daily',     backup.data.daily);
+      if(backup.data.settings && Object.keys(backup.data.settings).length){
+        const { id, ...rest } = backup.data.settings;
+        await fsAdd('settings', rest);
+      }
+
+      await loadAll();
+      alert(`✅ تم الاسترجاع بنجاح\n\nالفروع: ${backup.counts?.branches || 0}\nالموظفين: ${backup.counts?.employees || 0}\nالبصمات: ${backup.counts?.punches || 0}\nالتسجيل اليومي: ${backup.counts?.daily || 0}`);
+      renderPage();
+    } catch(err){
+      alert('❌ خطأ: ' + err.message);
+    } finally {
+      showLoader(false);
+      ev.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ============================================================
+   🔒 وضع الصيانة
+   ============================================================ */
+
+async function saveMaintenanceSettings(updates){
+  showLoader(true);
+  try {
+    if(DB.settingsId){
+      await fsUpd('settings', DB.settingsId, updates);
+      Object.assign(DB.settings, updates);
+    } else {
+      const rec = await fsAdd('settings', { maintenance: false, ...updates });
+      DB.settings = rec;
+      DB.settingsId = rec.id;
+    }
+  } finally {
+    showLoader(false);
+  }
+}
+
+async function toggleMaintenance(){
+  const m = DB.settings?.maintenance || false;
+  const hasPass = !!DB.settings?.maintenancePasswordHash;
+
+  if(!hasPass){
+    const p1 = prompt('🔑 يجب تعيين كلمة مرور للصيانة أولاً.\n\nاكتب كلمة المرور (٤ أحرف على الأقل):');
+    if(!p1 || p1.length < 4){ alert('كلمة المرور قصيرة جداً'); return; }
+    const p2 = prompt('🔑 أعد كتابة كلمة المرور للتأكيد:');
+    if(p2 !== p1){ alert('❌ كلمتا المرور غير متطابقتين'); return; }
+    const ph = await hash(p1);
+    await saveMaintenanceSettings({ maintenancePasswordHash: ph });
+    alert('✅ تم تعيين كلمة المرور. اضغط زر التفعيل مرة أخرى لتفعيل الصيانة.');
+    renderPage();
+    return;
+  }
+
+  const action = m ? 'إيقاف' : 'تفعيل';
+  const p = prompt(`🔑 أدخل كلمة مرور الصيانة لـ${action} الصيانة:`);
+  if(!p) return;
+  const ph = await hash(p);
+  if(ph !== DB.settings.maintenancePasswordHash){
+    alert('❌ كلمة المرور غير صحيحة');
+    return;
+  }
+
+  const newState = !m;
+  await saveMaintenanceSettings({ maintenance: newState });
+  alert(newState ? '🔴 تم تفعيل الصيانة — الفروع لا تستطيع الدخول' : '🟢 تم إيقاف الصيانة — النظام يعمل طبيعي');
+  renderPage();
+}
+
+async function changeMaintenancePassword(){
+  const oldPass = prompt('🔑 أدخل كلمة المرور الحالية:');
+  if(!oldPass) return;
+  const oldHash = await hash(oldPass);
+  if(oldHash !== DB.settings.maintenancePasswordHash){
+    alert('❌ كلمة المرور غير صحيحة');
+    return;
+  }
+
+  const p1 = prompt('🔑 كلمة المرور الجديدة (٤ أحرف على الأقل):');
+  if(!p1 || p1.length < 4){ alert('كلمة المرور قصيرة جداً'); return; }
+  const p2 = prompt('🔑 أعد كتابة كلمة المرور الجديدة:');
+  if(p2 !== p1){ alert('❌ كلمتا المرور غير متطابقتين'); return; }
+
+  const newHash = await hash(p1);
+  await saveMaintenanceSettings({ maintenancePasswordHash: newHash });
+  alert('✅ تم تغيير كلمة المرور');
+}
+
 Object.assign(window, {
   doLogin, doLogout, toggleSidebar, navigateTo, renderPage,
   setSettingsTab, addBranch, setDefaultShift, editBranchPass, deleteBranch,
@@ -2922,7 +3204,8 @@ Object.assign(window, {
   shareDailyWhatsApp, shareReportWhatsApp, shareEmployeeWhatsApp,
   sendWhatsApp, copyWhatsAppText, editBranchWhatsApp,
   arNum, arTime, fmtDateArFull,
-  setCmpFilter, setCmpTab, generateComparison, exportComparison, shareCompareWhatsApp
+  setCmpFilter, setCmpTab, generateComparison, exportComparison, shareCompareWhatsApp,
+  backupSystem, restoreSystem, toggleMaintenance, changeMaintenancePassword, renderSystemAdminCard
 });
 window.$ = $;
 
@@ -2934,7 +3217,21 @@ window.$ = $;
     if(uid){
       const users = await fsAll('users');
       const u = users.find(x => x.id === uid);
-      if(u){ currentUser = u; await loadAll(); enterApp(); }
+      if(u){
+        // فحص الصيانة
+        const stArr = await fsAll('settings');
+        const st = stArr.length ? stArr[0] : {};
+        if(st.maintenance && u.role !== 'admin'){
+          sessionStorage.removeItem('uid');
+          $('loginPage').style.display = 'flex';
+          $('app').style.display = 'none';
+          const err = $('loginErr');
+          err.textContent = '🔧 النظام تحت الصيانة حالياً';
+          err.style.display = 'block';
+        } else {
+          currentUser = u; await loadAll(); enterApp();
+        }
+      }
     }
     ['loginUser','loginPass','loginName'].forEach(id => {
       const el = $(id);
