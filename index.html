@@ -161,7 +161,24 @@ tbody tr:last-child td{border-bottom:none}
 .row-match{background:#f0fdf4}
 .row-warn{background:#fffbeb}
 .row-error{background:#fef2f2}
-@media print{.sidebar,.header,.btn,.no-print{display:none !important}.app{display:block}.main{padding:0;overflow:visible}.card,.report-card,.branch-section{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}body{background:#fff}}
+.cmp-print-only{display:none}
+
+@media print{
+  .sidebar,.header,.btn,.no-print{display:none !important}
+  .app{display:block}
+  .main{padding:0;overflow:visible}
+  .card,.report-card,.branch-section{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}
+  body{background:#fff}
+  .cmp-emp-card{page-break-after:always;page-break-inside:auto;box-shadow:none !important;border:1px solid #ddd;margin-bottom:0}
+  .cmp-emp-card:last-child{page-break-after:auto}
+  body.cmp-printing-single .cmp-emp-card:not(.cmp-print-target){display:none !important}
+  body.cmp-printing-single .cmp-emp-card.cmp-print-target{page-break-after:auto}
+  .cmp-print-only{display:block;font-size:11px;color:#666;margin-bottom:10px;border-bottom:1px solid #ddd;padding-bottom:6px}
+  .report-summary{gap:10px !important;font-size:11.5px !important}
+  .report-summary span{white-space:nowrap}
+  .stats{display:none !important}
+  .tabs-inline{display:none !important}
+}
 </style>
 </head>
 <body>
@@ -440,7 +457,6 @@ async function doLogin(){
     const user = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.passwordHash === ph);
     if(!user){ err.textContent = 'بيانات الدخول غير صحيحة'; err.style.display = 'block'; return; }
 
-    // 🔒 فحص وضع الصيانة
     const stArr = await fsAll('settings');
     const st = stArr.length ? stArr[0] : {};
     if(st.maintenance && user.role !== 'admin'){
@@ -2745,6 +2761,93 @@ function buildSummaryRows(rows){
   return Object.values(map).sort((a,b) => a.empName.localeCompare(b.empName,'ar'));
 }
 
+/* ============================================================
+   🆕 تجميع المقارنة حسب الموظف (للتاب التفصيلي الجديد)
+   ============================================================ */
+
+function buildComparisonByEmployee(rows){
+  const map = {};
+  rows.forEach(r => {
+    if(!map[r.empId]){
+      map[r.empId] = {
+        empId: r.empId,
+        empName: r.empName,
+        empCode: r.empCode,
+        days: [],
+        totals: { days:0, match:0, warn:0, error:0,
+                  branchNetTotal:0, punchTotal:0, permTotal:0 }
+      };
+    }
+    const m = map[r.empId];
+    m.days.push(r);
+    m.totals.days++;
+    if(r.level === 'match') m.totals.match++;
+    else if(r.level === 'warn') m.totals.warn++;
+    else if(r.level === 'error') m.totals.error++;
+    if(r.branchNetMins !== null) m.totals.branchNetTotal += r.branchNetMins;
+    if(r.punchMins !== null)     m.totals.punchTotal    += r.punchMins;
+    if(r.branchPermType === 'hour') m.totals.permTotal += Math.round(r.branchPermHours*60);
+    else if(r.branchPermType === 'day' && r.branchRawMins) m.totals.permTotal += r.branchRawMins;
+  });
+  // ترتيب الأيام تصاعدي جوه كل موظف
+  Object.values(map).forEach(m => {
+    m.days.sort((a,b) => a.dateKey.localeCompare(b.dateKey));
+  });
+  return Object.values(map).sort((a,b) => a.empName.localeCompare(b.empName,'ar'));
+}
+
+/* ============================================================
+   🖨️ الطباعة
+   ============================================================ */
+
+function printComparison(empId){
+  if(!lastComparison || !lastComparison.rows.length){
+    alert('اعرض المقارنة أولاً');
+    return;
+  }
+
+  // لو مش على التاب التفصيلي، أو الفلتر مش "الكل" في حالة طباعة موظف واحد
+  const needSwitch = (UI.cmpTab !== 'detailed') || (empId && (UI.cmpFilter || 'all') !== 'all');
+  if(needSwitch){
+    UI.cmpTab = 'detailed';
+    if(empId) UI.cmpFilter = 'all';
+    renderPage();
+    setTimeout(() => printComparison(empId), 400);
+    return;
+  }
+
+  if(empId){
+    // طباعة موظف واحد بس
+    document.querySelectorAll('.cmp-emp-card').forEach(c => c.classList.remove('cmp-print-target'));
+    const target = document.querySelector(`.cmp-emp-card[data-cmp-emp="${empId}"]`);
+    if(!target){
+      alert('لم يتم العثور على بيانات الموظف');
+      return;
+    }
+    target.classList.add('cmp-print-target');
+    document.body.classList.add('cmp-printing-single');
+
+    const cleanup = () => {
+      document.body.classList.remove('cmp-printing-single');
+      target.classList.remove('cmp-print-target');
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup);
+
+    setTimeout(() => {
+      window.print();
+      setTimeout(cleanup, 500);
+    }, 100);
+  } else {
+    // طباعة كل الموظفين
+    window.print();
+  }
+}
+
+/* ============================================================
+   صفحة المقارنة
+   ============================================================ */
+
 function renderCompare(){
   const bId = UI.cmpBranch || '';
   const from = UI.cmpFrom || '';
@@ -2776,72 +2879,87 @@ function renderCompare(){
         : filter === 'error' ? rows.filter(r => r.level === 'error')
         : rows;
 
-      const rowsHtml = filtered.length ? filtered.map(r => {
-        const cls = r.level === 'match' ? 'row-match' : r.level === 'warn' ? 'row-warn' : 'row-error';
-        const badge = r.level === 'match' ? '<span class="badge b-green">✅ مطابق</span>'
-          : r.level === 'warn' ? '<span class="badge b-orange">⚠️ فرق</span>'
-          : r.level === 'error' ? '<span class="badge b-red">❌ تناقض</span>'
-          : '<span class="badge b-gray">—</span>';
+      const byEmp = buildComparisonByEmployee(filtered);
 
-        let branchCell = '';
-        if(r.branchStatus !== 'present' && !r.branchIn){
-          branchCell = `<span class="badge b-gray">${STATUS[r.branchStatus] || r.branchStatus}</span>`;
-        } else if(r.branchIn || r.branchOut){
-          branchCell = `${arTime(r.branchIn) || '—'} ← ${arTime(r.branchOut) || '—'}`;
-          if(r.branchPermType === 'hour' && r.branchPermHours > 0){
-            branchCell += `<br><span class="badge b-blue" style="font-size:10px">إذن ${arNum(r.branchPermHours)} س</span>`;
-          } else if(r.branchPermType === 'day'){
-            branchCell += `<br><span class="badge b-blue" style="font-size:10px">إذن يوم</span>`;
+      const cardsHtml = byEmp.length ? byEmp.map(m => {
+        const netDiff = m.totals.branchNetTotal - m.totals.punchTotal;
+        const diffColor = Math.abs(netDiff) <= CMP_TOLERANCE ? 'var(--success)'
+          : netDiff > 0 ? 'var(--primary)' : 'var(--danger)';
+
+        const daysRowsHtml = m.days.map(r => {
+          const cls = r.level === 'match' ? 'row-match' : r.level === 'warn' ? 'row-warn' : 'row-error';
+          const badge = r.level === 'match' ? '<span class="badge b-green">✅ مطابق</span>'
+            : r.level === 'warn' ? '<span class="badge b-orange">⚠️ فرق</span>'
+            : r.level === 'error' ? '<span class="badge b-red">❌ تناقض</span>'
+            : '<span class="badge b-gray">—</span>';
+
+          let branchCell = '';
+          if(r.branchStatus !== 'present' && !r.branchIn){
+            branchCell = `<span class="badge b-gray">${STATUS[r.branchStatus] || r.branchStatus}</span>`;
+          } else if(r.branchIn || r.branchOut){
+            branchCell = `${arTime(r.branchIn) || '—'} ← ${arTime(r.branchOut) || '—'}`;
+            if(r.branchPermType === 'hour' && r.branchPermHours > 0){
+              branchCell += `<br><span class="badge b-blue" style="font-size:10px">إذن ${arNum(r.branchPermHours)} س</span>`;
+            } else if(r.branchPermType === 'day'){
+              branchCell += `<br><span class="badge b-blue" style="font-size:10px">إذن يوم</span>`;
+            }
+          } else {
+            branchCell = '<span class="muted">—</span>';
           }
-        } else {
-          branchCell = '<span class="muted">—</span>';
-        }
 
-        const branchHrs = r.branchNetMins !== null ? fmtMinsAr(r.branchNetMins) : '—';
-        const punchHrs = r.punchMins !== null ? fmtMinsAr(r.punchMins) : '—';
-        const netDiffTxt = r.netDiff !== null
-          ? (r.netDiff > 0 ? `<b style="color:var(--primary)">+${arNum(Math.abs(r.netDiff))} د</b>` :
-             r.netDiff < 0 ? `<b style="color:var(--danger)">${arNum(Math.abs(r.netDiff))} د</b>` : '0')
-          : '—';
+          const branchHrs = r.branchNetMins !== null ? fmtMinsAr(r.branchNetMins) : '—';
+          const punchHrs  = r.punchMins     !== null ? fmtMinsAr(r.punchMins)     : '—';
+          const netDiffTxt = r.netDiff !== null
+            ? (r.netDiff > 0 ? `<b style="color:var(--primary)">+${arNum(Math.abs(r.netDiff))} د</b>`
+              : r.netDiff < 0 ? `<b style="color:var(--danger)">${arNum(Math.abs(r.netDiff))} د</b>` : '0')
+            : '—';
 
-        const punchCell = r.hasPunch
-          ? `${arTime(r.punchIn) || '—'} ← ${arTime(r.punchOut) || '—'}`
-          : '<span class="badge b-gray">مفيش</span>';
+          const punchCell = r.hasPunch
+            ? `${arTime(r.punchIn) || '—'} ← ${arTime(r.punchOut) || '—'}`
+            : '<span class="badge b-gray">مفيش</span>';
 
-        const issuesTxt = r.issues.length
-          ? r.issues.map(i => `<div class="muted" style="font-size:11.5px">• ${esc(i)}</div>`).join('')
-          : '—';
+          const issuesTxt = r.issues.length
+            ? r.issues.map(i => `<div class="muted" style="font-size:11.5px">• ${esc(i)}</div>`).join('')
+            : '—';
 
-        return `<tr class="${cls}">
-          <td style="text-align:right;min-width:150px"><b>${esc(r.empName)}</b><br><span class="muted">${esc(r.empCode)}</span></td>
-          <td>${arNum(r.dateKey)}<br><span class="muted" style="font-size:11px">${r.day}</span></td>
-          <td>${branchCell}</td>
-          <td>${punchCell}</td>
-          <td>${branchHrs}</td>
-          <td>${punchHrs}</td>
-          <td>${netDiffTxt}</td>
-          <td>${issuesTxt}</td>
-          <td>${badge}</td>
-        </tr>`;
-      }).join('') : `<tr><td colspan="9" class="empty"><div class="empty-icon">🔍</div><div class="empty-title">لا توجد نتائج للفلتر المحدد</div></td></tr>`;
+          return `<tr class="${cls}">
+            <td>${arNum(r.dateKey)}<br><span class="muted" style="font-size:11px">${r.day}</span></td>
+            <td>${branchCell}</td>
+            <td>${punchCell}</td>
+            <td>${branchHrs}</td>
+            <td>${punchHrs}</td>
+            <td>${netDiffTxt}</td>
+            <td>${issuesTxt}</td>
+            <td>${badge}</td>
+          </tr>`;
+        }).join('');
 
-      content = `
-        <div class="card">
-          <div class="card-header">
+        return `<div class="cmp-emp-card report-card" data-cmp-emp="${m.empId}">
+          <div class="cmp-print-only">
+            تقرير المقارنة — ${esc(branchName(lastComparison.branchId))} — الفترة: ${from || 'البداية'} ← ${to || 'الآن'} — سماحية ${arNum(CMP_TOLERANCE)} دقيقة
+          </div>
+          <div class="report-header">
             <div>
-              <div class="card-title">📋 التفصيل اليومي</div>
-              <div class="card-subtitle">${arNum(filtered.length)} من ${arNum(rows.length)} صف — سماحية ${arNum(CMP_TOLERANCE)} دقيقة</div>
+              <div class="report-name">${esc(m.empName)}</div>
+              <div class="muted">رقم البصمة: ${esc(m.empCode)}</div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <button class="btn btn-outline btn-sm" onclick="setCmpFilter('all')" ${filter === 'all' ? 'disabled' : ''}>الكل</button>
-              <button class="btn btn-outline btn-sm" onclick="setCmpFilter('issues')" ${filter === 'issues' ? 'disabled' : ''}>الفروقات</button>
-              <button class="btn btn-outline btn-sm" onclick="setCmpFilter('error')" ${filter === 'error' ? 'disabled' : ''}>التناقضات</button>
-              <button class="btn btn-outline btn-sm" onclick="setCmpFilter('match')" ${filter === 'match' ? 'disabled' : ''}>المطابق</button>
+              <button class="btn btn-outline btn-sm no-print" onclick="printComparison('${m.empId}')">🖨️ طباعة</button>
+              <button class="btn btn-outline btn-sm no-print" onclick="openEmpHistory('${m.empId}')">السجل الكامل</button>
             </div>
+          </div>
+          <div class="report-summary">
+            <span>📅 أيام <b>${arNum(m.totals.days)}</b></span>
+            <span>✅ مطابق <b style="color:var(--success)">${arNum(m.totals.match)}</b></span>
+            <span>⚠️ فروقات <b style="color:var(--warning)">${arNum(m.totals.warn)}</b></span>
+            <span>❌ تناقضات <b style="color:var(--danger)">${arNum(m.totals.error)}</b></span>
+            <span>⚖️ صافي الفرع <b>${fmtMinsAr(m.totals.branchNetTotal)}</b></span>
+            <span>📥 ساعات البصمة <b>${fmtMinsAr(m.totals.punchTotal)}</b></span>
+            <span>الفرق <b style="color:${diffColor}">${netDiff>0?'+':''}${fmtMinsAr(netDiff)}</b></span>
+            ${m.totals.permTotal > 0 ? `<span>🕐 إذن <b style="color:var(--primary)">${fmtMinsAr(m.totals.permTotal)}</b></span>` : ''}
           </div>
           <div class="table-wrap"><table>
             <thead><tr>
-              <th>الموظف</th>
               <th>التاريخ</th>
               <th>جدول الفرع<br><span style="font-weight:400;font-size:10px">دخول ← خروج + إذن</span></th>
               <th>البصمة<br><span style="font-weight:400;font-size:10px">دخول ← خروج</span></th>
@@ -2851,9 +2969,27 @@ function renderCompare(){
               <th>الملاحظات</th>
               <th>النتيجة</th>
             </tr></thead>
-            <tbody>${rowsHtml}</tbody>
+            <tbody>${daysRowsHtml}</tbody>
           </table></div>
         </div>`;
+      }).join('') : `<div class="card"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">لا توجد نتائج للفلتر المحدد</div></div></div>`;
+
+      content = `
+        <div class="card no-print">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📋 التفصيل اليومي — حسب الموظف</div>
+              <div class="card-subtitle">${arNum(byEmp.length)} موظف — ${arNum(filtered.length)} من ${arNum(rows.length)} صف — سماحية ${arNum(CMP_TOLERANCE)} دقيقة</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-outline btn-sm" onclick="setCmpFilter('all')" ${filter === 'all' ? 'disabled' : ''}>الكل</button>
+              <button class="btn btn-outline btn-sm" onclick="setCmpFilter('issues')" ${filter === 'issues' ? 'disabled' : ''}>الفروقات</button>
+              <button class="btn btn-outline btn-sm" onclick="setCmpFilter('error')" ${filter === 'error' ? 'disabled' : ''}>التناقضات</button>
+              <button class="btn btn-outline btn-sm" onclick="setCmpFilter('match')" ${filter === 'match' ? 'disabled' : ''}>المطابق</button>
+            </div>
+          </div>
+        </div>
+        ${cardsHtml}`;
     } else {
       const sumRows = buildSummaryRows(rows);
       const rowsHtml = sumRows.length ? sumRows.map(m => {
@@ -2899,12 +3035,13 @@ function renderCompare(){
     }
 
     body = summaryHtml + `
-      <div class="tabs-inline">
+      <div class="tabs-inline no-print">
         <button class="tab-inline ${tab === 'detailed' ? 'active' : ''}" onclick="setCmpTab('detailed')">📋 تفصيلي</button>
         <button class="tab-inline ${tab === 'summary' ? 'active' : ''}" onclick="setCmpTab('summary')">📊 ملخص</button>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" class="no-print">
         <button class="btn btn-outline" onclick="exportComparison()">📥 Excel</button>
+        <button class="btn btn-outline" onclick="printComparison()">🖨️ طباعة PDF</button>
         <button class="btn btn-whatsapp" onclick="shareCompareWhatsApp()">📤 واتساب</button>
       </div>
     ` + content;
@@ -2916,7 +3053,7 @@ function renderCompare(){
     </div></div>`;
   }
 
-  return `<div class="card">
+  return `<div class="card no-print">
     <div class="card-header">
       <div>
         <div class="card-title">🔍 مقارنة جدول الفرع مع البصمة</div>
@@ -3205,6 +3342,7 @@ Object.assign(window, {
   sendWhatsApp, copyWhatsAppText, editBranchWhatsApp,
   arNum, arTime, fmtDateArFull,
   setCmpFilter, setCmpTab, generateComparison, exportComparison, shareCompareWhatsApp,
+  printComparison,
   backupSystem, restoreSystem, toggleMaintenance, changeMaintenancePassword, renderSystemAdminCard
 });
 window.$ = $;
@@ -3218,7 +3356,6 @@ window.$ = $;
       const users = await fsAll('users');
       const u = users.find(x => x.id === uid);
       if(u){
-        // فحص الصيانة
         const stArr = await fsAll('settings');
         const st = stArr.length ? stArr[0] : {};
         if(st.maintenance && u.role !== 'admin'){
