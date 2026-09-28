@@ -163,6 +163,202 @@ tbody tr:last-child td{border-bottom:none}
 .row-error{background:#fef2f2}
 .cmp-print-only{display:none}
 
+/* ===== Branch Cards ===== */
+.branch-card{
+  background:#fff;
+  border:1px solid var(--gray-200);
+  border-radius:12px;
+  padding:16px;
+  transition:all .15s;
+}
+.branch-card:hover{
+  border-color:var(--primary);
+  box-shadow:0 4px 12px rgba(37,99,235,.08);
+}
+.branch-card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:12px;
+  padding-bottom:12px;
+  border-bottom:1px dashed var(--gray-200);
+}
+.branch-card-name{font-size:16px;font-weight:800;color:var(--gray-900);line-height:1.2}
+.branch-card-info{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-bottom:12px;
+  font-size:12.5px;
+}
+.branch-card-info .row{display:flex;gap:8px;align-items:center;color:var(--gray-700)}
+.branch-card-info .lbl{color:var(--gray-500);min-width:70px;font-size:11.5px}
+.branch-card-footer{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  padding-top:12px;
+  border-top:1px dashed var(--gray-200);
+}
+.branch-card-footer .btn{flex:1;min-width:80px;justify-content:center}
+
+/* ===== Daily Cards ===== */
+.daily-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:14px;
+}
+.emp-card{
+  background:#fff;
+  border:1.5px solid var(--gray-200);
+  border-radius:14px;
+  padding:14px;
+  transition:all .15s;
+  position:relative;
+}
+.emp-card:hover{border-color:var(--gray-300)}
+.emp-card.saving{border-color:var(--warning);background:#fffbeb}
+.emp-card.saved{border-color:var(--success);background:#f0fdf4}
+.emp-card.status-absent{background:#fef2f2;border-color:#fecaca}
+.emp-card.status-leave{background:#eff6ff;border-color:#bfdbfe}
+.emp-card.status-mission{background:#faf5ff;border-color:#e9d5ff}
+
+.emp-card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:12px;
+  padding-bottom:10px;
+  border-bottom:1px dashed var(--gray-200);
+}
+.emp-name{font-size:15px;font-weight:800;color:var(--gray-900);line-height:1.2}
+.emp-code{font-size:11.5px;color:var(--gray-500);margin-top:3px}
+
+.save-indicator{
+  font-size:10.5px;
+  padding:3px 9px;
+  border-radius:20px;
+  font-weight:700;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.save-indicator.saving{background:#fef3c7;color:#92400e}
+.save-indicator.saved{background:#d1fae5;color:#065f46}
+
+.status-buttons{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+  margin-bottom:12px;
+}
+.status-btn{
+  padding:9px 3px;
+  border-radius:9px;
+  font-size:11.5px;
+  font-weight:700;
+  background:var(--gray-100);
+  color:var(--gray-700);
+  transition:all .15s;
+  border:1.5px solid transparent;
+  text-align:center;
+  cursor:pointer;
+  line-height:1.2;
+}
+.status-btn:hover{background:var(--gray-200);transform:translateY(-1px)}
+.status-btn.active[data-status="present"]{background:#d1fae5;color:#065f46;border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+.status-btn.active[data-status="absent"]{background:#fee2e2;color:#991b1b;border-color:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.1)}
+.status-btn.active[data-status="leave"]{background:#dbeafe;color:#1e40af;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.status-btn.active[data-status="mission"]{background:#e9d5ff;color:#6b21a8;border-color:#9333ea;box-shadow:0 0 0 3px rgba(147,51,234,.1)}
+
+.time-inputs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:12px;
+  padding:12px;
+  background:var(--gray-50);
+  border-radius:10px;
+}
+.time-group{display:flex;flex-direction:column;gap:4px}
+.time-group label{font-size:11px;font-weight:700;color:var(--gray-700);text-align:center}
+.time-group input{
+  padding:10px 8px;
+  border:1.5px solid var(--gray-200);
+  border-radius:8px;
+  font-size:14px;
+  text-align:center;
+  font-weight:700;
+  background:#fff;
+  transition:all .15s;
+}
+.time-group input:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px var(--primary-light);
+  outline:none;
+}
+
+.extra-row{margin-bottom:10px}
+.extra-row select{
+  width:100%;
+  padding:9px 12px;
+  border:1.5px solid var(--gray-200);
+  border-radius:9px;
+  font-size:12.5px;
+  background:#fff;
+  transition:all .15s;
+}
+.extra-row select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);outline:none}
+
+.perm-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  margin-bottom:10px;
+}
+.perm-row select{
+  padding:9px 12px;
+  border:1.5px solid var(--gray-200);
+  border-radius:9px;
+  font-size:12.5px;
+  background:#fff;
+}
+.perm-row select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);outline:none}
+.perm-row input{
+  width:90px;
+  padding:9px 8px;
+  border:1.5px solid var(--gray-200);
+  border-radius:9px;
+  font-size:12.5px;
+  text-align:center;
+}
+.perm-row input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);outline:none}
+
+.emp-card .f-notes{
+  width:100%;
+  padding:9px 12px;
+  border:1.5px solid var(--gray-200);
+  border-radius:9px;
+  font-size:12.5px;
+  background:#fff;
+  transition:all .15s;
+}
+.emp-card .f-notes:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);outline:none}
+
+.daily-summary-bar{
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  font-size:13px;
+  padding:10px 14px;
+  background:var(--gray-50);
+  border-radius:10px;
+  margin-top:8px;
+  border:1px solid var(--gray-100);
+}
+.daily-summary-bar b{font-size:15px}
+
 /* ===== Reset Options ===== */
 .reset-option{
   display:flex;align-items:flex-start;gap:10px;padding:12px 14px;
@@ -175,32 +371,47 @@ tbody tr:last-child td{border-bottom:none}
 }
 .reset-option:has(input:checked){border-color:var(--danger);background:#fef2f2;box-shadow:0 0 0 3px rgba(239,68,68,.1)}
 
-/* ===== هوية الشركة + الفوتر في الطباعة ===== */
-.print-header,.print-watermark,.print-footer{display:none}
+/* ===== الطباعة ===== */
+.print-header,.print-footer{display:none}
 
 @media print{
   .sidebar,.header,.btn,.no-print{display:none !important}
   .app{display:block}
   .main{padding:0;overflow:visible}
-  .card,.report-card,.branch-section{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}
-  body{background:#fff;padding-top:64px !important;padding-bottom:44px !important}
+  .card,.report-card,.branch-section,.branch-card{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}
+  body{background:#fff;padding-top:74px !important;padding-bottom:44px !important}
 
   .print-header{
-    display:block;position:fixed;top:0;left:0;right:0;
-    text-align:center;font-size:20px;font-weight:800;
-    padding:12px 16px;border-bottom:2px solid #111;
-    background:#fff;z-index:1000;letter-spacing:.5px;
-    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+    display:flex;
+    position:fixed;
+    top:0;left:0;right:0;
+    align-items:center;
+    justify-content:center;
+    padding:10px 16px;
+    border-bottom:2px solid #111;
+    background:#fff;
+    z-index:1000;
+    min-height:60px;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
   }
-
-  .print-watermark{
-    display:block;position:fixed;top:50%;left:50%;
-    transform:translate(-50%,-50%);
-    width:55%;max-width:480px;opacity:.09;z-index:0;
-    pointer-events:none;
-    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  .print-header .ph-logo{
+    position:absolute;
+    left:16px;
+    top:50%;
+    transform:translateY(-50%);
+    max-height:48px;
+    max-width:130px;
+    object-fit:contain;
   }
-  .print-watermark img{width:100%;height:auto;display:block}
+  .print-header .ph-name{
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:.5px;
+    padding:0 150px;
+    text-align:center;
+    line-height:1.2;
+  }
 
   .print-footer{
     display:flex;position:fixed;bottom:0;left:0;right:0;
@@ -283,7 +494,6 @@ tbody tr:last-child td{border-bottom:none}
 <div id="loader" class="loader-overlay" style="display:none"><div class="spinner"></div></div>
 <div id="modalContainer"></div>
 
-<!-- 🆕 عناصر الطباعة: هيدر + علامة مائية + فوتر -->
 <div id="printHeader" class="print-header"></div>
 <div id="printFooter" class="print-footer"></div>
 
@@ -553,7 +763,7 @@ function enterApp(){
   startLive();
   buildNav();
   renderPage();
-  updatePrintBranding(); // 🆕
+  updatePrintBranding();
 }
 function toggleSidebar(){ $('sidebar').classList.toggle('open'); }
 function buildNav(){
@@ -588,7 +798,7 @@ function navigateTo(page){
 function refreshPage(){
   const ae = document.activeElement;
   if(ae && ['INPUT','SELECT','TEXTAREA'].includes(ae.tagName)) return;
-  if(document.querySelector('.row-saving')) return;
+  if(document.querySelector('.emp-card.saving')) return;
   renderPage();
 }
 
@@ -615,7 +825,7 @@ function renderPage(){
     </div>`;
   }
   $('mainContent').innerHTML = banner + (content[activePage]?.() || '');
-  updatePrintBranding(getCurrentPrintBranch()); // 🆕
+  updatePrintBranding(getCurrentPrintBranch());
 }
 
 function renderDashboard(){
@@ -661,20 +871,26 @@ function renderDashboard(){
 }
 function viewBranchToday(bId){ UI.dailyBranch = bId; navigateTo('daily'); }
 
+/* ============================================================
+   📅 التسجيل اليومي — كروت
+   ============================================================ */
+
 function renderDaily(){
   const isAdmin = currentUser.role === 'admin';
   const date = UI.dailyDate || today();
   UI.dailyDate = date;
   if(!isAdmin) UI.dailyBranch = currentUser.branchId;
   const bId = isAdmin ? UI.dailyBranch : currentUser.branchId;
+
   const branchField = isAdmin ? `
     <div class="field" style="max-width:240px">
-      <label>الفرع</label>
+      <label>🏢 الفرع</label>
       <select onchange="setDailyBranch(this.value)">
         <option value="">اختر الفرع</option>
         ${DB.branches.map(b => `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
       </select>
     </div>` : '';
+
   const base = new Date(date+'T00:00:00');
   const y = new Date(base); y.setDate(y.getDate()-1);
   const yn = new Date(base); yn.setDate(yn.getDate()+1);
@@ -682,7 +898,7 @@ function renderDaily(){
   const tKey = today();
   const dateNav = `
     <div class="field" style="max-width:200px">
-      <label>التاريخ</label>
+      <label>📅 التاريخ</label>
       <input type="date" value="${date}" onchange="setDailyDate(this.value)">
     </div>
     <div class="date-nav" style="align-self:flex-end">
@@ -690,19 +906,40 @@ function renderDaily(){
       <button class="${date === tKey ? 'active' : ''}" onclick="setDailyDate('${tKey}')">اليوم</button>
       <button class="${date === ynKey ? 'active' : ''}" onclick="setDailyDate('${ynKey}')">غداً</button>
     </div>`;
+
   if(!bId){
-    return `<div class="card"><div class="card-header"><div class="card-title">التسجيل اليومي</div></div><div class="form-row">${branchField}${dateNav}</div><div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">اختر الفرع</div></div></div>`;
+    return `<div class="card">
+      <div class="card-header"><div class="card-title">📅 التسجيل اليومي</div></div>
+      <div class="form-row">${branchField}${dateNav}</div>
+      <div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">اختر الفرع أولاً</div></div>
+    </div>`;
   }
-  const emps = DB.employees.filter(e => e.branchId === bId && e.active !== false).sort((a,b) => a.name.localeCompare(b.name,'ar'));
+
+  const emps = DB.employees.filter(e => e.branchId === bId && e.active !== false)
+    .sort((a,b) => a.name.localeCompare(b.name,'ar'));
   const dailyMap = {};
   DB.daily.forEach(d => { if(d.dateKey === date && d.branchId === bId) dailyMap[d.empId] = d; });
   const branchShifts = DB.shifts.filter(s => s.branchId === bId);
   const defShift = getDefaultShift(bId);
   const savedCount = Object.keys(dailyMap).length;
+  const remainingCount = emps.length - savedCount;
+
   if(!emps.length){
-    return `<div class="card"><div class="card-header"><div class="card-title">التسجيل اليومي</div></div><div class="form-row">${branchField}${dateNav}</div><div class="empty"><div class="empty-icon">👥</div><div class="empty-title">لا يوجد موظفين</div></div></div>`;
+    return `<div class="card">
+      <div class="card-header"><div class="card-title">📅 التسجيل اليومي</div></div>
+      <div class="form-row">${branchField}${dateNav}</div>
+      <div class="empty"><div class="empty-icon">👥</div><div class="empty-title">لا يوجد موظفين</div></div>
+    </div>`;
   }
-  const rows = emps.map(e => {
+
+  const filter = UI.dailyFilter || 'all';
+  const visibleEmps = filter === 'saved'
+    ? emps.filter(e => dailyMap[e.id])
+    : filter === 'remaining'
+    ? emps.filter(e => !dailyMap[e.id])
+    : emps;
+
+  const cards = visibleEmps.map(e => {
     const rec = dailyMap[e.id] || {};
     const shiftId = rec.shiftId || e.shiftId || defShift?.id || '';
     const status = rec.status || 'present';
@@ -711,91 +948,177 @@ function renderDaily(){
     const notes = rec.notes || '';
     const timeIn = rec.timeIn || '';
     const timeOut = rec.timeOut || '';
-    return `<tr data-empid="${e.id}" data-branch="${bId}" data-date="${date}">
-      <td style="text-align:right;min-width:170px">
-        <div style="font-weight:600">${esc(e.name)}</div>
-        <div class="muted">${esc(e.code)}</div>
-        ${dailyMap[e.id] ? '<span class="badge b-blue" style="margin-top:4px">محفوظ</span>' : ''}
-      </td>
-      <td style="min-width:140px">
-        <select class="f-shift" onchange="saveRow('${e.id}')">
-          <option value="">—</option>
-          ${branchShifts.map(s => `<option value="${s.id}" ${shiftId === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}
+    const isSaved = !!dailyMap[e.id];
+    const statusClass = status !== 'present' ? ` status-${status}` : '';
+
+    return `<div class="emp-card${isSaved ? ' saved' : ''}${statusClass}" data-empid="${e.id}" data-branch="${bId}" data-date="${date}">
+      <div class="emp-card-header">
+        <div>
+          <div class="emp-name">${esc(e.name)}</div>
+          <div class="emp-code">#${esc(e.code)}</div>
+        </div>
+        <span class="save-indicator ${isSaved ? 'saved' : ''}" style="${isSaved ? '' : 'display:none'}">
+          ${isSaved ? '✓ محفوظ' : ''}
+        </span>
+      </div>
+
+      <div class="status-buttons">
+        <button type="button" class="status-btn ${status === 'present' ? 'active' : ''}" data-status="present" onclick="setStatus('${e.id}','present')">✅ حاضر</button>
+        <button type="button" class="status-btn ${status === 'absent' ? 'active' : ''}" data-status="absent" onclick="setStatus('${e.id}','absent')">❌ غائب</button>
+        <button type="button" class="status-btn ${status === 'leave' ? 'active' : ''}" data-status="leave" onclick="setStatus('${e.id}','leave')">🏖️ أجازة</button>
+        <button type="button" class="status-btn ${status === 'mission' ? 'active' : ''}" data-status="mission" onclick="setStatus('${e.id}','mission')">🎯 مهمة</button>
+      </div>
+
+      <div class="time-fields" style="${status === 'present' ? '' : 'display:none'}">
+        <div class="time-inputs">
+          <div class="time-group">
+            <label>🕐 الدخول</label>
+            <input type="time" class="f-in" value="${timeIn}" onchange="saveCard('${e.id}')">
+          </div>
+          <div class="time-group">
+            <label>🕐 الخروج</label>
+            <input type="time" class="f-out" value="${timeOut}" onchange="saveCard('${e.id}')">
+          </div>
+        </div>
+      </div>
+
+      <div class="extra-row">
+        <select class="f-shift" onchange="saveCard('${e.id}')">
+          <option value="">🕐 الشفت — اختر</option>
+          ${branchShifts.map(s => `<option value="${s.id}" ${shiftId === s.id ? 'selected' : ''}>${esc(s.name)} (${s.start}-${s.end})</option>`).join('')}
         </select>
-      </td>
-      <td><input type="time" class="f-in" value="${timeIn}" onchange="saveRow('${e.id}')"></td>
-      <td><input type="time" class="f-out" value="${timeOut}" onchange="saveRow('${e.id}')"></td>
-      <td><select class="f-status" onchange="saveRow('${e.id}')">${Object.keys(STATUS).map(k => `<option value="${k}" ${status === k ? 'selected' : ''}>${STATUS[k]}</option>`).join('')}</select></td>
-      <td><select class="f-ptype" onchange="saveRow('${e.id}');togglePermHours('${e.id}')">${Object.keys(PERM).map(k => `<option value="${k}" ${permType === k ? 'selected' : ''}>${PERM[k]}</option>`).join('')}</select></td>
-      <td><input type="number" class="f-phours perm-hours" min="0" max="24" step="0.5" value="${permHours}" onchange="saveRow('${e.id}')" style="${permType === 'hour' ? '' : 'display:none'}"></td>
-      <td><input type="text" class="f-notes" value="${esc(notes)}" style="min-width:120px" onchange="saveRow('${e.id}')"></td>
-    </tr>`;
+      </div>
+
+      <div class="perm-row">
+        <select class="f-ptype" onchange="saveCard('${e.id}');togglePermField('${e.id}')">
+          ${Object.keys(PERM).map(k => `<option value="${k}" ${permType === k ? 'selected' : ''}>${PERM[k]}</option>`).join('')}
+        </select>
+        <input type="number" class="f-phours" min="0" max="24" step="0.5" value="${permHours}" placeholder="ساعات" onchange="saveCard('${e.id}')" style="${permType === 'hour' ? '' : 'display:none'}">
+      </div>
+
+      <input type="text" class="f-notes" value="${esc(notes)}" placeholder="📝 ملاحظات (اختياري)" onchange="saveCard('${e.id}')">
+    </div>`;
   }).join('');
-  return `<div class="card">
+
+  return `<div class="card no-print">
     <div class="card-header">
-      <div><div class="card-title">التسجيل اليومي</div><div class="card-subtitle">${emps.length} موظف — ${savedCount} مسجل</div></div>
+      <div>
+        <div class="card-title">📅 التسجيل اليومي</div>
+        <div class="card-subtitle">${emps.length} موظف — <span style="color:var(--success);font-weight:700">${savedCount} محفوظ</span> · <span style="color:var(--warning);font-weight:700">${remainingCount} متبقي</span></div>
+      </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="markAllPresent('${bId}','${date}')">✅ الكل حاضر</button>
         <button class="btn btn-outline btn-sm" onclick="copyFromYesterday('${bId}','${date}')">📋 نسخ من الأمس</button>
-        <button class="btn btn-whatsapp btn-sm" onclick="shareDailyWhatsApp('${bId}','${date}')">📤 إرسال واتساب</button>
-        <button class="btn btn-success btn-sm" onclick="saveAll('${bId}','${date}')">💾 حفظ</button>
+        <button class="btn btn-whatsapp btn-sm" onclick="shareDailyWhatsApp('${bId}','${date}')">📤 واتساب</button>
+        <button class="btn btn-success btn-sm" onclick="saveAll('${bId}','${date}')">💾 حفظ الكل</button>
       </div>
     </div>
     <div class="form-row">${branchField}${dateNav}</div>
-    <div class="table-wrap daily-table"><table>
-      <thead><tr><th>الموظف</th><th>الشفت</th><th>الدخول</th><th>الخروج</th><th>الحالة</th><th>الإذن</th><th>ساعات الإذن</th><th>ملاحظات</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>
-  </div>`;
+    <div class="daily-summary-bar">
+      <span>👥 إجمالي: <b>${emps.length}</b></span>
+      <span style="color:var(--success)">✅ محفوظ: <b>${savedCount}</b></span>
+      <span style="color:var(--warning)">⏳ متبقي: <b>${remainingCount}</b></span>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:14px">
+      <button class="btn btn-outline btn-sm" onclick="setDailyFilter('all')" ${filter === 'all' ? 'disabled' : ''}>الكل (${emps.length})</button>
+      <button class="btn btn-outline btn-sm" onclick="setDailyFilter('remaining')" ${filter === 'remaining' ? 'disabled' : ''}>⏳ المتبقي (${remainingCount})</button>
+      <button class="btn btn-outline btn-sm" onclick="setDailyFilter('saved')" ${filter === 'saved' ? 'disabled' : ''}>✅ المحفوظ (${savedCount})</button>
+    </div>
+  </div>
+
+  <div class="daily-grid">${cards || `<div class="card" style="grid-column:1/-1"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">لا يوجد موظفين مطابقين للفلتر</div></div></div>`}</div>`;
 }
+
 function setDailyBranch(b){ UI.dailyBranch = b; renderPage(); }
 function setDailyDate(d){ UI.dailyDate = d; renderPage(); }
-function togglePermHours(empId){
-  const tr = document.querySelector(`tr[data-empid="${empId}"]`);
-  if(!tr) return;
-  const val = tr.querySelector('.f-ptype').value;
-  const inp = tr.querySelector('.f-phours');
-  inp.style.display = val === 'hour' ? 'block' : 'none';
+function setDailyFilter(f){ UI.dailyFilter = f; renderPage(); }
+
+function setStatus(empId, status){
+  const card = document.querySelector(`.emp-card[data-empid="${empId}"]`);
+  if(!card) return;
+
+  card.querySelectorAll('.status-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.status === status);
+  });
+
+  const timeFields = card.querySelector('.time-fields');
+  if(timeFields){
+    timeFields.style.display = (status === 'present') ? '' : 'none';
+  }
+
+  card.classList.remove('status-absent','status-leave','status-mission');
+  if(status !== 'present') card.classList.add(`status-${status}`);
+
+  saveCard(empId);
+}
+
+function togglePermField(empId){
+  const card = document.querySelector(`.emp-card[data-empid="${empId}"]`);
+  if(!card) return;
+  const val = card.querySelector('.f-ptype').value;
+  const inp = card.querySelector('.f-phours');
+  inp.style.display = val === 'hour' ? '' : 'none';
   if(val !== 'hour') inp.value = '';
 }
-function saveRow(empId){
-  const tr = document.querySelector(`tr[data-empid="${empId}"]`);
-  if(!tr) return;
-  tr.classList.add('row-saving');
-  clearTimeout(tr.__t);
-  tr.__t = setTimeout(async () => {
-    await persistRow(tr, empId);
-    tr.classList.remove('row-saving');
-    tr.classList.add('row-saved');
-    setTimeout(() => tr.classList.remove('row-saved'), 1500);
-  }, 400);
+
+function saveCard(empId){
+  const card = document.querySelector(`.emp-card[data-empid="${empId}"]`);
+  if(!card) return;
+
+  const indicator = card.querySelector('.save-indicator');
+  if(indicator){
+    indicator.textContent = '⏳ جاري الحفظ';
+    indicator.className = 'save-indicator saving';
+    indicator.style.display = '';
+  }
+  card.classList.add('saving');
+  card.classList.remove('saved');
+
+  clearTimeout(card.__t);
+  card.__t = setTimeout(async () => {
+    await persistCard(card, empId);
+    card.classList.remove('saving');
+    card.classList.add('saved');
+    if(indicator){
+      indicator.textContent = '✓ محفوظ';
+      indicator.className = 'save-indicator saved';
+    }
+  }, 500);
 }
-function rowDataFromTr(tr, bId, date){
-  const empId = tr.dataset.empid;
+
+function cardDataFromEl(card, bId, date){
+  const empId = card.dataset.empid;
+  const activeBtn = card.querySelector('.status-btn.active');
+  const status = activeBtn ? activeBtn.dataset.status : 'present';
   return {
-    branchId: bId, dateKey: date, empId,
-    shiftId: tr.querySelector('.f-shift').value,
-    timeIn: tr.querySelector('.f-in').value,
-    timeOut: tr.querySelector('.f-out').value,
-    status: tr.querySelector('.f-status').value,
-    permType: tr.querySelector('.f-ptype').value,
-    permHours: num(tr.querySelector('.f-phours').value),
-    notes: tr.querySelector('.f-notes').value.trim(),
+    branchId: bId,
+    dateKey: date,
+    empId,
+    shiftId: card.querySelector('.f-shift').value,
+    timeIn: card.querySelector('.f-in')?.value || '',
+    timeOut: card.querySelector('.f-out')?.value || '',
+    status,
+    permType: card.querySelector('.f-ptype').value,
+    permHours: num(card.querySelector('.f-phours').value),
+    notes: card.querySelector('.f-notes').value.trim(),
     updatedBy: currentUser.name,
     updatedAt: Date.now()
   };
 }
-function isRowEmpty(data, emp, bId){
+
+function isCardEmpty(data, emp, bId){
   const defShift = emp?.shiftId || getBranch(bId)?.defaultShiftId || '';
   return !data.timeIn && !data.timeOut && !data.notes
     && data.status === 'present' && data.permType === 'none'
     && !data.permHours && data.shiftId === defShift;
 }
-async function persistRow(tr, empId){
-  const bId = tr.dataset.branch;
-  const date = tr.dataset.date;
-  const data = rowDataFromTr(tr, bId, date);
+
+async function persistCard(card, empId){
+  const bId = card.dataset.branch;
+  const date = card.dataset.date;
+  const data = cardDataFromEl(card, bId, date);
   const emp = DB.employees.find(e => e.id === empId);
-  const isEmpty = isRowEmpty(data, emp, bId);
+  const isEmpty = isCardEmpty(data, emp, bId);
   const existing = DB.daily.find(d => d.branchId === bId && d.dateKey === date && d.empId === empId);
   try {
     if(isEmpty && existing){
@@ -810,19 +1133,34 @@ async function persistRow(tr, empId){
     }
   } catch(e){ console.error(e); }
 }
+
+async function markAllPresent(bId, date){
+  if(!confirm('هيتم تعليم كل الموظفين «✅ حاضر». متابعة؟')) return;
+  const cards = document.querySelectorAll('.emp-card[data-empid]');
+  cards.forEach(card => {
+    card.querySelectorAll('.status-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.status === 'present');
+    });
+    const tf = card.querySelector('.time-fields');
+    if(tf) tf.style.display = '';
+    card.classList.remove('status-absent','status-leave','status-mission');
+  });
+  await saveAll(bId, date);
+}
+
 async function saveAll(bId, date){
-  const rows = document.querySelectorAll('tr[data-empid]');
-  if(!rows.length) return;
+  const cards = document.querySelectorAll('.emp-card[data-empid]');
+  if(!cards.length){ alert('لا يوجد موظفين'); return; }
   showLoader(true);
   try {
-    rows.forEach(tr => { clearTimeout(tr.__t); tr.classList.remove('row-saving'); });
+    cards.forEach(card => { clearTimeout(card.__t); card.classList.remove('saving'); });
     const old = DB.daily.filter(d => d.branchId === bId && d.dateKey === date);
     const newRecords = [];
-    rows.forEach(tr => {
-      const empId = tr.dataset.empid;
+    cards.forEach(card => {
+      const empId = card.dataset.empid;
       const emp = DB.employees.find(e => e.id === empId);
-      const data = rowDataFromTr(tr, bId, date);
-      if(isRowEmpty(data, emp, bId)) return;
+      const data = cardDataFromEl(card, bId, date);
+      if(isCardEmpty(data, emp, bId)) return;
       newRecords.push(data);
     });
     const totalOps = old.length + newRecords.length;
@@ -848,23 +1186,33 @@ async function saveAll(bId, date){
   } catch(e){ alert('خطأ في الحفظ: ' + e.message); }
   finally { showLoader(false); }
 }
+
 async function copyFromYesterday(bId, date){
   const base = new Date(date+'T00:00:00');
   const y = new Date(base); y.setDate(y.getDate()-1);
   const yKey = localKey(y);
   const prev = DB.daily.filter(d => d.branchId === bId && d.dateKey === yKey);
-  if(!prev.length) return;
-  if(!confirm(`نسخ ${prev.length} سجل من ${yKey}؟`)) return;
+  if(!prev.length){ alert('📭 مفيش سجلات من الأمس'); return; }
+  if(!confirm(`📋 نسخ ${prev.length} سجل من ${yKey}؟`)) return;
   for(const p of prev){
-    const tr = document.querySelector(`tr[data-empid="${p.empId}"]`);
-    if(!tr) continue;
-    if(p.shiftId) tr.querySelector('.f-shift').value = p.shiftId;
-    if(p.status) tr.querySelector('.f-status').value = p.status;
-    if(p.permType) tr.querySelector('.f-ptype').value = p.permType;
-    if(p.permHours) tr.querySelector('.f-phours').value = p.permHours;
-    if(p.notes) tr.querySelector('.f-notes').value = p.notes;
-    togglePermHours(p.empId);
+    const card = document.querySelector(`.emp-card[data-empid="${p.empId}"]`);
+    if(!card) continue;
+    if(p.shiftId) card.querySelector('.f-shift').value = p.shiftId;
+    if(p.permType) card.querySelector('.f-ptype').value = p.permType;
+    if(p.permHours) card.querySelector('.f-phours').value = p.permHours;
+    if(p.notes) card.querySelector('.f-notes').value = p.notes;
+    if(p.status){
+      card.querySelectorAll('.status-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.status === p.status);
+      });
+      const tf = card.querySelector('.time-fields');
+      if(tf) tf.style.display = (p.status === 'present') ? '' : 'none';
+      card.classList.remove('status-absent','status-leave','status-mission');
+      if(p.status !== 'present') card.classList.add(`status-${p.status}`);
+    }
+    togglePermField(p.empId);
   }
+  alert('✅ تم النسخ — اضغط «حفظ الكل» للتأكيد');
 }
 
 /* ============================================================
@@ -899,9 +1247,7 @@ function arTime(hm){
   return `${arNum(h12)}:${arNum(String(m).padStart(2,'0'))} ${period}`;
 }
 
-function fmtMinsAr(m){
-  return arNum(fmtMins(m));
-}
+function fmtMinsAr(m){ return arNum(fmtMins(m)); }
 
 /* ============================================================
    WhatsApp Sharing
@@ -962,25 +1308,18 @@ function buildDailyWhatsAppText(bId, date){
   txt += `📋 تفاصيل الموظفين:\n\n`;
   txt += lines.length ? lines.join('\n\n') : 'لا يوجد موظفون';
   txt += `\n━━━━━━━━━━━━━━━━━━`;
-
   return txt;
 }
 
 function buildReportWhatsAppText(){
   if(!lastReport || !lastReport.rows.length) return '';
   const { rows, branchId, from, to } = lastReport;
-
   let gP=0, gA=0, gL=0, gM=0, gI=0;
   rows.forEach(r => {
-    gP += r.totals.present;
-    gA += r.totals.absent;
-    gL += r.totals.leave;
-    gM += r.totals.mission;
-    gI += r.totals.incomplete;
+    gP += r.totals.present; gA += r.totals.absent;
+    gL += r.totals.leave; gM += r.totals.mission; gI += r.totals.incomplete;
   });
-
   const period = `${from ? fmtDateArFull(from) : 'البداية'} ← ${to ? fmtDateArFull(to) : 'الآن'}`;
-
   let txt = `━━━━━━━━━━━━━━━━━━\n`;
   txt += `🏢 الفرع: ${branchName(branchId)}\n`;
   txt += `📅 الفترة: ${period}\n`;
@@ -993,7 +1332,6 @@ function buildReportWhatsAppText(){
   if(gI)  txt += `⚠️ بصمة ناقصة: ${arNum(gI)}\n`;
   txt += `━━━━━━━━━━━━━━━━━━\n`;
   txt += `📋 تفاصيل الموظفين:\n\n`;
-
   const lines = rows.map(r => {
     const t = r.totals;
     let line = r.emp.name;
@@ -1002,7 +1340,6 @@ function buildReportWhatsAppText(){
     if(t.mission) line += `  |  🎯 مهمة: ${arNum(t.mission)}`;
     return line;
   });
-
   txt += lines.length ? lines.join('\n\n') : 'لا توجد بيانات';
   txt += `\n━━━━━━━━━━━━━━━━━━`;
   return txt;
@@ -1012,7 +1349,6 @@ function buildEmployeeWhatsAppText(){
   if(!lastEmpReport) return '';
   const { emp, from, to, branchStats, grand } = lastEmpReport;
   const period = `${from ? fmtDateArFull(from) : 'البداية'} ← ${to ? fmtDateArFull(to) : 'الآن'}`;
-
   let txt = `━━━━━━━━━━━━━━━━━━\n`;
   txt += `👤 الاسم: ${emp.name}\n`;
   txt += `🔢 رقم البصمة: ${arNum(emp.code)}\n`;
@@ -1026,7 +1362,6 @@ function buildEmployeeWhatsAppText(){
   if(grand.leave)      txt += `🏖️ أجازة: ${arNum(grand.leave)}\n`;
   if(grand.mission)    txt += `🎯 مهمة: ${arNum(grand.mission)}\n`;
   if(grand.incomplete) txt += `⚠️ بصمة ناقصة: ${arNum(grand.incomplete)}\n`;
-
   const history = emp.transferHistory || [];
   if(history.length){
     txt += `━━━━━━━━━━━━━━━━━━\n`;
@@ -1035,7 +1370,6 @@ function buildEmployeeWhatsAppText(){
       txt += `• ${h.fromName} ← ${h.toName} — ${fmtDateArFull(h.date)}${h.reason ? ' (' + h.reason + ')' : ''}\n`;
     });
   }
-
   txt += `━━━━━━━━━━━━━━━━━━\n`;
   txt += `📋 التفاصيل اليومية:\n\n`;
   const lines = [];
@@ -1061,7 +1395,6 @@ function buildCompareWhatsAppText(){
   if(!lastComparison || !lastComparison.rows.length) return '';
   const { rows, summary, branchId, from, to } = lastComparison;
   const period = `${from ? fmtDateArFull(from) : 'البداية'} ← ${to ? fmtDateArFull(to) : 'الآن'}`;
-
   let txt = `━━━━━━━━━━━━━━━━━━\n`;
   txt += `🔍 تقرير المقارنة\n`;
   txt += `🏢 الفرع: ${branchName(branchId)}\n`;
@@ -1072,7 +1405,6 @@ function buildCompareWhatsAppText(){
   txt += `⚠️ فروقات: ${arNum(summary.warn)}\n`;
   txt += `❌ تناقضات: ${arNum(summary.error)}\n`;
   txt += `━━━━━━━━━━━━━━━━━━\n`;
-
   const issues = rows.filter(r => r.level === 'error' || r.level === 'warn');
   if(!issues.length){
     txt += `🎉 لا توجد فروقات — كل حاجة مطابقة\n`;
@@ -1145,10 +1477,8 @@ function openWhatsAppShare(text, title){
 function sendWhatsApp(){
   const text = $('waText')?.value || '';
   if(!text){ alert('لا يوجد نص'); return; }
-
   let phone = ($('waPhone')?.value || '').trim().replace(/[^\d+]/g, '');
   phone = phone.replace(/^\+/, '').replace(/^0+/, '');
-
   if(!phone && navigator.share){
     navigator.share({ text, title: 'تقرير الحضور' })
       .then(() => closeModal())
@@ -1160,12 +1490,8 @@ function sendWhatsApp(){
       });
     return;
   }
-
   const encoded = encodeURIComponent(text);
-  const url = phone
-    ? `https://wa.me/${phone}?text=${encoded}`
-    : `https://wa.me/?text=${encoded}`;
-
+  const url = phone ? `https://wa.me/${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
   window.open(url, '_blank');
   closeModal();
 }
@@ -1253,7 +1579,7 @@ function renderSettings(){
 function setSettingsTab(t){ UI.settingsTab = t; renderPage(); }
 
 /* ============================================================
-   🎨 هوية الشركة (لوجو + اسم) + تطبيقها على الطباعة
+   🎨 هوية الشركة
    ============================================================ */
 
 function renderBrandingTab(){
@@ -1272,7 +1598,7 @@ function renderBrandingTab(){
       </div>
 
       <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-200)">
-        <div style="font-size:13.5px;font-weight:700;margin-bottom:10px">🖼️ لوجو الشركة (يظهر كعلامة مائية شفافة)</div>
+        <div style="font-size:13.5px;font-weight:700;margin-bottom:10px">🖼️ لوجو الشركة (صغير على شمال الهيدر)</div>
 
         <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
           <div style="flex:1;min-width:250px">
@@ -1281,7 +1607,7 @@ function renderBrandingTab(){
               <div style="font-size:36px;margin-bottom:6px">🖼️</div>
               <div style="font-size:13px;font-weight:700">اختيار لوجو (PNG / JPG / SVG)</div>
               <div class="muted" style="margin-top:4px;font-size:11px">
-                💡 الصورة هتتضغط تلقائيًا لأقصى ٣٥٠ بكسل — الأفضل لوجو مربع أو عرضي بخلفية شفافة
+                💡 الصورة هتتضغط تلقائيًا لأقصى ٣٥٠ بكسل — الأفضل لوجو عرضي بخلفية شفافة
               </div>
             </div>
           </div>
@@ -1304,15 +1630,12 @@ function renderBrandingTab(){
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-200)">
           <div style="font-size:13.5px;font-weight:700;margin-bottom:10px">👁️ معاينة الطباعة</div>
           <div style="background:#fff;border:2px solid var(--gray-300);border-radius:8px;padding:0;overflow:hidden;position:relative;min-height:180px">
-            <div style="padding:10px 14px;border-bottom:2px solid #111;text-align:center;font-size:16px;font-weight:800">
+            <div style="position:relative;padding:10px 16px;border-bottom:2px solid #111;text-align:center;font-size:16px;font-weight:800;min-height:56px;display:flex;align-items:center;justify-content:center">
+              ${logo ? `<img src="${logo}" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);max-height:38px;max-width:110px;object-fit:contain">` : ''}
               ${esc(name || 'اسم الشركة')}
             </div>
-            <div style="padding:30px 20px;text-align:center;color:var(--gray-500);font-size:12.5px;position:relative;min-height:100px">
-              ${logo ? `<img src="${logo}" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:45%;max-width:220px;opacity:.09;pointer-events:none">` : ''}
-              <div style="position:relative;z-index:1">
-                ✏️ هنا يظهر محتوى التقرير / المقارنة / سجل الموظف...<br>
-                <span class="muted">(اللوجو هيظهر كعلامة مائية في الخلفية)</span>
-              </div>
+            <div style="padding:30px 20px;text-align:center;color:var(--gray-500);font-size:12.5px;min-height:100px">
+              ✏️ هنا يظهر محتوى التقرير / المقارنة / سجل الموظف...
             </div>
             <div style="padding:6px 14px;border-top:1px solid #999;font-size:10px;color:#666;display:flex;justify-content:space-between">
               <span>🏢 اسم الفرع</span>
@@ -1414,17 +1737,21 @@ function updatePrintBranding(branchNameForPrint){
   const name = DB.settings?.companyName || '';
   const logo = DB.settings?.companyLogo || '';
   const headerEl = $('printHeader');
-  const wmEl = $('printWatermark');
   const footerEl = $('printFooter');
 
   if(headerEl){
-    headerEl.textContent = name;
-    headerEl.style.display = name ? '' : 'none';
+    if(!name && !logo){
+      headerEl.style.display = 'none';
+      headerEl.innerHTML = '';
+    } else {
+      headerEl.style.display = '';
+      headerEl.innerHTML = `
+        ${logo ? `<img class="ph-logo" src="${logo}" alt="">` : ''}
+        <div class="ph-name">${esc(name || '')}</div>
+      `;
+    }
   }
-  if(wmEl){
-    wmEl.innerHTML = logo ? `<img src="${logo}" alt="">` : '';
-    wmEl.style.display = logo ? '' : 'none';
-  }
+
   if(footerEl){
     const bName = branchNameForPrint || UI.printBranchName || '';
     const dateStr = new Date().toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
@@ -1569,26 +1896,15 @@ function previewReset(){
   }
   const counts = countResetRecords(cfg);
   const total = Object.values(counts).reduce((s, n) => s + n, 0);
-
   const branchTxt = cfg.branchId ? `فرع: <b>${esc(branchName(cfg.branchId))}</b>` : 'كل الفروع';
-  const periodTxt = (cfg.from || cfg.to)
-    ? ` | من <b>${cfg.from || '—'}</b> إلى <b>${cfg.to || '—'}</b>`
-    : '';
-
-  const labels = {
-    daily: '📅 التسجيل اليومي',
-    punches: '📥 البصمات',
-    employees: '👥 الموظفين',
-    shifts: '🕐 الشفتات'
-  };
-
+  const periodTxt = (cfg.from || cfg.to) ? ` | من <b>${cfg.from || '—'}</b> إلى <b>${cfg.to || '—'}</b>` : '';
+  const labels = { daily:'📅 التسجيل اليومي', punches:'📥 البصمات', employees:'👥 الموظفين', shifts:'🕐 الشفتات' };
   const rowsHtml = Object.entries(counts).map(([k, n]) =>
     `<div style="display:flex;justify-content:space-between;padding:8px 12px;background:#fff;border-radius:8px;margin-bottom:6px;border:1px solid var(--gray-200)">
       <span>${labels[k]}</span>
       <span style="font-weight:700;color:${n > 0 ? 'var(--danger)' : 'var(--gray-500)'}">${arNum(n)} سجل</span>
     </div>`
   ).join('');
-
   el.innerHTML = `
     <div class="alert alert-info" style="display:block">
       <div style="font-weight:700;margin-bottom:10px">📊 النطاق: ${branchTxt}${periodTxt}</div>
@@ -1603,17 +1919,14 @@ function previewReset(){
 async function executeReset(){
   const cfg = getResetConfig();
   if(!cfg.targets.length){ alert('اختر حاجة واحدة على الأقل'); return; }
-
   const counts = countResetRecords(cfg);
   const total = Object.values(counts).reduce((s, n) => s + n, 0);
   if(!total){ alert('مفيش بيانات مطابقة للحذف'); return; }
 
-  // تحذير خاص عند حذف موظفين بدون data
   if(cfg.targets.includes('employees') && !cfg.targets.includes('daily') && !cfg.targets.includes('punches')){
     if(!confirm('⚠️ تحذير: هتحذف موظفين بدون حذف تسجيلاتهم وبصماتهم\n\nده هيسيب بيانات orphaned. تحب تختار «التسجيل اليومي» + «البصمات» كمان؟\n\nاضغط Cancel للرجوع.')) return;
   }
 
-  // تأكيد بكلمة مرور الصيانة
   const hasPass = !!DB.settings?.maintenancePasswordHash;
   if(hasPass){
     const p = prompt('🔑 أدخل كلمة مرور الصيانة لتأكيد الحذف:');
@@ -1627,14 +1940,12 @@ async function executeReset(){
 
   const labels = { daily:'التسجيل اليومي', punches:'البصمات', employees:'الموظفين', shifts:'الشفتات' };
   const summary = Object.entries(counts).map(([k, n]) => `• ${labels[k]}: ${n}`).join('\n');
-
   if(!confirm(`⚠️ سيتم حذف نهائي:\n\n${summary}\n\nالإجمالي: ${total}\n\nهل أنت متأكد؟`)) return;
   if(!confirm('🚨 تأكيد أخير — لا يمكن التراجع!\n\nاضغط OK للتنفيذ.')) return;
 
   showLoader(true);
   try {
     let deletedTotal = 0;
-
     if(cfg.targets.includes('daily')){
       const c = await fsBatchDel('daily', d => {
         if(cfg.branchId && d.branchId !== cfg.branchId) return false;
@@ -1661,7 +1972,6 @@ async function executeReset(){
       const c = await fsBatchDel('shifts', s => !cfg.branchId || s.branchId === cfg.branchId);
       deletedTotal += c;
     }
-
     await loadAll();
     alert(`✅ تم الحذف بنجاح\n\nعدد السجلات المحذوفة: ${deletedTotal}`);
     renderPage();
@@ -1689,15 +1999,13 @@ function renderSystemAdminCard(){
       </div>
 
       <div style="border:1px solid var(--gray-200);border-radius:12px;padding:18px;margin-bottom:14px;background:var(--gray-50)">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
-          <div style="flex:1;min-width:200px">
-            <div style="font-size:15px;font-weight:700;margin-bottom:6px">💾 النسخ الاحتياطي الكامل</div>
-            <div class="muted" style="font-size:12.5px;line-height:1.7">
-              ملف JSON يحتوي على <b>كل الداتا</b>:<br>
-              • الفروع (${DB.branches.length}) • المستخدمين (${DB.users.length})<br>
-              • الموظفين (${DB.employees.length}) • الشفتات (${DB.shifts.length})<br>
-              • البصمات (${DB.punches.length}) • التسجيل اليومي (${DB.daily.length})
-            </div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:15px;font-weight:700;margin-bottom:6px">💾 النسخ الاحتياطي الكامل</div>
+          <div class="muted" style="font-size:12.5px;line-height:1.7">
+            ملف JSON يحتوي على <b>كل الداتا</b>:<br>
+            • الفروع (${DB.branches.length}) • المستخدمين (${DB.users.length})<br>
+            • الموظفين (${DB.employees.length}) • الشفتات (${DB.shifts.length})<br>
+            • البصمات (${DB.punches.length}) • التسجيل اليومي (${DB.daily.length})
           </div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
@@ -1717,9 +2025,7 @@ function renderSystemAdminCard(){
               ${m ? '🔴 النظام تحت الصيانة' : '🟢 النظام يعمل بشكل طبيعي'}
             </div>
             <div class="muted" style="font-size:12.5px">
-              ${m
-                ? 'الفروع لا تستطيع تسجيل الدخول — الأدمن فقط'
-                : 'عند تفعيل الصيانة، لن تستطيع الفروع الدخول، وأنت فقط تقدر'}
+              ${m ? 'الفروع لا تستطيع تسجيل الدخول — الأدمن فقط' : 'عند تفعيل الصيانة، لن تستطيع الفروع الدخول، وأنت فقط تقدر'}
             </div>
           </div>
           <button class="btn ${m ? 'btn-success' : 'btn-warning'}" onclick="toggleMaintenance()" style="min-width:180px">
@@ -1732,77 +2038,156 @@ function renderSystemAdminCard(){
           </div>
         ` : `
           <div class="muted" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--gray-100);font-size:12px">
-            💡 عند أول تفعيل للصيانة، سيتم طلب كلمة مرور منك (لأنه لا توجد كلمة مرور بعد)
+            💡 عند أول تفعيل للصيانة، سيتم طلب كلمة مرور منك
           </div>
         `}
       </div>
     </div>`;
 }
 
+/* ============================================================
+   الفروع — كروت + مودال إضافة
+   ============================================================ */
+
 function renderBranchesTab(){
-  const rows = DB.branches.map(b => {
+  const cards = DB.branches.map(b => {
     const u = DB.users.find(x => x.branchId === b.id);
     const emps = DB.employees.filter(e => e.branchId === b.id && e.active !== false).length;
     const bShifts = DB.shifts.filter(s => s.branchId === b.id);
-    return `<tr>
-      <td><b>${esc(b.name)}</b></td>
-      <td>${esc(u?.username || '—')}</td>
-      <td>${esc(u?.name || '—')}</td>
-      <td>${b.whatsapp ? `<span class="badge b-wa">📱 ${esc(b.whatsapp)}</span>` : '<span class="muted">—</span>'}</td>
-      <td><span class="badge b-blue">${emps}</span></td>
-      <td>
-        <select onchange="setDefaultShift('${b.id}', this.value)" style="font-size:12px;padding:6px;border:1px solid var(--gray-200);border-radius:7px">
-          <option value="">—</option>
-          ${bShifts.map(s => `<option value="${s.id}" ${b.defaultShiftId === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}
-        </select>
-      </td>
-      <td style="white-space:nowrap">
+    const totalPunches = DB.punches.filter(p => p.branchId === b.id).length;
+    return `<div class="branch-card">
+      <div class="branch-card-header">
+        <div>
+          <div class="branch-card-name">🏢 ${esc(b.name)}</div>
+          <div class="muted" style="margin-top:4px">${esc(u?.name || u?.username || '—')}</div>
+        </div>
+        <span class="badge b-blue">${emps} موظف</span>
+      </div>
+
+      <div class="branch-card-info">
+        <div class="row"><span class="lbl">المستخدم</span><b>${esc(u?.username || '—')}</b></div>
+        <div class="row"><span class="lbl">واتساب</span>${b.whatsapp ? `<span class="badge b-wa">📱 ${esc(b.whatsapp)}</span>` : '<span class="muted">—</span>'}</div>
+        <div class="row"><span class="lbl">البصمات</span><span class="badge b-gray">${totalPunches}</span></div>
+        <div class="row" style="margin-top:6px">
+          <span class="lbl">الشفت</span>
+          <select onchange="setDefaultShift('${b.id}', this.value)" style="flex:1;font-size:12px;padding:6px 8px;border:1px solid var(--gray-200);border-radius:7px;background:#fff">
+            <option value="">—</option>
+            ${bShifts.map(s => `<option value="${s.id}" ${b.defaultShiftId === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div class="branch-card-footer">
         <button class="btn btn-outline btn-sm" onclick="editBranchWhatsApp('${b.id}')">📱 واتساب</button>
-        <button class="btn btn-outline btn-sm" onclick="editBranchPass('${b.id}')">🔑 كلمة المرور</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteBranch('${b.id}')">حذف</button>
-      </td>
-    </tr>`;
+        <button class="btn btn-outline btn-sm" onclick="editBranchPass('${b.id}')">🔑 المرور</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteBranch('${b.id}')">🗑️ حذف</button>
+      </div>
+    </div>`;
   }).join('');
+
   return `
-    <div class="card" style="background:var(--gray-50);box-shadow:none;border:1px solid var(--gray-200)">
-      <div style="font-size:14px;font-weight:700;margin-bottom:14px">إضافة فرع</div>
-      <div class="form-row">
-        <div class="field"><label>اسم الفرع</label><input id="brName"></div>
-        <div class="field"><label>اسم المستخدم</label><input id="brUser"></div>
-        <div class="field"><label>كلمة المرور</label><input id="brPass" type="text"></div>
-        <div class="field"><label>اسم المسؤول</label><input id="brMgr"></div>
-        <div class="field"><label>رقم واتساب (اختياري)</label><input id="brWa" type="tel" dir="ltr" style="text-align:left" placeholder="201012345678"></div>
-        <button class="btn btn-primary" onclick="addBranch()">إضافة</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:15px;font-weight:700">الفروع (${DB.branches.length})</div>
+        <div class="muted" style="font-size:12px">إدارة الفروع والمستخدمين</div>
+      </div>
+      <button class="btn btn-primary" onclick="openAddBranchModal()">➕ إضافة فرع جديد</button>
+    </div>
+
+    ${DB.branches.length ? `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">${cards}</div>
+    ` : `
+      <div class="card" style="background:var(--gray-50)">
+        <div class="empty">
+          <div class="empty-icon">🏢</div>
+          <div class="empty-title">لا توجد فروع</div>
+          <div class="muted mt-2">اضغط "إضافة فرع جديد" للبدء</div>
+          <button class="btn btn-primary mt-3" onclick="openAddBranchModal()">➕ إضافة أول فرع</button>
+        </div>
+      </div>
+    `}`;
+}
+
+function openAddBranchModal(){
+  showModal(`
+    <div class="modal-header">➕ إضافة فرع جديد</div>
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px;margin-bottom:16px;font-size:12.5px;color:#1e40af">
+      💡 كل فرع بياخد حساب دخول خاص بيه — استخدم بيانات الدخول لفتح النظام من الفرع.
+    </div>
+
+    <div class="field" style="margin-bottom:12px">
+      <label>🏢 اسم الفرع *</label>
+      <input id="brName" placeholder="مثال: فرع القاهرة">
+    </div>
+
+    <div style="border-top:1px dashed var(--gray-200);margin:16px 0;padding-top:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px">🔐 بيانات الدخول</div>
+
+      <div class="field" style="margin-bottom:12px">
+        <label>👤 اسم المستخدم *</label>
+        <input id="brUser" dir="ltr" style="text-align:left" placeholder="cairo1">
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label>🔑 كلمة المرور *</label>
+        <input id="brPass" type="text" dir="ltr" style="text-align:left" placeholder="كلمة مرور قوية">
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label>🧑 اسم المسؤول</label>
+        <input id="brMgr" placeholder="اتركه فارغ لاستخدام اسم الفرع">
       </div>
     </div>
-    ${DB.branches.length ? `
-      <div class="table-wrap mt-3">
-        <table><thead><tr><th>الفرع</th><th>المستخدم</th><th>المسؤول</th><th>واتساب</th><th>الموظفين</th><th>الشفت الافتراضي</th><th></th></tr></thead>
-        <tbody>${rows}</tbody></table>
-      </div>` : `<div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">لا توجد فروع</div></div>`}`;
+
+    <div style="border-top:1px dashed var(--gray-200);margin:16px 0;padding-top:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px">📱 واتساب (اختياري)</div>
+      <div class="field">
+        <label>رقم الواتساب</label>
+        <input id="brWa" type="tel" dir="ltr" style="text-align:left" placeholder="201012345678">
+        <div class="muted" style="font-size:11px;margin-top:4px">بالصيغة الدولية بدون + أو مسافات</div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="submitAddBranch()">✅ إضافة الفرع</button>
+      <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
+    </div>
+  `);
+
+  setTimeout(() => $('brName')?.focus(), 100);
 }
-async function addBranch(){
+
+async function submitAddBranch(){
   const name = $('brName').value.trim();
   const user = $('brUser').value.trim();
   const pass = $('brPass').value.trim();
   const mgr = $('brMgr').value.trim() || name;
   const wa = $('brWa').value.trim().replace(/[^\d+]/g,'').replace(/^\+/,'');
-  if(!name || !user || !pass){ alert('أكمل الحقول المطلوبة'); return; }
-  if(DB.users.some(u => u.username.toLowerCase() === user.toLowerCase())){ alert('اسم المستخدم مستخدم'); return; }
+
+  if(!name || !user || !pass){
+    alert('❌ أكمل الحقول المطلوبة:\n• اسم الفرع\n• اسم المستخدم\n• كلمة المرور');
+    return;
+  }
+  if(DB.users.some(u => u.username.toLowerCase() === user.toLowerCase())){
+    alert('❌ اسم المستخدم مستخدم بالفعل');
+    return;
+  }
+
   showLoader(true);
   try {
     const b = await fsAdd('branches', { name, defaultShiftId:'', whatsapp: wa, createdAt: Date.now() });
     await fsAdd('users', { username: user, passwordHash: await hash(pass), role: 'branch', name: mgr, branchId: b.id, createdAt: Date.now() });
     await loadAll();
+    closeModal();
+    alert(`✅ تم إضافة فرع "${name}" بنجاح`);
     renderPage();
-  } catch(e){ alert(e.message); }
+  } catch(e){ alert('❌ ' + e.message); }
   finally { showLoader(false); }
 }
+
 async function editBranchWhatsApp(bId){
   const b = getBranch(bId);
   if(!b) return;
   const cur = b.whatsapp || '';
-  const np = prompt('رقم واتساب الفرع (صيغة دولية بدون + أو مسافات):\nمثال: 201012345678\n\nاتركه فارغ للحذف:', cur);
+  const np = prompt('📱 رقم واتساب الفرع (صيغة دولية بدون + أو مسافات):\nمثال: 201012345678\n\nاتركه فارغ للحذف:', cur);
   if(np === null) return;
   const clean = String(np).trim().replace(/[^\d+]/g,'').replace(/^\+/,'');
   showLoader(true);
@@ -1813,25 +2198,29 @@ async function editBranchWhatsApp(bId){
   } catch(e){ alert(e.message); }
   finally { showLoader(false); }
 }
+
 async function setDefaultShift(bId, shiftId){
   await fsUpd('branches', bId, { defaultShiftId: shiftId });
   await loadAll();
   renderPage();
 }
+
 async function editBranchPass(bId){
   const u = DB.users.find(x => x.branchId === bId);
   if(!u) return;
-  const np = prompt('كلمة المرور الجديدة:', '');
+  const np = prompt('🔑 كلمة المرور الجديدة:', '');
   if(!np) return;
   showLoader(true);
   try {
     await fsUpd('users', u.id, { passwordHash: await hash(np) });
     await loadAll();
+    alert('✅ تم تغيير كلمة المرور');
   } catch(e){ alert(e.message); }
   finally { showLoader(false); }
 }
+
 async function deleteBranch(id){
-  if(!confirm('سيتم حذف الفرع وكل بياناته. متابعة؟')) return;
+  if(!confirm('⚠️ سيتم حذف الفرع وكل بياناته (موظفين، بصمات، تسجيلات). متابعة؟')) return;
   showLoader(true);
   try {
     await fsDel('branches', id);
@@ -1845,6 +2234,10 @@ async function deleteBranch(id){
   } catch(e){ alert(e.message); }
   finally { showLoader(false); }
 }
+
+/* ============================================================
+   الشفتات
+   ============================================================ */
 
 function renderShiftsTab(){
   const branchOpts = DB.branches.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
@@ -1935,6 +2328,10 @@ async function deleteShift(id){
   } catch(e){ alert(e.message); }
   finally { showLoader(false); }
 }
+
+/* ============================================================
+   الموظفين
+   ============================================================ */
 
 function renderEmployeesTab(){
   const bId = UI.empBranchFilter || '';
@@ -2260,6 +2657,10 @@ async function importEmployees(ev){
   reader.readAsArrayBuffer(file);
 }
 
+/* ============================================================
+   رفع البصمة
+   ============================================================ */
+
 function renderUploads(){
   const branchOpts = DB.branches.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
   return `
@@ -2349,6 +2750,10 @@ async function handleUpload(ev){
   };
   reader.readAsArrayBuffer(file);
 }
+
+/* ============================================================
+   حساب اليوم
+   ============================================================ */
 
 function detectShift(empId, excludeDate){
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 45);
@@ -2472,6 +2877,10 @@ function calcEmp(emp, from, to, branchId){
   });
   return { emp, days: results, totals: t };
 }
+
+/* ============================================================
+   التقارير
+   ============================================================ */
 
 function renderReports(){
   const bId = UI.repBranch || (DB.branches[0]?.id || '');
@@ -2648,7 +3057,9 @@ function exportReport(){
   XLSX.writeFile(wb, `تقرير_${branchName(lastReport.branchId)}_${today()}.xlsx`);
 }
 
-/* ============ سجل الموظف الكامل ============ */
+/* ============================================================
+   سجل الموظف الكامل
+   ============================================================ */
 function renderEmployeeHistory(){
   const filterBranchId = UI.empBranchFilter || '';
   const empId = UI.empReportId || '';
@@ -2713,19 +3124,17 @@ function renderEmployeeHistory(){
         <div class="empty">
           <div class="empty-icon">👥</div>
           <div class="empty-title">لا يوجد موظفين في هذا الفرع</div>
-          <div class="muted" style="margin-top:8px">اذهب للإعدادات → الموظفين → استورد موظفين لهذا الفرع</div>
         </div>
       </div>`;
     }
     return header + `<div class="card">
       <div class="card-header">
-        <div><div class="card-title">👥 موظفي ${esc(branchName(filterBranchId))}</div><div class="card-subtitle">${branchEmps.length} موظف — اضغط على أي واحد لعرض سجله</div></div>
+        <div><div class="card-title">👥 موظفي ${esc(branchName(filterBranchId))}</div><div class="card-subtitle">${branchEmps.length} موظف</div></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
         ${branchEmps.map(e => {
           const dailyCount = DB.daily.filter(d => d.empId === e.id).length;
           const punchCount = DB.punches.filter(p => p.empId === e.id).length;
-          const transCount = (e.transferHistory || []).length;
           const isInactive = e.active === false;
           return `<div class="branch-section" style="cursor:pointer;transition:all .15s;padding:14px"
             onmouseover="this.style.borderColor='var(--primary)';this.style.background='#eff6ff'"
@@ -2735,11 +3144,9 @@ function renderEmployeeHistory(){
               <div style="flex:1">
                 <div style="font-size:15px;font-weight:700;margin-bottom:4px">${esc(e.name)}</div>
                 <div class="muted">رقم البصمة: ${esc(e.code)}</div>
-                <div class="muted">الفرع الحالي: ${esc(branchName(e.branchId))}</div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
                   <span class="badge b-blue">${dailyCount} تسجيل</span>
                   <span class="badge b-gray">${punchCount} بصمة</span>
-                  ${transCount ? `<span class="badge b-purple">${transCount} نقل</span>` : ''}
                 </div>
               </div>
               <span class="badge ${isInactive ? 'b-red' : 'b-green'}">${isInactive ? 'منتهي' : 'نشط'}</span>
@@ -2765,7 +3172,6 @@ function renderEmployeeHistory(){
         <div style="text-align:left">
           <div style="font-size:12px;opacity:.85">الحالة</div>
           <div style="font-size:16px;font-weight:700">${emp.active === false ? 'منتهي' : 'نشط'}</div>
-          ${emp.active === false ? `<div style="font-size:12px;opacity:.85">حتى ${fmtDate(emp.endDate)}</div>` : ''}
           <div style="font-size:12px;opacity:.85;margin-top:4px">الفرع الحالي: ${esc(branchName(emp.branchId))}</div>
         </div>
       </div>
@@ -2779,7 +3185,6 @@ function renderEmployeeHistory(){
         <div class="timeline-item">
           <div style="font-weight:700">${esc(h.fromName)} ← ${esc(h.toName)}</div>
           <div class="muted">${fmtDate(h.date)}${h.reason ? ` — ${esc(h.reason)}` : ''}</div>
-          <div class="muted" style="font-size:11px">بواسطة: ${esc(h.by || '—')}</div>
         </div>
       `).join('')}
     </div>
@@ -2870,8 +3275,6 @@ function renderEmployeeHistory(){
             <span>📅 <b>${b.totals.days}</b> يوم</span>
             <span>✅ <b style="color:var(--success)">${b.totals.present}</b></span>
             <span>❌ <b style="color:var(--danger)">${b.totals.absent}</b></span>
-            <span>🏖 <b style="color:var(--primary)">${b.totals.leave}</b></span>
-            <span>⏰ <b style="color:var(--danger)">${fmtMins(b.totals.lateness)}</b></span>
             <span>⚖️ <b style="color:${c}">${b.totals.overtime>=0?'+':''}${fmtMins(b.totals.overtime)}</b></span>
           </div>
         </div>
@@ -2880,7 +3283,6 @@ function renderEmployeeHistory(){
           <tbody>
             ${b.days.map(d => {
               const shiftTxt = d.shift ? `${d.shift.start} - ${d.shift.end}` : '—';
-              const detected = d.shift?.detected ? ' <span class="badge b-purple" style="font-size:9px">تلقائي</span>' : '';
               const exc = d.excusedMins > 0 ? `<span class="badge b-blue">${fmtMins(d.excusedMins)}</span>` : '—';
               const ovTxt = ['بصمة ناقصة','غياب','أجازة','مهمة'].includes(d.status) ? '—'
                 : d.overtime > 0 ? `<b style="color:var(--primary)">+${fmtMins(d.overtime)}</b>`
@@ -2890,7 +3292,7 @@ function renderEmployeeHistory(){
               const cls = d.status === 'منتظم' ? 'b-green' : d.status === 'تأخير' ? 'b-red' : d.status === 'غياب' ? 'b-gray' : d.status === 'أجازة' ? 'b-blue' : d.status === 'مهمة' ? 'b-purple' : 'b-orange';
               return `<tr>
                 <td>${d.dateKey}<br><span class="muted" style="font-size:11px">${dayName(d.dateKey)}</span></td>
-                <td><span class="badge b-gray" style="font-size:10px">${shiftTxt}</span>${detected}</td>
+                <td><span class="badge b-gray" style="font-size:10px">${shiftTxt}</span></td>
                 <td>${d.timeIn || '—'}</td>
                 <td>${d.timeOut || '—'}</td>
                 <td><b>${workTxt}</b></td>
@@ -3059,7 +3461,7 @@ function selectEmployee(id){ UI.empReportId = id; lastEmpReport = null; renderPa
 function clearEmpSelection(){ UI.empReportId = ''; lastEmpReport = null; renderPage(); }
 
 /* ============================================================
-   🔍 صفحة المقارنة — جدول الفرع vs شيت البصمة
+   🔍 المقارنة
    ============================================================ */
 
 const CMP_TOLERANCE = 10;
@@ -3245,8 +3647,7 @@ function buildSummaryRows(rows){
       map[r.empId] = {
         empId: r.empId, empName: r.empName, empCode: r.empCode,
         days: 0, match: 0, warn: 0, error: 0,
-        totalBranchNet: 0, totalPunch: 0,
-        totalPermMins: 0
+        totalBranchNet: 0, totalPunch: 0, totalPermMins: 0
       };
     }
     const m = map[r.empId];
@@ -3267,12 +3668,9 @@ function buildComparisonByEmployee(rows){
   rows.forEach(r => {
     if(!map[r.empId]){
       map[r.empId] = {
-        empId: r.empId,
-        empName: r.empName,
-        empCode: r.empCode,
+        empId: r.empId, empName: r.empName, empCode: r.empCode,
         days: [],
-        totals: { days:0, match:0, warn:0, error:0,
-                  branchNetTotal:0, punchTotal:0, permTotal:0 }
+        totals: { days:0, match:0, warn:0, error:0, branchNetTotal:0, punchTotal:0, permTotal:0 }
       };
     }
     const m = map[r.empId];
@@ -3297,7 +3695,6 @@ function printComparison(empId){
     alert('اعرض المقارنة أولاً');
     return;
   }
-
   const needSwitch = (UI.cmpTab !== 'detailed') || (empId && (UI.cmpFilter || 'all') !== 'all');
   if(needSwitch){
     UI.cmpTab = 'detailed';
@@ -3306,28 +3703,19 @@ function printComparison(empId){
     setTimeout(() => printComparison(empId), 400);
     return;
   }
-
   if(empId){
     document.querySelectorAll('.cmp-emp-card').forEach(c => c.classList.remove('cmp-print-target'));
     const target = document.querySelector(`.cmp-emp-card[data-cmp-emp="${empId}"]`);
-    if(!target){
-      alert('لم يتم العثور على بيانات الموظف');
-      return;
-    }
+    if(!target){ alert('لم يتم العثور على بيانات الموظف'); return; }
     target.classList.add('cmp-print-target');
     document.body.classList.add('cmp-printing-single');
-
     const cleanup = () => {
       document.body.classList.remove('cmp-printing-single');
       target.classList.remove('cmp-print-target');
       window.removeEventListener('afterprint', cleanup);
     };
     window.addEventListener('afterprint', cleanup);
-
-    setTimeout(() => {
-      window.print();
-      setTimeout(cleanup, 500);
-    }, 100);
+    setTimeout(() => { window.print(); setTimeout(cleanup, 500); }, 100);
   } else {
     window.print();
   }
@@ -3347,7 +3735,6 @@ function renderCompare(){
   let body = '';
   if(lastComparison && lastComparison.rows.length){
     const { rows, summary } = lastComparison;
-
     const summaryHtml = `
       <div class="stats">
         <div class="stat"><div class="stat-icon blue">📊</div><div class="stat-value">${arNum(summary.total)}</div><div class="stat-label">إجمالي الصفوف</div></div>
@@ -3355,7 +3742,6 @@ function renderCompare(){
         <div class="stat"><div class="stat-icon orange">⚠️</div><div class="stat-value">${arNum(summary.warn)}</div><div class="stat-label">فروقات</div></div>
         <div class="stat"><div class="stat-icon red">❌</div><div class="stat-value">${arNum(summary.error)}</div><div class="stat-label">تناقضات</div></div>
       </div>`;
-
     let content = '';
     if(tab === 'detailed'){
       const filtered = filter === 'all' ? rows
@@ -3365,7 +3751,6 @@ function renderCompare(){
         : rows;
 
       const byEmp = buildComparisonByEmployee(filtered);
-
       const cardsHtml = byEmp.length ? byEmp.map(m => {
         const netDiff = m.totals.branchNetTotal - m.totals.punchTotal;
         const diffColor = Math.abs(netDiff) <= CMP_TOLERANCE ? 'var(--success)'
@@ -3377,7 +3762,6 @@ function renderCompare(){
             : r.level === 'warn' ? '<span class="badge b-orange">⚠️ فرق</span>'
             : r.level === 'error' ? '<span class="badge b-red">❌ تناقض</span>'
             : '<span class="badge b-gray">—</span>';
-
           let branchCell = '';
           if(r.branchStatus !== 'present' && !r.branchIn){
             branchCell = `<span class="badge b-gray">${STATUS[r.branchStatus] || r.branchStatus}</span>`;
@@ -3388,25 +3772,19 @@ function renderCompare(){
             } else if(r.branchPermType === 'day'){
               branchCell += `<br><span class="badge b-blue" style="font-size:10px">إذن يوم</span>`;
             }
-          } else {
-            branchCell = '<span class="muted">—</span>';
-          }
-
+          } else { branchCell = '<span class="muted">—</span>'; }
           const branchHrs = r.branchNetMins !== null ? fmtMinsAr(r.branchNetMins) : '—';
           const punchHrs  = r.punchMins     !== null ? fmtMinsAr(r.punchMins)     : '—';
           const netDiffTxt = r.netDiff !== null
             ? (r.netDiff > 0 ? `<b style="color:var(--primary)">+${arNum(Math.abs(r.netDiff))} د</b>`
               : r.netDiff < 0 ? `<b style="color:var(--danger)">${arNum(Math.abs(r.netDiff))} د</b>` : '0')
             : '—';
-
           const punchCell = r.hasPunch
             ? `${arTime(r.punchIn) || '—'} ← ${arTime(r.punchOut) || '—'}`
             : '<span class="badge b-gray">مفيش</span>';
-
           const issuesTxt = r.issues.length
             ? r.issues.map(i => `<div class="muted" style="font-size:11.5px">• ${esc(i)}</div>`).join('')
             : '—';
-
           return `<tr class="${cls}">
             <td>${arNum(r.dateKey)}<br><span class="muted" style="font-size:11px">${r.day}</span></td>
             <td>${branchCell}</td>
@@ -3441,14 +3819,13 @@ function renderCompare(){
             <span>⚖️ صافي الفرع <b>${fmtMinsAr(m.totals.branchNetTotal)}</b></span>
             <span>📥 ساعات البصمة <b>${fmtMinsAr(m.totals.punchTotal)}</b></span>
             <span>الفرق <b style="color:${diffColor}">${netDiff>0?'+':''}${fmtMinsAr(netDiff)}</b></span>
-            ${m.totals.permTotal > 0 ? `<span>🕐 إذن <b style="color:var(--primary)">${fmtMinsAr(m.totals.permTotal)}</b></span>` : ''}
           </div>
           <div class="table-wrap"><table>
             <thead><tr>
               <th>التاريخ</th>
               <th>جدول الفرع<br><span style="font-weight:400;font-size:10px">دخول ← خروج + إذن</span></th>
               <th>البصمة<br><span style="font-weight:400;font-size:10px">دخول ← خروج</span></th>
-              <th>صافي الفرع<br><span style="font-weight:400;font-size:10px">بعد الإذن</span></th>
+              <th>صافي الفرع</th>
               <th>ساعات البصمة</th>
               <th>الفرق</th>
               <th>الملاحظات</th>
@@ -3464,7 +3841,7 @@ function renderCompare(){
           <div class="card-header">
             <div>
               <div class="card-title">📋 التفصيل اليومي — حسب الموظف</div>
-              <div class="card-subtitle">${arNum(byEmp.length)} موظف — ${arNum(filtered.length)} من ${arNum(rows.length)} صف — سماحية ${arNum(CMP_TOLERANCE)} دقيقة</div>
+              <div class="card-subtitle">${arNum(byEmp.length)} موظف — ${arNum(filtered.length)} من ${arNum(rows.length)} صف</div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <button class="btn btn-outline btn-sm" onclick="setCmpFilter('all')" ${filter === 'all' ? 'disabled' : ''}>الكل</button>
@@ -3490,29 +3867,21 @@ function renderCompare(){
           <td>${fmtMinsAr(m.totalBranchNet)}</td>
           <td>${fmtMinsAr(m.totalPunch)}</td>
           <td style="color:${diffColor};font-weight:700">${netDiff > 0 ? '+' : ''}${fmtMinsAr(netDiff)}</td>
-          ${m.totalPermMins > 0 ? `<td><span class="badge b-blue">${fmtMinsAr(m.totalPermMins)}</span></td>` : '<td>—</td>'}
         </tr>`;
-      }).join('') : `<tr><td colspan="9" class="empty">لا توجد بيانات</td></tr>`;
+      }).join('') : `<tr><td colspan="8" class="empty">لا توجد بيانات</td></tr>`;
 
       content = `
         <div class="card">
           <div class="card-header">
             <div>
               <div class="card-title">📊 ملخص الفترة</div>
-              <div class="card-subtitle">${arNum(sumRows.length)} موظف — الإجماليات بعد خصم الإذن</div>
+              <div class="card-subtitle">${arNum(sumRows.length)} موظف</div>
             </div>
           </div>
           <div class="table-wrap"><table>
             <thead><tr>
-              <th>الموظف</th>
-              <th>أيام</th>
-              <th>مطابق</th>
-              <th>فروقات</th>
-              <th>تناقضات</th>
-              <th>صافي ساعات الفرع</th>
-              <th>إجمالي ساعات البصمة</th>
-              <th>الفرق</th>
-              <th>إجمالي الإذن</th>
+              <th>الموظف</th><th>أيام</th><th>مطابق</th><th>فروقات</th><th>تناقضات</th>
+              <th>صافي ساعات الفرع</th><th>إجمالي ساعات البصمة</th><th>الفرق</th>
             </tr></thead>
             <tbody>${rowsHtml}</tbody>
           </table></div>
@@ -3569,7 +3938,6 @@ function generateComparison(){
   UI.cmpBranch = bId; UI.cmpFrom = from; UI.cmpTo = to;
   UI.cmpTab = UI.cmpTab || 'detailed';
   UI.cmpFilter = UI.cmpFilter || 'all';
-
   showLoader(true);
   try {
     const rows = buildComparisonRows(bId, from, to);
@@ -3582,16 +3950,13 @@ function generateComparison(){
     });
     lastComparison = { rows, summary, branchId: bId, from, to };
     renderPage();
-  } finally {
-    showLoader(false);
-  }
+  } finally { showLoader(false); }
 }
 
 function exportComparison(){
   if(!lastComparison || !lastComparison.rows.length){ alert('لا يوجد تقرير'); return; }
   const { rows, branchId } = lastComparison;
   const wb = XLSX.utils.book_new();
-
   const detailed = rows.map(r => ({
     'رقم البصمة': r.empCode,
     'الاسم': r.empName,
@@ -3599,8 +3964,7 @@ function exportComparison(){
     'اليوم': r.day,
     'فرع — دخول': r.branchIn || '',
     'فرع — خروج': r.branchOut || '',
-    'فرع — إذن': r.branchPermType === 'hour' ? `${r.branchPermHours} س` :
-                 r.branchPermType === 'day' ? 'يوم' : '',
+    'فرع — إذن': r.branchPermType === 'hour' ? `${r.branchPermHours} س` : r.branchPermType === 'day' ? 'يوم' : '',
     'فرع — صافي (دقيقة)': r.branchNetMins ?? '',
     'بصمة — دخول': r.punchIn || '',
     'بصمة — خروج': r.punchOut || '',
@@ -3610,7 +3974,6 @@ function exportComparison(){
     'الملاحظات': r.issues.join(' | ')
   }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detailed), 'تفصيلي');
-
   const summary = buildSummaryRows(rows).map(m => ({
     'رقم البصمة': m.empCode,
     'الاسم': m.empName,
@@ -3620,16 +3983,14 @@ function exportComparison(){
     'تناقضات': m.error,
     'صافي ساعات الفرع (دقيقة)': m.totalBranchNet,
     'ساعات البصمة (دقيقة)': m.totalPunch,
-    'الفرق (دقيقة)': m.totalBranchNet - m.totalPunch,
-    'إجمالي الإذن (دقيقة)': m.totalPermMins
+    'الفرق (دقيقة)': m.totalBranchNet - m.totalPunch
   }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summary), 'ملخص');
-
   XLSX.writeFile(wb, `مقارنة_${branchName(branchId)}_${today()}.xlsx`);
 }
 
 /* ============================================================
-   💾 النسخ الاحتياطي والاسترجاع + 🔒 الصيانة
+   النسخ الاحتياطي والصيانة
    ============================================================ */
 
 async function backupSystem(){
@@ -3641,24 +4002,15 @@ async function backupSystem(){
       exportedAt: Date.now(),
       exportedBy: currentUser.name,
       counts: {
-        branches: DB.branches.length,
-        users: DB.users.length,
-        shifts: DB.shifts.length,
-        employees: DB.employees.length,
-        punches: DB.punches.length,
-        daily: DB.daily.length
+        branches: DB.branches.length, users: DB.users.length, shifts: DB.shifts.length,
+        employees: DB.employees.length, punches: DB.punches.length, daily: DB.daily.length
       },
       data: {
-        branches: DB.branches,
-        users: DB.users,
-        shifts: DB.shifts,
-        employees: DB.employees,
-        punches: DB.punches,
-        daily: DB.daily,
+        branches: DB.branches, users: DB.users, shifts: DB.shifts,
+        employees: DB.employees, punches: DB.punches, daily: DB.daily,
         settings: DB.settings || {}
       }
     };
-
     const json = JSON.stringify(backup, null, 2);
     const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -3671,17 +4023,13 @@ async function backupSystem(){
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 2000);
-  } catch(e){
-    alert('خطأ في النسخ الاحتياطي: ' + e.message);
-  } finally {
-    showLoader(false);
-  }
+  } catch(e){ alert('خطأ في النسخ الاحتياطي: ' + e.message); }
+  finally { showLoader(false); }
 }
 
 async function restoreSystem(ev){
   const file = ev.target.files[0];
   if(!file){ return; }
-
   const hasPass = !!DB.settings?.maintenancePasswordHash;
   if(hasPass){
     const pass1 = prompt('🔑 أدخل كلمة مرور الصيانة لتأكيد الاسترجاع:');
@@ -3693,12 +4041,10 @@ async function restoreSystem(ev){
       return;
     }
   }
-
   if(!confirm('⚠️ سيتم حذف كل البيانات الحالية واستبدالها بالنسخة الاحتياطية.\n\nهل أنت متأكد؟')){
     ev.target.value = '';
     return;
   }
-
   const reader = new FileReader();
   reader.onload = async e => {
     showLoader(true);
@@ -3708,7 +4054,6 @@ async function restoreSystem(ev){
         alert('❌ ملف النسخة الاحتياطية غير صالح');
         return;
       }
-
       await fsBatchDel('branches', () => true);
       await fsBatchDel('users', () => true);
       await fsBatchDel('shifts', () => true);
@@ -3716,7 +4061,6 @@ async function restoreSystem(ev){
       await fsBatchDel('punches', () => true);
       await fsBatchDel('daily', () => true);
       await fsBatchDel('settings', () => true);
-
       if(backup.data.branches?.length)  await fsRestore('branches',  backup.data.branches);
       if(backup.data.users?.length)     await fsRestore('users',     backup.data.users);
       if(backup.data.shifts?.length)    await fsRestore('shifts',    backup.data.shifts);
@@ -3727,16 +4071,11 @@ async function restoreSystem(ev){
         const { id, ...rest } = backup.data.settings;
         await fsAdd('settings', rest);
       }
-
       await loadAll();
-      alert(`✅ تم الاسترجاع بنجاح\n\nالفروع: ${backup.counts?.branches || 0}\nالموظفين: ${backup.counts?.employees || 0}\nالبصمات: ${backup.counts?.punches || 0}\nالتسجيل اليومي: ${backup.counts?.daily || 0}`);
+      alert(`✅ تم الاسترجاع بنجاح`);
       renderPage();
-    } catch(err){
-      alert('❌ خطأ: ' + err.message);
-    } finally {
-      showLoader(false);
-      ev.target.value = '';
-    }
+    } catch(err){ alert('❌ خطأ: ' + err.message); }
+    finally { showLoader(false); ev.target.value = ''; }
   };
   reader.readAsText(file);
 }
@@ -3752,15 +4091,12 @@ async function saveMaintenanceSettings(updates){
       DB.settings = rec;
       DB.settingsId = rec.id;
     }
-  } finally {
-    showLoader(false);
-  }
+  } finally { showLoader(false); }
 }
 
 async function toggleMaintenance(){
   const m = DB.settings?.maintenance || false;
   const hasPass = !!DB.settings?.maintenancePasswordHash;
-
   if(!hasPass){
     const p1 = prompt('🔑 يجب تعيين كلمة مرور للصيانة أولاً.\n\nاكتب كلمة المرور (٤ أحرف على الأقل):');
     if(!p1 || p1.length < 4){ alert('كلمة المرور قصيرة جداً'); return; }
@@ -3772,7 +4108,6 @@ async function toggleMaintenance(){
     renderPage();
     return;
   }
-
   const action = m ? 'إيقاف' : 'تفعيل';
   const p = prompt(`🔑 أدخل كلمة مرور الصيانة لـ${action} الصيانة:`);
   if(!p) return;
@@ -3781,10 +4116,9 @@ async function toggleMaintenance(){
     alert('❌ كلمة المرور غير صحيحة');
     return;
   }
-
   const newState = !m;
   await saveMaintenanceSettings({ maintenance: newState });
-  alert(newState ? '🔴 تم تفعيل الصيانة — الفروع لا تستطيع الدخول' : '🟢 تم إيقاف الصيانة — النظام يعمل طبيعي');
+  alert(newState ? '🔴 تم تفعيل الصيانة' : '🟢 تم إيقاف الصيانة');
   renderPage();
 }
 
@@ -3796,12 +4130,10 @@ async function changeMaintenancePassword(){
     alert('❌ كلمة المرور غير صحيحة');
     return;
   }
-
   const p1 = prompt('🔑 كلمة المرور الجديدة (٤ أحرف على الأقل):');
   if(!p1 || p1.length < 4){ alert('كلمة المرور قصيرة جداً'); return; }
   const p2 = prompt('🔑 أعد كتابة كلمة المرور الجديدة:');
   if(p2 !== p1){ alert('❌ كلمتا المرور غير متطابقتين'); return; }
-
   const newHash = await hash(p1);
   await saveMaintenanceSettings({ maintenancePasswordHash: newHash });
   alert('✅ تم تغيير كلمة المرور');
@@ -3809,10 +4141,10 @@ async function changeMaintenancePassword(){
 
 Object.assign(window, {
   doLogin, doLogout, toggleSidebar, navigateTo, renderPage,
-  setSettingsTab, addBranch, setDefaultShift, editBranchPass, deleteBranch,
+  setSettingsTab, addBranch, submitAddBranch, openAddBranchModal, setDefaultShift, editBranchPass, deleteBranch,
   autoShiftHours, addShift, deleteShift,
   updateEmpShiftOptions, addEmp, setEmpShift, deleteEmp, importEmployees,
-  setDailyBranch, setDailyDate, togglePermHours, saveRow, saveAll, copyFromYesterday,
+  setDailyBranch, setDailyDate, setDailyFilter, setStatus, saveCard, saveAll, copyFromYesterday, togglePermField, markAllPresent,
   handleUpload, generateReport, exportReport, viewBranchToday,
   transferEmp, confirmTransfer, deactivateEmp, confirmDeactivate, reactivateEmp,
   showEmpDetails, closeModal, openEmpHistory,
@@ -3866,9 +4198,7 @@ window.$ = $;
     err.textContent = '⚠️ خطأ في التهيئة: ' + (e?.message || e);
     err.style.display = 'block';
     $('loginHint').textContent = 'افتح Console (F12) للتفاصيل';
-  } finally {
-    showLoader(false);
-  }
+  } finally { showLoader(false); }
 })();
 </script>
 </body>
