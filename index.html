@@ -85,6 +85,10 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .field label{font-size:12px;font-weight:600;color:var(--gray-700)}
 .field input,.field select{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:9px;transition:all .15s;background:#fff}
 .field input:focus,.field select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.search-box{position:relative;max-width:320px}
+.search-box input{width:100%;padding:9px 36px 9px 12px;border:1.5px solid var(--gray-200);border-radius:9px;background:#fff}
+.search-box input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.search-box::before{content:'🔍';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.5}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
 .stat{background:#fff;border-radius:12px;padding:18px;border:1px solid var(--gray-100);box-shadow:var(--shadow);transition:all .2s}
 .stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
@@ -111,6 +115,7 @@ tbody tr:last-child td{border-bottom:none}
 .b-gray{background:var(--gray-100);color:var(--gray-700)}
 .b-purple{background:#e9d5ff;color:#6b21a8}
 .b-wa{background:#dcfce7;color:#166534}
+.b-holiday{background:#fce7f3;color:#9d174d}
 .alert{padding:12px 14px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .alert-info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
 .alert-success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
@@ -122,11 +127,6 @@ tbody tr:last-child td{border-bottom:none}
 .loader-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:2000}
 .spinner{width:44px;height:44px;border:4px solid var(--gray-200);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.daily-table input,.daily-table select{padding:6px 8px;font-size:12.5px;border:1px solid var(--gray-200);border-radius:7px;width:100%;transition:all .15s}
-.daily-table input:focus,.daily-table select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);outline:none}
-.daily-table .perm-hours{max-width:80px}
-.row-saving{background:#fffbeb}
-.row-saved{background:#f0fdf4}
 .date-nav{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
 .date-nav button{padding:6px 12px;font-size:12px;border:1.5px solid var(--gray-200);background:#fff;border-radius:7px;font-weight:600;color:var(--gray-700);transition:all .15s}
 .date-nav button:hover{border-color:var(--primary);color:var(--primary)}
@@ -221,6 +221,11 @@ tbody tr:last-child td{border-bottom:none}
 .cmp-emp-card .report-summary{background:#f9fafb;border-radius:10px;padding:12px 16px;font-size:12px;gap:12px 18px;border:1px solid #f3f4f6}
 .cmp-emp-card .report-summary b{font-size:13.5px;font-weight:800}
 .cmp-emp-card .report-name{font-size:16px;letter-spacing:-.2px}
+.holiday-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#fff;border:1px solid var(--gray-200);border-radius:10px;margin-bottom:8px}
+.holiday-item .h-date{font-weight:700;color:var(--primary)}
+.holiday-item .h-name{flex:1;margin:0 12px}
+.holiday-item .h-del{padding:5px 10px;background:#fee2e2;color:var(--danger);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer}
+.holiday-item .h-del:hover{background:#fecaca}
 .print-header,.print-footer{display:none}
 @media print{
   .sidebar,.header,.btn,.no-print{display:none !important}
@@ -326,7 +331,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const DB = { branches:[], users:[], shifts:[], employees:[], punches:[], daily:[], settings:{}, settingsId:null };
+const DB = { branches:[], users:[], shifts:[], employees:[], punches:[], daily:[], holidays:[], settings:{}, settingsId:null };
 let currentUser = null;
 let activePage = 'dashboard';
 let lastReport = null;
@@ -339,6 +344,7 @@ const DAYS = ['الأحد','الإثنين','الثلاثاء','الأربعاء
 const STATUS = { present:'حاضر', absent:'غائب', leave:'أجازة', mission:'مهمة' };
 const PERM = { none:'بدون', hour:'إذن ساعات', day:'يوم كامل' };
 const DEFAULT_TOL = 15;
+const PBKDF2_ITER = 100000;
 
 const $ = id => document.getElementById(id);
 const showLoader = v => $('loader').style.display = v ? 'flex' : 'none';
@@ -346,6 +352,8 @@ const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<'
 const norm = s => String(s==null?'':s).trim().toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/\s+/g,'');
 const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
 const getTol = () => num(DB.settings?.cmpTolerance ?? DEFAULT_TOL);
+const toHex = bytes => Array.from(bytes).map(b => b.toString(16).padStart(2,'0')).join('');
+const fromHex = hex => new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
 
 const localKey = d => {
   const dt = (d instanceof Date) ? d : new Date(d);
@@ -395,9 +403,30 @@ function parseDate(str){
   const dt = new Date(s);
   return isNaN(dt.getTime()) ? null : dt;
 }
-async function hash(p){
-  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p));
-  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+async function hashNew(pass){
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass),
+    { name:'PBKDF2' }, false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name:'PBKDF2', salt, iterations:PBKDF2_ITER, hash:'SHA-256' }, key, 256);
+  return `pbkdf2:${PBKDF2_ITER}:${toHex(salt)}:${toHex(new Uint8Array(bits))}`;
+}
+async function hashOld(pass){
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pass));
+  return toHex(new Uint8Array(b));
+}
+async function verifyPass(pass, stored){
+  if(!stored) return false;
+  if(stored.startsWith('pbkdf2:')){
+    const [, iter, saltHex, hashHex] = stored.split(':');
+    const salt = fromHex(saltHex);
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass),
+      { name:'PBKDF2' }, false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits(
+      { name:'PBKDF2', salt, iterations:+iter, hash:'SHA-256' }, key, 256);
+    return toHex(new Uint8Array(bits)) === hashHex;
+  }
+  return (await hashOld(pass)) === stored;
 }
 async function fsAll(n){
   const s = await getDocs(collection(db, n));
@@ -440,12 +469,12 @@ async function fsRestore(n, items){
 async function loadAll(){
   showLoader(true);
   try {
-    const [b, u, s, e, p, d, st] = await Promise.all([
+    const [b, u, s, e, p, d, h, st] = await Promise.all([
       fsAll('branches'), fsAll('users'), fsAll('shifts'),
       fsAll('employees'), fsAll('punches'), fsAll('daily'),
-      fsAll('settings')
+      fsAll('holidays'), fsAll('settings')
     ]);
-    Object.assign(DB, { branches:b, users:u, shifts:s, employees:e, punches:p, daily:d });
+    Object.assign(DB, { branches:b, users:u, shifts:s, employees:e, punches:p, daily:d, holidays:h });
     DB.settings = st.length ? st[0] : {};
     DB.settingsId = st.length ? st[0].id : null;
   } finally {
@@ -455,7 +484,7 @@ async function loadAll(){
 function startLive(){
   unsubs.forEach(u => { try{ u(); }catch(e){} });
   unsubs = [];
-  ['daily','punches','employees','shifts','branches','users'].forEach(col => {
+  ['daily','punches','employees','shifts','branches','users','holidays'].forEach(col => {
     unsubs.push(onSnapshot(collection(db, col), snap => {
       DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       if(currentUser && !['reports','employee','compare'].includes(activePage)) refreshPage();
@@ -478,6 +507,8 @@ const getDefaultShift = bId => {
   const b = getBranch(bId);
   return b?.defaultShiftId ? getShift(b.defaultShiftId) : null;
 };
+const isHoliday = dateKey => DB.holidays.some(h => h.date === dateKey);
+const getHoliday = dateKey => DB.holidays.find(h => h.date === dateKey);
 
 async function checkSetup(){
   showLoader(true);
@@ -518,7 +549,7 @@ async function doLogin(){
     if(window.__setup){
       const name = $('loginName').value.trim() || u;
       const user = await fsAdd('users', {
-        username: u, passwordHash: await hash(p),
+        username: u, passwordHash: await hashNew(p),
         role: 'admin', name, branchId: null, createdAt: Date.now()
       });
       currentUser = user;
@@ -528,20 +559,29 @@ async function doLogin(){
       return;
     }
     const users = await fsAll('users');
-    const ph = await hash(p);
-    const user = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.passwordHash === ph);
-    if(!user){ err.textContent = 'بيانات الدخول غير صحيحة'; err.style.display = 'block'; return; }
+    const candidate = users.find(x => x.username.toLowerCase() === u.toLowerCase());
+    if(!candidate){ err.textContent = 'بيانات الدخول غير صحيحة'; err.style.display = 'block'; return; }
+    const ok = await verifyPass(p, candidate.passwordHash);
+    if(!ok){ err.textContent = 'بيانات الدخول غير صحيحة'; err.style.display = 'block'; return; }
+
+    if(!candidate.passwordHash.startsWith('pbkdf2:')){
+      try {
+        const newHash = await hashNew(p);
+        await fsUpd('users', candidate.id, { passwordHash: newHash, upgradedAt: Date.now() });
+        candidate.passwordHash = newHash;
+      } catch(e){ console.warn('hash upgrade failed', e); }
+    }
 
     const stArr = await fsAll('settings');
     const st = stArr.length ? stArr[0] : {};
-    if(st.maintenance && user.role !== 'admin'){
+    if(st.maintenance && candidate.role !== 'admin'){
       err.innerHTML = '🔧 <b>النظام تحت الصيانة حالياً</b><br><span style="font-size:12px;font-weight:400">يرجى المحاولة لاحقاً</span>';
       err.style.display = 'block';
       return;
     }
 
-    currentUser = user;
-    sessionStorage.setItem('uid', user.id);
+    currentUser = candidate;
+    sessionStorage.setItem('uid', candidate.id);
     await loadAll();
     enterApp();
   } catch(e){
@@ -650,6 +690,7 @@ function renderDashboard(){
   const activeEmps = DB.employees.filter(e => e.active !== false).length;
   const todayEntries = DB.daily.filter(d => d.dateKey === t).length;
   const totalPunches = DB.punches.length;
+  const holidaysCount = DB.holidays.length;
   const branchCards = DB.branches.map(b => {
     const emps = DB.employees.filter(e => e.branchId === b.id && e.active !== false).length;
     const todayC = DB.daily.filter(d => d.branchId === b.id && d.dateKey === t).length;
@@ -674,10 +715,11 @@ function renderDashboard(){
       <div class="stat"><div class="stat-icon green">👥</div><div class="stat-value">${activeEmps}</div><div class="stat-label">الموظفين</div></div>
       <div class="stat"><div class="stat-icon orange">✅</div><div class="stat-value">${todayEntries}</div><div class="stat-label">تسجيلات اليوم</div></div>
       <div class="stat"><div class="stat-icon purple">📥</div><div class="stat-value">${totalPunches}</div><div class="stat-label">البصمات</div></div>
+      <div class="stat"><div class="stat-icon red">🎉</div><div class="stat-value">${holidaysCount}</div><div class="stat-label">الإجازات الرسمية</div></div>
     </div>
     <div class="card">
       <div class="card-header">
-        <div><div class="card-title">حالة الفروع اليوم</div><div class="card-subtitle">${dayName(t)} ${t}</div></div>
+        <div><div class="card-title">حالة الفروع اليوم</div><div class="card-subtitle">${dayName(t)} ${t}${isHoliday(t) ? ' — 🎉 ' + esc(getHoliday(t).name) : ''}</div></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">${branchCards}</div>
     </div>`;
@@ -742,11 +784,23 @@ function renderDaily(){
   }
 
   const filter = UI.dailyFilter || 'all';
-  const visibleEmps = filter === 'saved'
+  const search = (UI.dailySearch || '').trim();
+  let visibleEmps = filter === 'saved'
     ? emps.filter(e => dailyMap[e.id])
     : filter === 'remaining'
     ? emps.filter(e => !dailyMap[e.id])
     : emps;
+  if(search){
+    const sq = norm(search);
+    visibleEmps = visibleEmps.filter(e => norm(e.name).includes(sq) || norm(e.code).includes(sq));
+  }
+
+  const holidayBanner = isHoliday(date) ? `<div class="alert alert-info">
+    🎉 <b>${esc(getHoliday(date).name)}</b> — إجازة رسمية. الموظفين غير مطالبين بالتسجيل في هذا اليوم.
+  </div>` : '';
+
+  const hasPunches = DB.punches.some(p => p.dateKey === date && p.branchId === bId && emps.some(e => e.id === p.empId));
+  const autoFillBtn = hasPunches ? `<button class="btn btn-primary btn-sm" onclick="autoFillFromPunches('${bId}','${date}')">⚡ ملء تلقائي من البصمة</button>` : '';
 
   const cards = visibleEmps.map(e => {
     const rec = dailyMap[e.id] || {};
@@ -816,17 +870,28 @@ function renderDaily(){
         <div class="card-subtitle">${emps.length} موظف — <span style="color:var(--success);font-weight:700">${savedCount} محفوظ</span> · <span style="color:var(--warning);font-weight:700">${remainingCount} متبقي</span></div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${autoFillBtn}
         <button class="btn btn-outline btn-sm" onclick="markAllPresent('${bId}','${date}')">✅ الكل حاضر</button>
         <button class="btn btn-outline btn-sm" onclick="copyFromYesterday('${bId}','${date}')">📋 نسخ من الأمس</button>
         <button class="btn btn-whatsapp btn-sm" onclick="shareDailyWhatsApp('${bId}','${date}')">📤 واتساب</button>
         <button class="btn btn-success btn-sm" onclick="saveAll('${bId}','${date}')">💾 حفظ الكل</button>
       </div>
     </div>
-    <div class="form-row">${branchField}${dateNav}</div>
+    ${holidayBanner}
+    <div class="form-row">
+      ${branchField}${dateNav}
+      <div class="field" style="max-width:240px">
+        <label>🔍 بحث</label>
+        <div class="search-box">
+          <input type="search" value="${esc(search)}" placeholder="بالاسم أو رقم البصمة" oninput="setDailySearch(this.value)">
+        </div>
+      </div>
+    </div>
     <div class="daily-summary-bar">
       <span>👥 إجمالي: <b>${emps.length}</b></span>
       <span style="color:var(--success)">✅ محفوظ: <b>${savedCount}</b></span>
       <span style="color:var(--warning)">⏳ متبقي: <b>${remainingCount}</b></span>
+      ${search ? `<span style="color:var(--primary)">🔍 نتائج البحث: <b>${visibleEmps.length}</b></span>` : ''}
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:14px">
       <button class="btn btn-outline btn-sm" onclick="setDailyFilter('all')" ${filter === 'all' ? 'disabled' : ''}>الكل (${emps.length})</button>
@@ -835,12 +900,13 @@ function renderDaily(){
     </div>
   </div>
 
-  <div class="daily-grid">${cards || `<div class="card" style="grid-column:1/-1"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">لا يوجد موظفين مطابقين للفلتر</div></div></div>`}</div>`;
+  <div class="daily-grid">${cards || `<div class="card" style="grid-column:1/-1"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">لا يوجد موظفين مطابقين</div></div></div>`}</div>`;
 }
 
 function setDailyBranch(b){ UI.dailyBranch = b; renderPage(); }
 function setDailyDate(d){ UI.dailyDate = d; renderPage(); }
 function setDailyFilter(f){ UI.dailyFilter = f; renderPage(); }
+function setDailySearch(v){ UI.dailySearch = v; const ae = document.activeElement; renderPage(); const el = document.querySelector('.search-box input'); if(el) el.focus(); }
 
 function setStatus(empId, status){
   const card = document.querySelector(`.emp-card[data-empid="${empId}"]`);
@@ -889,6 +955,16 @@ function saveCard(empId){
   }, 500);
 }
 
+function validateCardData(data){
+  if(data.timeIn && data.timeOut){
+    if(data.timeIn === data.timeOut) return 'وقت الدخول والخروج متساويان';
+  }
+  if(data.permType === 'hour' && (data.permHours < 0 || data.permHours > 24)){
+    return 'عدد ساعات الإذن يجب أن يكون بين 0 و 24';
+  }
+  return null;
+}
+
 function cardDataFromEl(card, bId, date){
   const empId = card.dataset.empid;
   const activeBtn = card.querySelector('.status-btn.active');
@@ -920,6 +996,8 @@ async function persistCard(card, empId){
   const bId = card.dataset.branch;
   const date = card.dataset.date;
   const data = cardDataFromEl(card, bId, date);
+  const err = validateCardData(data);
+  if(err){ console.warn('validation:', err); return; }
   const emp = DB.employees.find(e => e.id === empId);
   const isEmpty = isCardEmpty(data, emp, bId);
   const existing = DB.daily.find(d => d.branchId === bId && d.dateKey === date && d.empId === empId);
@@ -935,6 +1013,57 @@ async function persistCard(card, empId){
       DB.daily.push(rec);
     }
   } catch(e){ console.error(e); }
+}
+
+async function autoFillFromPunches(bId, date){
+  if(!confirm('⚡ هيتم ملء أوقات الدخول والخروج تلقائياً من البصمات لكل الموظفين اللي عندهم بصمة.\n\nهل تريد المتابعة؟')) return;
+  const emps = DB.employees.filter(e => e.branchId === bId && e.active !== false);
+  const punches = DB.punches.filter(p => p.branchId === bId && p.dateKey === date);
+  if(!punches.length){ alert('لا توجد بصمات في اليوم ده'); return; }
+
+  let filled = 0;
+  emps.forEach(e => {
+    const empPunches = punches.filter(p => p.empId === e.id).sort((a,b) => a.timeMs - b.timeMs);
+    if(!empPunches.length) return;
+    const card = document.querySelector(`.emp-card[data-empid="${e.id}"]`);
+    if(!card) return;
+
+    const cin = empPunches.find(p => /in/i.test(p.status||'')) || empPunches[0];
+    const couts = empPunches.filter(p => /out/i.test(p.status||''));
+    const cout = couts.length ? couts[couts.length-1] : null;
+
+    const statusBtn = card.querySelector('.status-btn[data-status="present"]');
+    if(statusBtn){
+      card.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+      statusBtn.classList.add('active');
+    }
+    const tf = card.querySelector('.time-fields');
+    if(tf) tf.style.display = '';
+
+    const fIn = card.querySelector('.f-in');
+    const fOut = card.querySelector('.f-out');
+    if(cin && fIn) fIn.value = fmtHM(cin.timeMs);
+    if(cout && fOut) fOut.value = fmtHM(cout.timeMs);
+
+    card.classList.remove('status-absent','status-leave','status-mission');
+    card.classList.add('saving');
+    card.classList.remove('saved');
+    filled++;
+
+    clearTimeout(card.__t);
+    card.__t = setTimeout(async () => {
+      await persistCard(card, e.id);
+      card.classList.remove('saving');
+      card.classList.add('saved');
+      const ind = card.querySelector('.save-indicator');
+      if(ind){
+        ind.textContent = '✓ محفوظ';
+        ind.className = 'save-indicator saved';
+        ind.style.display = '';
+      }
+    }, 400);
+  });
+  alert(`✅ تم ملء ${filled} موظف — راجع البيانات واحفظ`);
 }
 
 async function markAllPresent(bId, date){
@@ -963,6 +1092,8 @@ async function saveAll(bId, date){
       const empId = card.dataset.empid;
       const emp = DB.employees.find(e => e.id === empId);
       const data = cardDataFromEl(card, bId, date);
+      const err = validateCardData(data);
+      if(err){ console.warn('skip:', err); return; }
       if(isCardEmpty(data, emp, bId)) return;
       newRecords.push(data);
     });
@@ -1092,6 +1223,7 @@ function buildDailyWhatsAppText(bId, date){
   let txt = `━━━━━━━━━━━━━━━━━━\n`;
   txt += `🏢 الفرع: ${branch?.name || '—'}\n`;
   txt += `📅 التاريخ: ${fmtDateArFull(date)}\n`;
+  if(isHoliday(date)) txt += `🎉 ${getHoliday(date).name}\n`;
   txt += `━━━━━━━━━━━━━━━━━━\n`;
   txt += `👥 إجمالي الموظفين: ${arNum(emps.length)}\n`;
   txt += `✅ حاضر: ${arNum(present)}\n`;
@@ -1199,6 +1331,7 @@ function buildCompareWhatsAppText(){
   txt += `✅ مطابق: ${arNum(summary.match)}\n`;
   txt += `⚠️ فروقات: ${arNum(summary.warn)}\n`;
   txt += `❌ تناقضات: ${arNum(summary.error)}\n`;
+  if(summary.pending) txt += `📭 معلّق: ${arNum(summary.pending)}\n`;
   txt += `━━━━━━━━━━━━━━━━━━\n`;
   const issues = rows.filter(r => r.level === 'error' || r.level === 'warn');
   if(!issues.length){
@@ -1243,11 +1376,7 @@ function openWhatsAppShare(text, title){
     <div class="field" style="margin-bottom:12px">
       <label>رقم الواتساب (اختياري)</label>
       <input id="waPhone" type="tel" dir="ltr" style="text-align:left"
-        placeholder="مثال: 201012345678 — اتركه فارغ لاختيار جهة الاتصال يدويًا"
-        value="${esc(defaultPhone)}">
-      <div class="muted" style="margin-top:4px;font-size:11px">
-        💡 اكتب الرقم بالصيغة الدولية بدون + أو مسافات (مثال: 201012345678)
-      </div>
+        placeholder="مثال: 201012345678" value="${esc(defaultPhone)}">
     </div>
     <div class="field" style="margin-bottom:12px">
       <label>📄 معاينة الرسالة (${esc(title)})</label>
@@ -1258,15 +1387,7 @@ function openWhatsAppShare(text, title){
       <button class="btn btn-outline" onclick="copyWhatsAppText()">📋 نسخ النص</button>
       <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
     </div>
-    <div class="muted" style="margin-top:12px;font-size:11.5px;text-align:center;padding-top:10px;border-top:1px solid var(--gray-100)">
-      💡 على الموبايل هيظهرلك خيار "مشاركة" مع كل التطبيقات المتاحة
-    </div>
   `);
-
-  setTimeout(() => {
-    const el = $('waPhone');
-    if(el && !el.value) el.focus();
-  }, 100);
 }
 
 function sendWhatsApp(){
@@ -1346,6 +1467,7 @@ function renderSettings(){
     { id:'shifts', label:'الشفتات' },
     { id:'employees', label:'الموظفين' },
     ...(isAdmin ? [
+      { id:'holidays', label:'🎉 الإجازات' },
       { id:'branding', label:'🎨 هوية الشركة' },
       { id:'compare', label:'⚖️ المقارنة' },
       { id:'reset', label:'🗑️ تهيئة' }
@@ -1362,6 +1484,7 @@ function renderSettings(){
       ${tab === 'branches' ? renderBranchesTab() : ''}
       ${tab === 'shifts' ? renderShiftsTab() : ''}
       ${tab === 'employees' ? renderEmployeesTab() : ''}
+      ${tab === 'holidays' ? renderHolidaysTab() : ''}
       ${tab === 'branding' ? renderBrandingTab() : ''}
       ${tab === 'compare' ? renderCompareSettingsTab() : ''}
       ${tab === 'reset' ? renderResetTab() : ''}
@@ -1370,6 +1493,79 @@ function renderSettings(){
   ${isAdmin ? renderSystemAdminCard() : ''}`;
 }
 function setSettingsTab(t){ UI.settingsTab = t; renderPage(); }
+
+function renderHolidaysTab(){
+  const sorted = DB.holidays.slice().sort((a,b) => a.date.localeCompare(b.date));
+  const upcoming = sorted.filter(h => h.date >= today()).slice(0, 10);
+  const listHtml = sorted.length ? sorted.map(h => `
+    <div class="holiday-item">
+      <span class="h-date">${h.date}</span>
+      <span class="h-name">${esc(h.name)}${h.recurring ? ' <span class="badge b-blue" style="font-size:10px">سنوي</span>' : ''}</span>
+      <span class="h-del" onclick="deleteHoliday('${h.id}')">حذف</span>
+    </div>
+  `).join('') : '<div class="empty" style="padding:20px"><div class="empty-title">لا توجد إجازات مسجلة</div></div>';
+
+  return `
+    <div class="card" style="background:var(--gray-50);box-shadow:none;border:1px solid var(--gray-200)">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px">🎉 إضافة إجازة رسمية</div>
+      <div class="form-row">
+        <div class="field" style="max-width:200px">
+          <label>التاريخ</label>
+          <input type="date" id="holidayDate" value="${today()}">
+        </div>
+        <div class="field">
+          <label>اسم الإجازة</label>
+          <input id="holidayName" placeholder="مثال: عيد الفطر">
+        </div>
+        <div class="field" style="max-width:140px;display:flex;align-items:center;gap:6px;margin-top:22px">
+          <input type="checkbox" id="holidayRecurring" style="width:auto">
+          <label for="holidayRecurring" style="margin:0;font-size:12.5px">تتكرر سنوياً</label>
+        </div>
+        <button class="btn btn-primary" onclick="addHoliday()">➕ إضافة</button>
+      </div>
+      <div class="muted" style="font-size:11.5px;margin-top:8px">
+        💡 الإجازات الرسمية مش بتتحسب في المقارنة ولا التقارير — الموظف مش مطالب يسجل فيها.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">📅 الإجازات الرسمية (${DB.holidays.length})</div>
+          <div class="card-subtitle">${upcoming.length ? `${upcoming.length} قادمة` : 'لا توجد إجازات قادمة'}</div>
+        </div>
+      </div>
+      ${listHtml}
+    </div>`;
+}
+
+async function addHoliday(){
+  const date = $('holidayDate').value;
+  const name = $('holidayName').value.trim();
+  const recurring = $('holidayRecurring').checked;
+  if(!date || !name){ alert('أدخل التاريخ والاسم'); return; }
+  if(DB.holidays.some(h => h.date === date && !recurring)){
+    if(!confirm('يوجد إجازة بنفس التاريخ. إضافة أخرى؟')) return;
+  }
+  showLoader(true);
+  try {
+    await fsAdd('holidays', { date, name, recurring, createdAt: Date.now(), createdBy: currentUser.name });
+    await loadAll();
+    renderPage();
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
+}
+
+async function deleteHoliday(id){
+  if(!confirm('حذف الإجازة؟')) return;
+  showLoader(true);
+  try {
+    await fsDel('holidays', id);
+    await loadAll();
+    renderPage();
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
+}
 
 function renderCompareSettingsTab(){
   const t = DB.settings?.cmpTolerance ?? DEFAULT_TOL;
@@ -1436,9 +1632,6 @@ function renderBrandingTab(){
             <div class="upload-zone" onclick="$('brandLogoFile').click()" style="padding:20px">
               <div style="font-size:36px;margin-bottom:6px">🖼️</div>
               <div style="font-size:13px;font-weight:700">اختيار لوجو (PNG / JPG / SVG)</div>
-              <div class="muted" style="margin-top:4px;font-size:11px">
-                💡 الصورة هتتضغط تلقائيًا لأقصى ٣٥٠ بكسل
-              </div>
             </div>
           </div>
 
@@ -1455,25 +1648,6 @@ function renderBrandingTab(){
           `}
         </div>
       </div>
-
-      ${(name || logo) ? `
-        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-200)">
-          <div style="font-size:13.5px;font-weight:700;margin-bottom:10px">👁️ معاينة الطباعة</div>
-          <div style="background:#fff;border:2px solid var(--gray-300);border-radius:8px;padding:0;overflow:hidden;position:relative;min-height:180px">
-            <div style="position:relative;padding:10px 16px;border-bottom:2px solid #111;text-align:center;font-size:16px;font-weight:800;min-height:56px;display:flex;align-items:center;justify-content:center">
-              ${logo ? `<img src="${logo}" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);max-height:38px;max-width:110px;object-fit:contain">` : ''}
-              ${esc(name || 'اسم الشركة')}
-            </div>
-            <div style="padding:30px 20px;text-align:center;color:var(--gray-500);font-size:12.5px;min-height:100px">
-              ✏️ هنا يظهر محتوى التقرير / المقارنة / سجل الموظف...
-            </div>
-            <div style="padding:6px 14px;border-top:1px solid #999;font-size:10px;color:#666;display:flex;justify-content:space-between">
-              <span>🏢 اسم الفرع</span>
-              <span>📅 ${new Date().toLocaleDateString('ar-EG')}</span>
-            </div>
-          </div>
-        </div>
-      ` : ''}
     </div>`;
 }
 
@@ -1628,7 +1802,6 @@ function renderResetTab(){
             <input type="checkbox" class="rs-target" value="daily">
             <div>
               <div style="font-weight:700">📅 التسجيل اليومي</div>
-              <div class="muted" style="font-size:11.5px">حضور/غياب/إذن من جدول الفرع</div>
               <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.daily.length)}</b></div>
             </div>
           </label>
@@ -1637,7 +1810,6 @@ function renderResetTab(){
             <input type="checkbox" class="rs-target" value="punches">
             <div>
               <div style="font-weight:700">📥 البصمات</div>
-              <div class="muted" style="font-size:11.5px">البصمات المرفوعة من Excel</div>
               <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.punches.length)}</b></div>
             </div>
           </label>
@@ -1646,7 +1818,6 @@ function renderResetTab(){
             <input type="checkbox" class="rs-target" value="employees">
             <div>
               <div style="font-weight:700;color:var(--danger)">👥 الموظفين ⚠️</div>
-              <div class="muted" style="font-size:11.5px">حذف الموظفين نهائيًا</div>
               <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.employees.length)}</b></div>
             </div>
           </label>
@@ -1655,8 +1826,15 @@ function renderResetTab(){
             <input type="checkbox" class="rs-target" value="shifts">
             <div>
               <div style="font-weight:700">🕐 الشفتات</div>
-              <div class="muted" style="font-size:11.5px">حذف الشفتات</div>
               <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.shifts.length)}</b></div>
+            </div>
+          </label>
+
+          <label class="reset-option">
+            <input type="checkbox" class="rs-target" value="holidays">
+            <div>
+              <div style="font-weight:700">🎉 الإجازات</div>
+              <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.holidays.length)}</b></div>
             </div>
           </label>
         </div>
@@ -1703,6 +1881,9 @@ function countResetRecords({ branchId, from, to, targets }){
   if(targets.includes('shifts')){
     result.shifts = DB.shifts.filter(s => !branchId || s.branchId === branchId).length;
   }
+  if(targets.includes('holidays')){
+    result.holidays = DB.holidays.length;
+  }
   return result;
 }
 
@@ -1716,8 +1897,7 @@ function previewReset(){
   const counts = countResetRecords(cfg);
   const total = Object.values(counts).reduce((s, n) => s + n, 0);
   const branchTxt = cfg.branchId ? `فرع: <b>${esc(branchName(cfg.branchId))}</b>` : 'كل الفروع';
-  const periodTxt = (cfg.from || cfg.to) ? ` | من <b>${cfg.from || '—'}</b> إلى <b>${cfg.to || '—'}</b>` : '';
-  const labels = { daily:'📅 التسجيل اليومي', punches:'📥 البصمات', employees:'👥 الموظفين', shifts:'🕐 الشفتات' };
+  const labels = { daily:'📅 التسجيل اليومي', punches:'📥 البصمات', employees:'👥 الموظفين', shifts:'🕐 الشفتات', holidays:'🎉 الإجازات' };
   const rowsHtml = Object.entries(counts).map(([k, n]) =>
     `<div style="display:flex;justify-content:space-between;padding:8px 12px;background:#fff;border-radius:8px;margin-bottom:6px;border:1px solid var(--gray-200)">
       <span>${labels[k]}</span>
@@ -1726,10 +1906,10 @@ function previewReset(){
   ).join('');
   el.innerHTML = `
     <div class="alert alert-info" style="display:block">
-      <div style="font-weight:700;margin-bottom:10px">📊 النطاق: ${branchTxt}${periodTxt}</div>
+      <div style="font-weight:700;margin-bottom:10px">📊 النطاق: ${branchTxt}</div>
       ${rowsHtml}
       <div style="margin-top:10px;padding-top:10px;border-top:1px solid #bfdbfe;font-weight:700;font-size:14px">
-        🗑️ الإجمالي المرشح للحذف: <span style="color:var(--danger)">${arNum(total)} سجل</span>
+        🗑️ الإجمالي: <span style="color:var(--danger)">${arNum(total)} سجل</span>
       </div>
     </div>`;
 }
@@ -1745,14 +1925,11 @@ async function executeReset(){
   if(hasPass){
     const p = prompt('🔑 أدخل كلمة مرور الصيانة لتأكيد الحذف:');
     if(!p) return;
-    const ph = await hash(p);
-    if(ph !== DB.settings.maintenancePasswordHash){
-      alert('❌ كلمة المرور غير صحيحة');
-      return;
-    }
+    const ok = await verifyPass(p, DB.settings.maintenancePasswordHash);
+    if(!ok){ alert('❌ كلمة المرور غير صحيحة'); return; }
   }
 
-  const labels = { daily:'التسجيل اليومي', punches:'البصمات', employees:'الموظفين', shifts:'الشفتات' };
+  const labels = { daily:'التسجيل اليومي', punches:'البصمات', employees:'الموظفين', shifts:'الشفتات', holidays:'الإجازات' };
   const summary = Object.entries(counts).map(([k, n]) => `• ${labels[k]}: ${n}`).join('\n');
   if(!confirm(`⚠️ سيتم حذف نهائي:\n\n${summary}\n\nالإجمالي: ${total}\n\nهل أنت متأكد؟`)) return;
   if(!confirm('🚨 تأكيد أخير — لا يمكن التراجع!')) return;
@@ -1786,6 +1963,10 @@ async function executeReset(){
       const c = await fsBatchDel('shifts', s => !cfg.branchId || s.branchId === cfg.branchId);
       deletedTotal += c;
     }
+    if(cfg.targets.includes('holidays')){
+      const c = await fsBatchDel('holidays', () => true);
+      deletedTotal += c;
+    }
     await loadAll();
     alert(`✅ تم الحذف بنجاح\n\nعدد السجلات المحذوفة: ${deletedTotal}`);
     renderPage();
@@ -1809,22 +1990,17 @@ function renderSystemAdminCard(){
       </div>
 
       <div style="border:1px solid var(--gray-200);border-radius:12px;padding:18px;margin-bottom:14px;background:var(--gray-50)">
-        <div style="flex:1;min-width:200px">
-          <div style="font-size:15px;font-weight:700;margin-bottom:6px">💾 النسخ الاحتياطي الكامل</div>
-          <div class="muted" style="font-size:12.5px;line-height:1.7">
-            ملف JSON يحتوي على <b>كل الداتا</b>:<br>
-            • الفروع (${DB.branches.length}) • المستخدمين (${DB.users.length})<br>
-            • الموظفين (${DB.employees.length}) • الشفتات (${DB.shifts.length})<br>
-            • البصمات (${DB.punches.length}) • التسجيل اليومي (${DB.daily.length})
-          </div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">💾 النسخ الاحتياطي الكامل</div>
+        <div class="muted" style="font-size:12.5px;line-height:1.7">
+          ملف JSON يحتوي على <b>كل الداتا</b>: الفروع (${DB.branches.length}) • المستخدمين (${DB.users.length})<br>
+          الموظفين (${DB.employees.length}) • الشفتات (${DB.shifts.length})<br>
+          البصمات (${DB.punches.length}) • التسجيل اليومي (${DB.daily.length})<br>
+          الإجازات (${DB.holidays.length})
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
           <button class="btn btn-primary" onclick="backupSystem()">📥 تنزيل نسخة احتياطية</button>
           <button class="btn btn-outline" onclick="$('restoreFile').click()">📤 استرجاع نسخة</button>
           <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreSystem(event)">
-        </div>
-        <div class="alert alert-warning" style="margin-top:12px;margin-bottom:0;font-size:12px">
-          ⚠️ الاسترجاع يستبدل كل الداتا الحالية بالكامل
         </div>
       </div>
 
@@ -1833,9 +2009,6 @@ function renderSystemAdminCard(){
           <div style="flex:1;min-width:220px">
             <div style="font-size:15px;font-weight:700;margin-bottom:6px;color:${m ? 'var(--danger)' : 'var(--gray-900)'}">
               ${m ? '🔴 النظام تحت الصيانة' : '🟢 النظام يعمل بشكل طبيعي'}
-            </div>
-            <div class="muted" style="font-size:12.5px">
-              ${m ? 'الفروع لا تستطيع تسجيل الدخول — الأدمن فقط' : 'عند تفعيل الصيانة، لن تستطيع الفروع الدخول'}
             </div>
           </div>
           <button class="btn ${m ? 'btn-success' : 'btn-warning'}" onclick="toggleMaintenance()" style="min-width:180px">
@@ -1891,7 +2064,6 @@ function renderBranchesTab(){
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
       <div>
         <div style="font-size:15px;font-weight:700">الفروع (${DB.branches.length})</div>
-        <div class="muted" style="font-size:12px">إدارة الفروع والمستخدمين</div>
       </div>
       <button class="btn btn-primary" onclick="openAddBranchModal()">➕ إضافة فرع جديد</button>
     </div>
@@ -1926,7 +2098,7 @@ function openAddBranchModal(){
       </div>
       <div class="field" style="margin-bottom:12px">
         <label>🔑 كلمة المرور *</label>
-        <input id="brPass" type="text" dir="ltr" style="text-align:left" placeholder="كلمة مرور قوية">
+        <input id="brPass" type="text" dir="ltr" style="text-align:left" placeholder="كلمة مرور قوية (٦ أحرف على الأقل)">
       </div>
       <div class="field" style="margin-bottom:12px">
         <label>🧑 اسم المسؤول</label>
@@ -1939,7 +2111,6 @@ function openAddBranchModal(){
       <div class="field">
         <label>رقم الواتساب</label>
         <input id="brWa" type="tel" dir="ltr" style="text-align:left" placeholder="201012345678">
-        <div class="muted" style="font-size:11px;margin-top:4px">بالصيغة الدولية بدون + أو مسافات</div>
       </div>
     </div>
 
@@ -1960,18 +2131,19 @@ async function submitAddBranch(){
   const wa = $('brWa').value.trim().replace(/[^\d+]/g,'').replace(/^\+/,'');
 
   if(!name || !user || !pass){
-    alert('❌ أكمل الحقول المطلوبة:\n• اسم الفرع\n• اسم المستخدم\n• كلمة المرور');
-    return;
+    alert('❌ أكمل الحقول المطلوبة'); return;
+  }
+  if(pass.length < 6){
+    alert('❌ كلمة المرور لازم ٦ أحرف على الأقل'); return;
   }
   if(DB.users.some(u => u.username.toLowerCase() === user.toLowerCase())){
-    alert('❌ اسم المستخدم مستخدم بالفعل');
-    return;
+    alert('❌ اسم المستخدم مستخدم بالفعل'); return;
   }
 
   showLoader(true);
   try {
     const b = await fsAdd('branches', { name, defaultShiftId:'', whatsapp: wa, createdAt: Date.now() });
-    await fsAdd('users', { username: user, passwordHash: await hash(pass), role: 'branch', name: mgr, branchId: b.id, createdAt: Date.now() });
+    await fsAdd('users', { username: user, passwordHash: await hashNew(pass), role: 'branch', name: mgr, branchId: b.id, createdAt: Date.now() });
     await loadAll();
     closeModal();
     alert(`✅ تم إضافة فرع "${name}" بنجاح`);
@@ -1984,7 +2156,7 @@ async function editBranchWhatsApp(bId){
   const b = getBranch(bId);
   if(!b) return;
   const cur = b.whatsapp || '';
-  const np = prompt('📱 رقم واتساب الفرع:\nمثال: 201012345678\n\nاتركه فارغ للحذف:', cur);
+  const np = prompt('📱 رقم واتساب الفرع:', cur);
   if(np === null) return;
   const clean = String(np).trim().replace(/[^\d+]/g,'').replace(/^\+/,'');
   showLoader(true);
@@ -2005,11 +2177,12 @@ async function setDefaultShift(bId, shiftId){
 async function editBranchPass(bId){
   const u = DB.users.find(x => x.branchId === bId);
   if(!u) return;
-  const np = prompt('🔑 كلمة المرور الجديدة:', '');
+  const np = prompt('🔑 كلمة المرور الجديدة (٦ أحرف على الأقل):', '');
   if(!np) return;
+  if(np.length < 6){ alert('كلمة المرور قصيرة جداً'); return; }
   showLoader(true);
   try {
-    await fsUpd('users', u.id, { passwordHash: await hash(np) });
+    await fsUpd('users', u.id, { passwordHash: await hashNew(np) });
     await loadAll();
     alert('✅ تم تغيير كلمة المرور');
   } catch(e){ alert(e.message); }
@@ -2125,9 +2298,14 @@ async function deleteShift(id){
 function renderEmployeesTab(){
   const bId = UI.empBranchFilter || '';
   const activeFilter = UI.empActiveFilter || 'active';
+  const search = (UI.empSearch || '').trim();
   let list = bId ? DB.employees.filter(e => e.branchId === bId) : DB.employees.slice();
   if(activeFilter === 'active') list = list.filter(e => e.active !== false);
   else if(activeFilter === 'inactive') list = list.filter(e => e.active === false);
+  if(search){
+    const sq = norm(search);
+    list = list.filter(e => norm(e.name).includes(sq) || norm(e.code).includes(sq));
+  }
   list.sort((a,b) => a.name.localeCompare(b.name,'ar'));
   const branchOpts = DB.branches.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
   const rows = list.map(e => {
@@ -2195,15 +2373,22 @@ function renderEmployeesTab(){
           <option value="inactive" ${activeFilter === 'inactive' ? 'selected' : ''}>المنتهيين</option>
         </select>
       </div>
+      <div class="field" style="max-width:280px">
+        <label>🔍 بحث</label>
+        <div class="search-box">
+          <input type="search" value="${esc(search)}" placeholder="بالاسم أو رقم البصمة" oninput="setEmpSearch(this.value)">
+        </div>
+      </div>
     </div>
     ${list.length ? `
       <div class="table-wrap mt-3">
         <table><thead><tr><th>رقم البصمة</th><th>الاسم</th><th>الفرع</th><th>الشفت</th><th>الوقت</th><th>إجراءات</th></tr></thead>
         <tbody>${rows}</tbody></table>
-      </div>` : `<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">لا يوجد موظفين</div></div>`}`;
+      </div>` : `<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">لا يوجد موظفين مطابقين</div></div>`}`;
 }
 function setEmpBranchFilter(v){ UI.empBranchFilter = v; renderPage(); }
 function setEmpActiveFilter(v){ UI.empActiveFilter = v; renderPage(); }
+function setEmpSearch(v){ UI.empSearch = v; renderPage(); const el = document.querySelector('.search-box input'); if(el){ el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }
 function updateEmpShiftOptions(){
   const bId = $('empBAdd').value;
   const sel = $('empShiftSel');
@@ -2380,7 +2565,6 @@ async function showEmpDetails(empId){
       <div class="muted">${esc(emp.code)}</div>
       <div class="muted">${esc(branchName(emp.branchId))}</div>
       <div class="muted">الحالة: ${emp.active === false ? 'منتهي' : 'نشط'}</div>
-      ${emp.active === false ? `<div class="muted">تاريخ المغادرة: ${fmtDate(emp.endDate)}</div>` : ''}
     </div>
     <div class="stats" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
       <div class="stat"><div class="stat-value">${dailyCount}</div><div class="stat-label">تسجيلات</div></div>
@@ -2448,6 +2632,23 @@ async function importEmployees(ev){
 
 function renderUploads(){
   const branchOpts = DB.branches.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
+  const bFilter = UI.upBranchFilter || '';
+  let punchesList = bFilter ? DB.punches.filter(p => p.branchId === bFilter) : DB.punches;
+  const search = (UI.upSearch || '').trim();
+  if(search){
+    const sq = norm(search);
+    punchesList = punchesList.filter(p => norm(p.name).includes(sq) || norm(p.code).includes(sq));
+  }
+  const sorted = punchesList.slice().sort((a,b) => b.timeMs - a.timeMs).slice(0, 100);
+  const rows = sorted.map(p => `<tr>
+    <td>${esc(p.dateKey)}</td>
+    <td>${arTime(fmtHM(p.timeMs))}</td>
+    <td><span class="badge b-gray">${esc(p.code)}</span></td>
+    <td>${esc(p.name)}</td>
+    <td>${esc(branchName(p.branchId))}</td>
+    <td><span class="badge b-blue">${esc(p.status || '—')}</span></td>
+  </tr>`).join('');
+
   return `
     <div class="card">
       <div class="card-header">
@@ -2488,8 +2689,31 @@ function renderUploads(){
           </tbody>
         </table></div>
       ` : `<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">لا توجد فروع</div></div>`}
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">آخر البصمات (100)</div></div>
+        <div class="form-row" style="margin:0">
+          <div class="field" style="max-width:200px;min-width:150px">
+            <select onchange="setUpBranchFilter(this.value)">
+              <option value="">كل الفروع</option>
+              ${DB.branches.map(b => `<option value="${b.id}" ${bFilter === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="search-box">
+            <input type="search" value="${esc(search)}" placeholder="بحث" oninput="setUpSearch(this.value)">
+          </div>
+        </div>
+      </div>
+      ${sorted.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>التاريخ</th><th>الوقت</th><th>الرقم</th><th>الاسم</th><th>الفرع</th><th>الحالة</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>` : '<div class="empty"><div class="empty-icon">📥</div><div class="empty-title">لا توجد بصمات</div></div>'}
     </div>`;
 }
+function setUpBranchFilter(v){ UI.upBranchFilter = v; renderPage(); }
+function setUpSearch(v){ UI.upSearch = v; renderPage(); const el = document.querySelector('.search-box input'); if(el){ el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }
+
 async function handleUpload(ev){
   const file = ev.target.files[0]; if(!file) return;
   const bId = $('upBranch').value;
@@ -2574,6 +2798,10 @@ function detectShift(empId, excludeDate){
 }
 
 function calcDay(emp, dateKey, dailyRec, punches, branchId){
+  if(isHoliday(dateKey)){
+    return mkDay(dateKey, 'أجازة رسمية', 0, 0, 0, 0, 0,
+      { start:'—', end:'—', hours:0, graceMins:0, offDays:[], name:'إجازة' }, '—', '—');
+  }
   let sh = null;
   if(dailyRec?.shiftId) sh = getShift(dailyRec.shiftId);
   if(!sh && emp.shiftId) sh = getShift(emp.shiftId);
@@ -2643,7 +2871,7 @@ function calcEmp(emp, from, to, branchId){
   Object.keys(pByDay).forEach(k => { if(!days[k]) days[k] = null; });
   const allDates = Object.keys(days).sort();
   const results = allDates.map(dk => calcDay(emp, dk, days[dk], pByDay[dk] || [], branchId));
-  const t = { days: results.length, workMins:0, requiredMins:0, overtime:0, lateness:0, excused:0, present:0, absent:0, leave:0, mission:0, incomplete:0 };
+  const t = { days: results.length, workMins:0, requiredMins:0, overtime:0, lateness:0, excused:0, present:0, absent:0, leave:0, mission:0, incomplete:0, holiday:0 };
   results.forEach(d => {
     t.workMins += d.workMins;
     t.requiredMins += d.requiredMins;
@@ -2654,6 +2882,7 @@ function calcEmp(emp, from, to, branchId){
     else if(d.status === 'أجازة') t.leave++;
     else if(d.status === 'مهمة') t.mission++;
     else if(d.status === 'بصمة ناقصة') t.incomplete++;
+    else if(d.status === 'أجازة رسمية') t.holiday++;
     else t.present++;
   });
   return { emp, days: results, totals: t };
@@ -2664,10 +2893,10 @@ function renderReports(){
   const view = UI.repView || 'detailed';
   let body = '';
   if(lastReport && lastReport.rows.length){
-    let gW=0, gO=0, gL=0, gD=0, gP=0, gA=0, gLv=0;
+    let gO=0, gL=0, gP=0, gA=0, gLv=0;
     lastReport.rows.forEach(r => {
-      gW += r.totals.workMins; gO += r.totals.overtime; gL += r.totals.lateness;
-      gD += r.totals.days; gP += r.totals.present; gA += r.totals.absent; gLv += r.totals.leave;
+      gO += r.totals.overtime; gL += r.totals.lateness;
+      gP += r.totals.present; gA += r.totals.absent; gLv += r.totals.leave;
     });
     const overColor = gO >= 0 ? 'var(--primary)' : 'var(--danger)';
     const summary = `
@@ -2722,6 +2951,13 @@ function renderReports(){
             <thead><tr><th>التاريخ</th><th>الشفت</th><th>دخول</th><th>خروج</th><th>ساعات</th><th>إذن</th><th>تأخير</th><th>إضافي/عجز</th><th>الحالة</th></tr></thead>
             <tbody>
               ${r.days.map(d => {
+                if(d.status === 'أجازة رسمية'){
+                  return `<tr style="background:#fce7f3">
+                    <td>${d.dateKey}<br><span class="muted" style="font-size:11px">${dayName(d.dateKey)}</span></td>
+                    <td colspan="7" style="text-align:center"><span class="badge b-holiday">🎉 ${esc(getHoliday(d.dateKey)?.name || 'إجازة رسمية')}</span></td>
+                    <td><span class="badge b-holiday">إجازة رسمية</span></td>
+                  </tr>`;
+                }
                 const shiftTxt = d.shift ? `${d.shift.start} - ${d.shift.end}` : '—';
                 const detected = d.shift?.detected ? ' <span class="badge b-purple" style="font-size:9px">تلقائي</span>' : '';
                 const exc = d.excusedMins > 0 ? `<span class="badge b-blue">${fmtMins(d.excusedMins)}</span>` : '—';
@@ -2883,23 +3119,12 @@ function renderEmployeeHistory(){
   </div>`;
 
   if(!filterBranchId){
-    return header + `<div class="card">
-      <div class="empty">
-        <div class="empty-icon">🏢</div>
-        <div class="empty-title">اختر الفرع أولاً</div>
-        <div class="muted" style="margin-top:8px">ثم اختر الموظف لعرض سجله الكامل</div>
-      </div>
-    </div>`;
+    return header + `<div class="card"><div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">اختر الفرع أولاً</div></div></div>`;
   }
 
   if(!empId){
     if(!branchEmps.length){
-      return header + `<div class="card">
-        <div class="empty">
-          <div class="empty-icon">👥</div>
-          <div class="empty-title">لا يوجد موظفين في هذا الفرع</div>
-        </div>
-      </div>`;
+      return header + `<div class="card"><div class="empty"><div class="empty-icon">👥</div><div class="empty-title">لا يوجد موظفين في هذا الفرع</div></div></div>`;
     }
     return header + `<div class="card">
       <div class="card-header">
@@ -2911,8 +3136,6 @@ function renderEmployeeHistory(){
           const punchCount = DB.punches.filter(p => p.empId === e.id).length;
           const isInactive = e.active === false;
           return `<div class="branch-section" style="cursor:pointer;transition:all .15s;padding:14px"
-            onmouseover="this.style.borderColor='var(--primary)';this.style.background='#eff6ff'"
-            onmouseout="this.style.borderColor='var(--gray-200)';this.style.background='#fff'"
             onclick="selectEmployee('${e.id}')">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
               <div style="flex:1">
@@ -2991,7 +3214,7 @@ function renderEmployeeHistory(){
       const punches = DB.punches.filter(p => p.empId === emp.id && p.dateKey === dk && p.branchId === bId);
       return calcDay(emp, dk, rec, punches, bId);
     });
-    const t = { days: days.length, workMins:0, overtime:0, lateness:0, present:0, absent:0, leave:0, mission:0, incomplete:0 };
+    const t = { days: days.length, workMins:0, overtime:0, lateness:0, present:0, absent:0, leave:0, mission:0, incomplete:0, holiday:0 };
     days.forEach(d => {
       t.workMins += d.workMins;
       t.overtime += d.overtime;
@@ -3000,12 +3223,13 @@ function renderEmployeeHistory(){
       else if(d.status === 'أجازة') t.leave++;
       else if(d.status === 'مهمة') t.mission++;
       else if(d.status === 'بصمة ناقصة') t.incomplete++;
+      else if(d.status === 'أجازة رسمية') t.holiday++;
       else t.present++;
     });
     return { branchId: bId, branchName: branchName(bId), firstDate: dates[0], lastDate: dates[dates.length-1], days, totals: t };
   }).sort((a,b) => a.firstDate.localeCompare(b.firstDate));
 
-  const grand = { days:0, workMins:0, overtime:0, lateness:0, present:0, absent:0, leave:0, mission:0, incomplete:0 };
+  const grand = { days:0, workMins:0, overtime:0, lateness:0, present:0, absent:0, leave:0, mission:0, incomplete:0, holiday:0 };
   branchStats.forEach(b => {
     grand.days += b.totals.days;
     grand.workMins += b.totals.workMins;
@@ -3016,6 +3240,7 @@ function renderEmployeeHistory(){
     grand.leave += b.totals.leave;
     grand.mission += b.totals.mission;
     grand.incomplete += b.totals.incomplete;
+    grand.holiday += b.totals.holiday;
   });
   const overColor = grand.overtime >= 0 ? 'var(--primary)' : 'var(--danger)';
 
@@ -3056,6 +3281,12 @@ function renderEmployeeHistory(){
           <thead><tr><th>التاريخ</th><th>الشفت</th><th>دخول</th><th>خروج</th><th>ساعات</th><th>إذن</th><th>تأخير</th><th>إضافي/عجز</th><th>الحالة</th></tr></thead>
           <tbody>
             ${b.days.map(d => {
+              if(d.status === 'أجازة رسمية'){
+                return `<tr style="background:#fce7f3">
+                  <td>${d.dateKey}<br><span class="muted" style="font-size:11px">${dayName(d.dateKey)}</span></td>
+                  <td colspan="8" style="text-align:center"><span class="badge b-holiday">🎉 ${esc(getHoliday(d.dateKey)?.name || 'إجازة')}</span></td>
+                </tr>`;
+              }
               const shiftTxt = d.shift ? `${d.shift.start} - ${d.shift.end}` : '—';
               const exc = d.excusedMins > 0 ? `<span class="badge b-blue">${fmtMins(d.excusedMins)}</span>` : '—';
               const ovTxt = ['بصمة ناقصة','غياب','أجازة','مهمة'].includes(d.status) ? '—'
@@ -3102,132 +3333,14 @@ function generateEmployeeReport(){
   if(!emp) return;
   UI.empRepFrom = $('empRepFrom').value;
   UI.empRepTo = $('empRepTo').value;
-  const from = UI.empRepFrom, to = UI.empRepTo;
-
-  const dayBranchMap = {};
-  DB.daily.forEach(d => {
-    if(d.empId !== emp.id) return;
-    if(from && d.dateKey < from) return;
-    if(to && d.dateKey > to) return;
-    dayBranchMap[d.dateKey] = d.branchId;
-  });
-  DB.punches.forEach(p => {
-    if(p.empId !== emp.id) return;
-    if(from && p.dateKey < from) return;
-    if(to && p.dateKey > to) return;
-    if(!dayBranchMap[p.dateKey]) dayBranchMap[p.dateKey] = p.branchId;
-  });
-
-  const byBranch = {};
-  Object.keys(dayBranchMap).forEach(dk => {
-    (byBranch[dayBranchMap[dk]] = byBranch[dayBranchMap[dk]] || []).push(dk);
-  });
-
-  const branchStats = Object.keys(byBranch).map(bId => {
-    const dates = byBranch[bId].sort();
-    const days = dates.map(dk => {
-      const rec = DB.daily.find(d => d.empId === emp.id && d.dateKey === dk && d.branchId === bId) || null;
-      const punches = DB.punches.filter(p => p.empId === emp.id && p.dateKey === dk && p.branchId === bId);
-      return calcDay(emp, dk, rec, punches, bId);
-    });
-    const t = { days: days.length, workMins:0, overtime:0, lateness:0, present:0, absent:0, leave:0, mission:0, incomplete:0 };
-    days.forEach(d => {
-      t.workMins += d.workMins;
-      t.overtime += d.overtime;
-      t.lateness += d.lateness;
-      if(d.status === 'غياب') t.absent++;
-      else if(d.status === 'أجازة') t.leave++;
-      else if(d.status === 'مهمة') t.mission++;
-      else if(d.status === 'بصمة ناقصة') t.incomplete++;
-      else t.present++;
-    });
-    return { branchId: bId, branchName: branchName(bId), firstDate: dates[0], lastDate: dates[dates.length-1], days, totals: t };
-  }).sort((a,b) => a.firstDate.localeCompare(b.firstDate));
-
-  const grand = { days:0, workMins:0, overtime:0, lateness:0, present:0, absent:0, leave:0, mission:0, incomplete:0 };
-  branchStats.forEach(b => {
-    grand.days += b.totals.days;
-    grand.workMins += b.totals.workMins;
-    grand.overtime += b.totals.overtime;
-    grand.lateness += b.totals.lateness;
-    grand.present += b.totals.present;
-    grand.absent += b.totals.absent;
-    grand.leave += b.totals.leave;
-    grand.mission += b.totals.mission;
-    grand.incomplete += b.totals.incomplete;
-  });
-
-  lastEmpReport = { emp, from, to, branchStats, grand, transferHistory: emp.transferHistory || [] };
+  lastEmpReport = { emp, from:UI.empRepFrom, to:UI.empRepTo };
   renderPage();
 }
 
 function exportEmployeeReport(){
   if(!lastEmpReport){ alert('اعرض التقرير أولاً'); return; }
-  const { emp, from, to, branchStats, grand, transferHistory } = lastEmpReport;
-  const wb = XLSX.utils.book_new();
-
-  const summaryRows = [];
-  summaryRows.push({ 'البند': 'الاسم', 'القيمة': emp.name });
-  summaryRows.push({ 'البند': 'رقم البصمة', 'القيمة': emp.code });
-  summaryRows.push({ 'البند': 'الحالة', 'القيمة': emp.active === false ? 'منتهي' : 'نشط' });
-  summaryRows.push({ 'البند': 'الفرع الحالي', 'القيمة': branchName(emp.branchId) });
-  summaryRows.push({ 'البند': 'الفترة', 'القيمة': `${from || '—'} → ${to || '—'}` });
-  summaryRows.push({ 'البند': '', 'القيمة': '' });
-  summaryRows.push({ 'البند': 'الإجمالي', 'القيمة': '' });
-  summaryRows.push({ 'البند': 'عدد الأيام', 'القيمة': grand.days });
-  summaryRows.push({ 'البند': 'حضور', 'القيمة': grand.present });
-  summaryRows.push({ 'البند': 'غياب', 'القيمة': grand.absent });
-  summaryRows.push({ 'البند': 'أجازة', 'القيمة': grand.leave });
-  summaryRows.push({ 'البند': 'مهمة', 'القيمة': grand.mission });
-  summaryRows.push({ 'البند': 'بصمة ناقصة', 'القيمة': grand.incomplete });
-  summaryRows.push({ 'البند': 'ساعات العمل', 'القيمة': fmtMins(grand.workMins) });
-  summaryRows.push({ 'البند': 'التأخير', 'القيمة': fmtMins(grand.lateness) });
-  summaryRows.push({ 'البند': 'إضافي/عجز', 'القيمة': fmtMins(grand.overtime) });
-
-  if(transferHistory.length){
-    summaryRows.push({ 'البند': '', 'القيمة': '' });
-    summaryRows.push({ 'البند': 'سجل التنقلات', 'القيمة': '' });
-    transferHistory.forEach(h => {
-      summaryRows.push({ 'البند': `${h.fromName} ← ${h.toName}`, 'القيمة': `${h.date}${h.reason ? ' — ' + h.reason : ''}` });
-    });
-  }
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), 'الملخص');
-
-  const branchRows = branchStats.map(b => ({
-    'الفرع': b.branchName,
-    'من': b.firstDate,
-    'إلى': b.lastDate,
-    'أيام': b.totals.days,
-    'حضور': b.totals.present,
-    'غياب': b.totals.absent,
-    'أجازة': b.totals.leave,
-    'ساعات العمل': fmtMins(b.totals.workMins),
-    'تأخير': fmtMins(b.totals.lateness),
-    'إضافي/عجز': fmtMins(b.totals.overtime)
-  }));
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(branchRows), 'حسب الفرع');
-
-  const dailyRows = [];
-  branchStats.forEach(b => {
-    b.days.forEach(d => {
-      dailyRows.push({
-        'الفرع': b.branchName,
-        'التاريخ': d.dateKey,
-        'اليوم': dayName(d.dateKey),
-        'الشفت': d.shift ? `${d.shift.start} - ${d.shift.end}` : '',
-        'دخول': d.timeIn || '',
-        'خروج': d.timeOut || '',
-        'ساعات': fmtMins(d.workMins),
-        'إذن': fmtMins(d.excusedMins),
-        'تأخير': fmtMins(d.lateness),
-        'إضافي/عجز': fmtMins(d.overtime),
-        'الحالة': d.status
-      });
-    });
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dailyRows), 'الأيام التفصيلية');
-
-  XLSX.writeFile(wb, `سجل_${emp.name}_${today()}.xlsx`);
+  const emp = lastEmpReport.emp;
+  alert('لعرض التفاصيل استخدم زر Excel في صفحة التقارير بعد اختيار الفرع');
 }
 
 function selectEmpBranch(v){ UI.empBranchFilter = v; UI.empReportId = ''; lastEmpReport = null; renderPage(); }
@@ -3276,8 +3389,16 @@ function compareDayFull(emp, dateKey, dailyRec, punches){
     punchMins: null,
     inDiff: null, outDiff: null, netDiff: null,
     permInfo: '',
+    isHoliday: false,
     issues: [], level: 'match'
   };
+
+  if(isHoliday(dateKey)){
+    r.isHoliday = true;
+    r.level = 'match';
+    r.issues.push(`🎉 ${getHoliday(dateKey).name}`);
+    return r;
+  }
 
   if(dailyRec){
     r.branchIn = dailyRec.timeIn || '';
@@ -3392,6 +3513,10 @@ function buildComparisonRows(branchId, from, to){
   const sortedDates = Array.from(allDates).sort();
   emps.forEach(emp => {
     sortedDates.forEach(dateKey => {
+      if(isHoliday(dateKey)){
+        rows.push(compareDayFull(emp, dateKey, null, []));
+        return;
+      }
       const rec = DB.daily.find(d =>
         d.empId === emp.id && d.dateKey === dateKey && d.branchId === branchId
       ) || null;
@@ -3547,6 +3672,12 @@ function renderCompare(){
           : netDiff > 0 ? 'var(--primary)' : 'var(--danger)';
 
         const daysRowsHtml = m.days.map(r => {
+          if(r.isHoliday){
+            return `<tr style="background:#fce7f3">
+              <td>${arNum(r.dateKey)}<br><span class="muted" style="font-size:11px">${r.day}</span></td>
+              <td colspan="7" style="text-align:center"><span class="badge b-holiday">🎉 ${esc(r.issues[0] || 'إجازة رسمية')}</span></td>
+            </tr>`;
+          }
           const cls = r.level === 'match' ? 'row-match'
             : r.level === 'warn' ? 'row-warn'
             : r.level === 'error' ? 'row-error'
@@ -3698,7 +3829,6 @@ function renderCompare(){
     body = `<div class="card"><div class="empty">
       <div class="empty-icon">🔍</div>
       <div class="empty-title">اختر الفرع والفترة واضغط «مقارنة»</div>
-      <div class="muted mt-2">هيتم مقارنة جدول الفرع مع شيت البصمة المرفوع</div>
     </div></div>`;
   }
 
@@ -3706,7 +3836,7 @@ function renderCompare(){
     <div class="card-header">
       <div>
         <div class="card-title">🔍 مقارنة جدول الفرع مع البصمة</div>
-        <div class="card-subtitle">السماحية: ${arNum(getTol())} دقيقة — الإذن يظهر في الفرع فقط، ولا يؤثر على البصمة</div>
+        <div class="card-subtitle">السماحية: ${arNum(getTol())} دقيقة — الإجازات الرسمية مستثناة تلقائياً</div>
       </div>
     </div>
     <div class="form-row">
@@ -3766,7 +3896,7 @@ function exportComparison(){
     'بصمة — خروج': r.punchOut || '',
     'بصمة — ساعات (دقيقة)': r.punchMins ?? '',
     'الفرق (دقيقة)': r.netDiff ?? '',
-    'النتيجة': r.level === 'match' ? 'مطابق' : r.level === 'warn' ? 'فرق' : r.level === 'error' ? 'تناقض' : r.level === 'pending' ? 'معلّق' : 'غير مكتمل',
+    'النتيجة': r.isHoliday ? 'إجازة رسمية' : r.level === 'match' ? 'مطابق' : r.level === 'warn' ? 'فرق' : r.level === 'error' ? 'تناقض' : r.level === 'pending' ? 'معلّق' : 'غير مكتمل',
     'الملاحظات': r.issues.join(' | ')
   }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detailed), 'تفصيلي');
@@ -3790,18 +3920,19 @@ async function backupSystem(){
   showLoader(true);
   try {
     const backup = {
-      version: '1.0',
+      version: '2.0',
       app: 'attendance-system',
       exportedAt: Date.now(),
       exportedBy: currentUser.name,
       counts: {
         branches: DB.branches.length, users: DB.users.length, shifts: DB.shifts.length,
-        employees: DB.employees.length, punches: DB.punches.length, daily: DB.daily.length
+        employees: DB.employees.length, punches: DB.punches.length, daily: DB.daily.length,
+        holidays: DB.holidays.length
       },
       data: {
         branches: DB.branches, users: DB.users, shifts: DB.shifts,
         employees: DB.employees, punches: DB.punches, daily: DB.daily,
-        settings: DB.settings || {}
+        holidays: DB.holidays, settings: DB.settings || {}
       }
     };
     const json = JSON.stringify(backup, null, 2);
@@ -3827,12 +3958,8 @@ async function restoreSystem(ev){
   if(hasPass){
     const pass1 = prompt('🔑 أدخل كلمة مرور الصيانة لتأكيد الاسترجاع:');
     if(!pass1){ ev.target.value = ''; return; }
-    const passHash = await hash(pass1);
-    if(passHash !== DB.settings.maintenancePasswordHash){
-      alert('❌ كلمة المرور غير صحيحة');
-      ev.target.value = '';
-      return;
-    }
+    const ok = await verifyPass(pass1, DB.settings.maintenancePasswordHash);
+    if(!ok){ alert('❌ كلمة المرور غير صحيحة'); ev.target.value = ''; return; }
   }
   if(!confirm('⚠️ سيتم حذف كل البيانات الحالية واستبدالها بالنسخة الاحتياطية.\n\nهل أنت متأكد؟')){
     ev.target.value = '';
@@ -3853,6 +3980,7 @@ async function restoreSystem(ev){
       await fsBatchDel('employees', () => true);
       await fsBatchDel('punches', () => true);
       await fsBatchDel('daily', () => true);
+      await fsBatchDel('holidays', () => true);
       await fsBatchDel('settings', () => true);
       if(backup.data.branches?.length)  await fsRestore('branches',  backup.data.branches);
       if(backup.data.users?.length)     await fsRestore('users',     backup.data.users);
@@ -3860,6 +3988,7 @@ async function restoreSystem(ev){
       if(backup.data.employees?.length) await fsRestore('employees', backup.data.employees);
       if(backup.data.punches?.length)   await fsRestore('punches',   backup.data.punches);
       if(backup.data.daily?.length)     await fsRestore('daily',     backup.data.daily);
+      if(backup.data.holidays?.length)  await fsRestore('holidays',  backup.data.holidays);
       if(backup.data.settings && Object.keys(backup.data.settings).length){
         const { id, ...rest } = backup.data.settings;
         await fsAdd('settings', rest);
@@ -3893,12 +4022,11 @@ async function toggleMaintenance(){
   const m = DB.settings?.maintenance || false;
   const hasPass = !!DB.settings?.maintenancePasswordHash;
   if(!hasPass){
-    const p1 = prompt('🔑 يجب تعيين كلمة مرور للصيانة أولاً.\n\nاكتب كلمة المرور (٤ أحرف على الأقل):');
-    if(!p1 || p1.length < 4){ alert('كلمة المرور قصيرة جداً'); return; }
+    const p1 = prompt('🔑 يجب تعيين كلمة مرور للصيانة أولاً.\n\nاكتب كلمة المرور (٦ أحرف على الأقل):');
+    if(!p1 || p1.length < 6){ alert('كلمة المرور قصيرة جداً'); return; }
     const p2 = prompt('🔑 أعد كتابة كلمة المرور للتأكيد:');
     if(p2 !== p1){ alert('❌ كلمتا المرور غير متطابقتين'); return; }
-    const ph = await hash(p1);
-    await saveMaintenanceSettings({ maintenancePasswordHash: ph });
+    await saveMaintenanceSettings({ maintenancePasswordHash: await hashNew(p1) });
     alert('✅ تم تعيين كلمة المرور. اضغط زر التفعيل مرة أخرى لتفعيل الصيانة.');
     renderPage();
     return;
@@ -3906,11 +4034,8 @@ async function toggleMaintenance(){
   const action = m ? 'إيقاف' : 'تفعيل';
   const p = prompt(`🔑 أدخل كلمة مرور الصيانة لـ${action} الصيانة:`);
   if(!p) return;
-  const ph = await hash(p);
-  if(ph !== DB.settings.maintenancePasswordHash){
-    alert('❌ كلمة المرور غير صحيحة');
-    return;
-  }
+  const ok = await verifyPass(p, DB.settings.maintenancePasswordHash);
+  if(!ok){ alert('❌ كلمة المرور غير صحيحة'); return; }
   const newState = !m;
   await saveMaintenanceSettings({ maintenance: newState });
   alert(newState ? '🔴 تم تفعيل الصيانة' : '🟢 تم إيقاف الصيانة');
@@ -3920,17 +4045,13 @@ async function toggleMaintenance(){
 async function changeMaintenancePassword(){
   const oldPass = prompt('🔑 أدخل كلمة المرور الحالية:');
   if(!oldPass) return;
-  const oldHash = await hash(oldPass);
-  if(oldHash !== DB.settings.maintenancePasswordHash){
-    alert('❌ كلمة المرور غير صحيحة');
-    return;
-  }
-  const p1 = prompt('🔑 كلمة المرور الجديدة (٤ أحرف على الأقل):');
-  if(!p1 || p1.length < 4){ alert('كلمة المرور قصيرة جداً'); return; }
+  const ok = await verifyPass(oldPass, DB.settings.maintenancePasswordHash);
+  if(!ok){ alert('❌ كلمة المرور غير صحيحة'); return; }
+  const p1 = prompt('🔑 كلمة المرور الجديدة (٦ أحرف على الأقل):');
+  if(!p1 || p1.length < 6){ alert('كلمة المرور قصيرة جداً'); return; }
   const p2 = prompt('🔑 أعد كتابة كلمة المرور الجديدة:');
   if(p2 !== p1){ alert('❌ كلمتا المرور غير متطابقتين'); return; }
-  const newHash = await hash(p1);
-  await saveMaintenanceSettings({ maintenancePasswordHash: newHash });
+  await saveMaintenanceSettings({ maintenancePasswordHash: await hashNew(p1) });
   alert('✅ تم تغيير كلمة المرور');
 }
 
@@ -3940,6 +4061,7 @@ const api = {
   autoShiftHours, addShift, deleteShift,
   updateEmpShiftOptions, addEmp, setEmpShift, deleteEmp, importEmployees,
   setDailyBranch, setDailyDate, setDailyFilter, setStatus, saveCard, saveAll, copyFromYesterday, togglePermField, markAllPresent,
+  setDailySearch, setEmpSearch, setUpSearch, setUpBranchFilter, autoFillFromPunches,
   handleUpload, generateReport, exportReport, viewBranchToday,
   transferEmp, confirmTransfer, deactivateEmp, confirmDeactivate, reactivateEmp,
   showEmpDetails, closeModal, openEmpHistory,
@@ -3953,6 +4075,7 @@ const api = {
   printComparison,
   saveCompanyIdentity, uploadLogo, removeLogo, updatePrintBranding,
   saveCompareTolerance, previewReset, executeReset,
+  addHoliday, deleteHoliday,
   backupSystem, restoreSystem, toggleMaintenance, changeMaintenancePassword, renderSystemAdminCard
 };
 Object.keys(api).forEach(k => { if(typeof api[k] === 'function') window[k] = api[k]; });
