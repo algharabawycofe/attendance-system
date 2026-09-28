@@ -749,12 +749,10 @@ async function copyFromYesterday(bId, date){
 
 const AR_DIGITS = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
 
-/** تحويل الأرقام إلى أرقام عربية (٠-٩) */
 function arNum(v){
   return String(v==null?'':v).replace(/[0-9]/g, d => AR_DIGITS[+d]);
 }
 
-/** تاريخ كامل بالعربي: الأحد ٢٧ سبتمبر ٢٠٢٦ */
 function fmtDateArFull(dateKey){
   if(!dateKey) return '—';
   const d = new Date(dateKey + 'T00:00:00');
@@ -765,11 +763,25 @@ function fmtDateArFull(dateKey){
   return `${day} ${arNum(d.getDate())} ${month} ${arNum(d.getFullYear())}`.replace(/\s+/g,' ');
 }
 
+function arTime(hm){
+  if(!hm || hm === '—') return '—';
+  const parts = String(hm).split(':');
+  let h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1] || '0', 10);
+  if(isNaN(h)) return '—';
+  const period = h < 12 ? 'ص' : 'م';
+  let h12 = h % 12;
+  if(h12 === 0) h12 = 12;
+  return `${arNum(h12)}:${arNum(String(m).padStart(2,'0'))} ${period}`;
+}
+
 /* ============================================================
-   WhatsApp Sharing — رسائل مختصرة (الأسماء بالإنجليزية كما هي)
+   WhatsApp Sharing — الشكل المبسط المطلوب
    ============================================================ */
 
-/** تقرير الحضور اليومي — الاسم + الحالة فقط */
+const NON_PRESENT_STATUSES = ['غياب','أجازة','مهمة','بصمة ناقصة'];
+
+/** تقرير الحضور اليومي — الاسم + (دخول/خروج أو الحالة) */
 function buildDailyWhatsAppText(bId, date){
   const branch = getBranch(bId);
   const emps = DB.employees
@@ -800,8 +812,12 @@ function buildDailyWhatsAppText(bId, date){
     else if(day.status === 'بصمة ناقصة') incomplete++;
     else present++;
 
-    let line = `${e.name}\n     📌 ${day.status}`;
-    if(day.lateness > 0) line += ` — تأخير ${arNum(Math.round(day.lateness))} دقيقة`;
+    let line = e.name;
+    if(!NON_PRESENT_STATUSES.includes(day.status) && day.timeIn && day.timeOut){
+      line += `\n     🕐 دخول: ${arTime(day.timeIn)}  ←  خروج: ${arTime(day.timeOut)}`;
+    } else {
+      line += `\n     📌 ${day.status}`;
+    }
     lines.push(line);
   });
 
@@ -823,7 +839,7 @@ function buildDailyWhatsAppText(bId, date){
   return txt;
 }
 
-/** تقرير التقارير — ملخص + الاسم + الحالة فقط */
+/** تقرير التقارير — ملخص + كل موظف بأيامه */
 function buildReportWhatsAppText(){
   if(!lastReport || !lastReport.rows.length) return '';
   const { rows, branchId, from, to } = lastReport;
@@ -854,9 +870,10 @@ function buildReportWhatsAppText(){
 
   const lines = rows.map(r => {
     const t = r.totals;
-    let line = `${r.emp.name}\n     📌 أيام: ${arNum(t.days)} | حضور: ${arNum(t.present)} | غياب: ${arNum(t.absent)}`;
-    if(t.leave)   line += ` | أجازة: ${arNum(t.leave)}`;
-    if(t.mission) line += ` | مهمة: ${arNum(t.mission)}`;
+    let line = r.emp.name;
+    line += `\n     📅 أيام: ${arNum(t.days)}  |  ✅ حضور: ${arNum(t.present)}  |  ❌ غياب: ${arNum(t.absent)}`;
+    if(t.leave)   line += `  |  🏖️ أجازة: ${arNum(t.leave)}`;
+    if(t.mission) line += `  |  🎯 مهمة: ${arNum(t.mission)}`;
     return line;
   });
 
@@ -866,7 +883,7 @@ function buildReportWhatsAppText(){
   return txt;
 }
 
-/** سجل الموظف — الاسم + الحالة فقط بدون تفاصيل إضافية */
+/** سجل الموظف — تفاصيل يومية (دخول/خروج أو الحالة) */
 function buildEmployeeWhatsAppText(){
   if(!lastEmpReport) return '';
   const { emp, from, to, branchStats, grand } = lastEmpReport;
@@ -903,8 +920,12 @@ function buildEmployeeWhatsAppText(){
   branchStats.forEach(b => {
     lines.push(`🏢 ${b.branchName}  (${fmtDateArFull(b.firstDate)} ← ${fmtDateArFull(b.lastDate)})`);
     b.days.forEach(d => {
-      let line = `${d.dateKey}\n     📌 ${d.status}`;
-      if(d.lateness > 0) line += ` — تأخير ${arNum(Math.round(d.lateness))} دقيقة`;
+      let line = `${d.dateKey}`;
+      if(!NON_PRESENT_STATUSES.includes(d.status) && d.timeIn && d.timeOut){
+        line += `\n     🕐 دخول: ${arTime(d.timeIn)}  ←  خروج: ${arTime(d.timeOut)}`;
+      } else {
+        line += `\n     📌 ${d.status}`;
+      }
       lines.push(line);
     });
     lines.push('');
@@ -1869,555 +1890,4 @@ function renderReports(){
                   <td><b>${workTxt}</b></td>
                   <td>${exc}</td>
                   <td>${lateTxt}</td>
-                  <td>${ovTxt}</td>
-                  <td><span class="badge ${cls}">${d.status}</span></td>
-                </tr>`;
-              }).join('')}
-            </tbody>
-          </table></div>
-        </div>`;
-      }).join('');
-    }
-    body = summary + content;
-  } else {
-    body = `<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">لا يوجد تقرير</div></div>`;
-  }
-  return `<div class="card">
-    <div class="card-header">
-      <div><div class="card-title">التقارير</div><div class="card-subtitle">عرض وتصدير التقارير</div></div>
-    </div>
-    <div class="form-row">
-      <div class="field" style="max-width:260px">
-        <label>الفرع</label>
-        <select id="repBranch">
-          <option value="">اختر</option>
-          ${DB.branches.map(b => `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
-        </select>
-      </div>
-      <div class="field" style="max-width:180px"><label>من</label><input type="date" id="repFrom" value="${UI.repFrom || ''}"></div>
-      <div class="field" style="max-width:180px"><label>إلى</label><input type="date" id="repTo" value="${UI.repTo || ''}"></div>
-      <div class="field" style="max-width:180px">
-        <label>العرض</label>
-        <select id="repView">
-          <option value="detailed" ${view === 'detailed' ? 'selected' : ''}>تفصيلي</option>
-          <option value="summary" ${view === 'summary' ? 'selected' : ''}>ملخص</option>
-        </select>
-      </div>
-      <button class="btn btn-primary" onclick="generateReport()">عرض</button>
-      <button class="btn btn-outline" onclick="exportReport()">📥 Excel</button>
-      ${(lastReport && lastReport.rows.length) ? `<button class="btn btn-whatsapp" onclick="shareReportWhatsApp()">📤 واتساب</button>` : ''}
-    </div>
-  </div>
-  ${body}`;
-}
-function generateReport(){
-  const bId = $('repBranch').value;
-  const from = $('repFrom').value;
-  const to = $('repTo').value;
-  const view = $('repView').value;
-  if(!bId){ alert('اختر الفرع'); return; }
-  UI.repBranch = bId; UI.repFrom = from; UI.repTo = to; UI.repView = view;
-  const empIds = new Set();
-  DB.daily.forEach(d => {
-    if(d.branchId !== bId) return;
-    if(from && d.dateKey < from) return;
-    if(to && d.dateKey > to) return;
-    empIds.add(d.empId);
-  });
-  DB.punches.forEach(p => {
-    if(p.branchId !== bId) return;
-    if(from && p.dateKey < from) return;
-    if(to && p.dateKey > to) return;
-    empIds.add(p.empId);
-  });
-  const emps = Array.from(empIds).map(id => DB.employees.find(e => e.id === id)).filter(Boolean);
-  const rows = emps.map(e => calcEmp(e, from, to, bId)).filter(r => r.days.length > 0);
-  lastReport = { rows, branchId: bId, from, to };
-  renderPage();
-}
-function exportReport(){
-  if(!lastReport || !lastReport.rows.length){ alert('لا يوجد تقرير'); return; }
-  const out = [];
-  lastReport.rows.forEach(r => {
-    r.days.forEach(d => {
-      out.push({
-        'الفرع': branchName(lastReport.branchId),
-        'رقم البصمة': r.emp.code,
-        'الاسم': r.emp.name,
-        'التاريخ': d.dateKey,
-        'اليوم': dayName(d.dateKey),
-        'الشفت': d.shift ? `${d.shift.start} - ${d.shift.end}` : '',
-        'دخول': d.timeIn || '',
-        'خروج': d.timeOut || '',
-        'ساعات العمل': fmtMins(d.workMins),
-        'المطلوب': fmtMins(d.requiredMins),
-        'إذن (دقيقة)': d.excusedMins,
-        'تأخير (دقيقة)': d.lateness,
-        'إضافي/عجز (دقيقة)': d.overtime,
-        'الحالة': d.status
-      });
-    });
-  });
-  const ws = XLSX.utils.json_to_sheet(out);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'تقرير');
-  XLSX.writeFile(wb, `تقرير_${branchName(lastReport.branchId)}_${today()}.xlsx`);
-}
-
-/* ============ سجل الموظف الكامل ============ */
-function renderEmployeeHistory(){
-  const filterBranchId = UI.empBranchFilter || '';
-  const empId = UI.empReportId || '';
-  const emp = empId ? DB.employees.find(e => e.id === empId) : null;
-
-  let branchEmps = [];
-  if(filterBranchId){
-    const empIds = new Set();
-    DB.daily.forEach(d => { if(d.branchId === filterBranchId) empIds.add(d.empId); });
-    DB.punches.forEach(p => { if(p.branchId === filterBranchId) empIds.add(p.empId); });
-    DB.employees.forEach(e => { if(e.branchId === filterBranchId) empIds.add(e.id); });
-    branchEmps = Array.from(empIds)
-      .map(id => DB.employees.find(e => e.id === id))
-      .filter(Boolean)
-      .sort((a,b) => a.name.localeCompare(b.name,'ar'));
-  }
-
-  const branchField = `<div class="field" style="max-width:300px">
-    <label>1️⃣ الفرع</label>
-    <select onchange="selectEmpBranch(this.value)">
-      <option value="">— اختر الفرع —</option>
-      ${DB.branches.map(b => `<option value="${b.id}" ${filterBranchId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
-    </select>
-  </div>`;
-
-  const empField = filterBranchId ? `<div class="field" style="max-width:340px">
-    <label>2️⃣ الموظف (${branchEmps.length})</label>
-    <select onchange="selectEmployee(this.value)">
-      <option value="">— اختر الموظف —</option>
-      ${branchEmps.map(e => `<option value="${e.id}" ${empId === e.id ? 'selected' : ''}>${esc(e.name)} — ${esc(e.code)}${e.active === false ? ' ⛔' : ''}</option>`).join('')}
-    </select>
-  </div>` : '';
-
-  const dateFields = empId ? `
-    <div class="field" style="max-width:160px"><label>من</label><input type="date" id="empRepFrom" value="${UI.empRepFrom || ''}"></div>
-    <div class="field" style="max-width:160px"><label>إلى</label><input type="date" id="empRepTo" value="${UI.empRepTo || ''}"></div>
-    <button class="btn btn-primary" onclick="generateEmployeeReport()">🔄 تحديث</button>
-    <button class="btn btn-outline" onclick="exportEmployeeReport()" ${!lastEmpReport ? 'disabled' : ''}>📥 Excel</button>
-    <button class="btn btn-whatsapp" onclick="shareEmployeeWhatsApp()" ${!lastEmpReport ? 'disabled' : ''}>📤 واتساب</button>
-  ` : '';
-
-  const header = `<div class="card">
-    <div class="card-header">
-      <div><div class="card-title">👤 سجل الموظف الكامل</div><div class="card-subtitle">اختر الفرع ثم الموظف لعرض التاريخ الكامل</div></div>
-    </div>
-    <div class="form-row">${branchField}${empField}${dateFields}</div>
-  </div>`;
-
-  if(!filterBranchId){
-    return header + `<div class="card">
-      <div class="empty">
-        <div class="empty-icon">🏢</div>
-        <div class="empty-title">اختر الفرع أولاً</div>
-        <div class="muted" style="margin-top:8px">ثم اختر الموظف لعرض سجله الكامل</div>
-      </div>
-    </div>`;
-  }
-
-  if(!empId){
-    if(!branchEmps.length){
-      return header + `<div class="card">
-        <div class="empty">
-          <div class="empty-icon">👥</div>
-          <div class="empty-title">لا يوجد موظفين في هذا الفرع</div>
-          <div class="muted" style="margin-top:8px">اذهب للإعدادات → الموظفين → استورد موظفين لهذا الفرع</div>
-        </div>
-      </div>`;
-    }
-    return header + `<div class="card">
-      <div class="card-header">
-        <div><div class="card-title">👥 موظفي ${esc(branchName(filterBranchId))}</div><div class="card-subtitle">${branchEmps.length} موظف — اضغط على أي واحد لعرض سجله</div></div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
-        ${branchEmps.map(e => {
-          const dailyCount = DB.daily.filter(d => d.empId === e.id).length;
-          const punchCount = DB.punches.filter(p => p.empId === e.id).length;
-          const transCount = (e.transferHistory || []).length;
-          const isInactive = e.active === false;
-          return `<div class="branch-section" style="cursor:pointer;transition:all .15s;padding:14px"
-            onmouseover="this.style.borderColor='var(--primary)';this.style.background='#eff6ff'"
-            onmouseout="this.style.borderColor='var(--gray-200)';this.style.background='#fff'"
-            onclick="selectEmployee('${e.id}')">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-              <div style="flex:1">
-                <div style="font-size:15px;font-weight:700;margin-bottom:4px">${esc(e.name)}</div>
-                <div class="muted">رقم البصمة: ${esc(e.code)}</div>
-                <div class="muted">الفرع الحالي: ${esc(branchName(e.branchId))}</div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-                  <span class="badge b-blue">${dailyCount} تسجيل</span>
-                  <span class="badge b-gray">${punchCount} بصمة</span>
-                  ${transCount ? `<span class="badge b-purple">${transCount} نقل</span>` : ''}
-                </div>
-              </div>
-              <span class="badge ${isInactive ? 'b-red' : 'b-green'}">${isInactive ? 'منتهي' : 'نشط'}</span>
-            </div>
-            <button class="btn btn-primary btn-sm" style="width:100%;margin-top:12px">عرض السجل الكامل →</button>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
-  }
-
-  if(!emp){
-    return header + `<div class="card"><div class="empty"><div class="empty-icon">❓</div><div class="empty-title">الموظف غير موجود</div></div></div>`;
-  }
-
-  const empInfo = `
-    <div class="card" style="background:linear-gradient(135deg,#1e40af,#2563eb);color:#fff">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-        <div>
-          <div style="font-size:22px;font-weight:800">${esc(emp.name)}</div>
-          <div style="font-size:13px;opacity:.85;margin-top:4px">رقم البصمة: ${esc(emp.code)}</div>
-        </div>
-        <div style="text-align:left">
-          <div style="font-size:12px;opacity:.85">الحالة</div>
-          <div style="font-size:16px;font-weight:700">${emp.active === false ? 'منتهي' : 'نشط'}</div>
-          ${emp.active === false ? `<div style="font-size:12px;opacity:.85">حتى ${fmtDate(emp.endDate)}</div>` : ''}
-          <div style="font-size:12px;opacity:.85;margin-top:4px">الفرع الحالي: ${esc(branchName(emp.branchId))}</div>
-        </div>
-      </div>
-    </div>`;
-
-  const history = emp.transferHistory || [];
-  const timelineHtml = history.length ? `<div class="card">
-    <div class="card-header"><div class="card-title">🔄 سجل التنقلات (${history.length})</div></div>
-    <div class="timeline">
-      ${history.map(h => `
-        <div class="timeline-item">
-          <div style="font-weight:700">${esc(h.fromName)} ← ${esc(h.toName)}</div>
-          <div class="muted">${fmtDate(h.date)}${h.reason ? ` — ${esc(h.reason)}` : ''}</div>
-          <div class="muted" style="font-size:11px">بواسطة: ${esc(h.by || '—')}</div>
-        </div>
-      `).join('')}
-    </div>
-  </div>` : '';
-
-  const from = UI.empRepFrom || '';
-  const to = UI.empRepTo || '';
-  const dayBranchMap = {};
-  DB.daily.forEach(d => {
-    if(d.empId !== emp.id) return;
-    if(from && d.dateKey < from) return;
-    if(to && d.dateKey > to) return;
-    dayBranchMap[d.dateKey] = d.branchId;
-  });
-  DB.punches.forEach(p => {
-    if(p.empId !== emp.id) return;
-    if(from && p.dateKey < from) return;
-    if(to && p.dateKey > to) return;
-    if(!dayBranchMap[p.dateKey]) dayBranchMap[p.dateKey] = p.branchId;
-  });
-  const byBranch = {};
-  Object.keys(dayBranchMap).forEach(dk => {
-    (byBranch[dayBranchMap[dk]] = byBranch[dayBranchMap[dk]] || []).push(dk);
-  });
-
-  const branchStats = Object.keys(byBranch).map(bId => {
-    const dates = byBranch[bId].sort();
-    const days = dates.map(dk => {
-      const rec = DB.daily.find(d => d.empId === emp.id && d.dateKey === dk && d.branchId === bId) || null;
-      const punches = DB.punches.filter(p => p.empId === emp.id && p.dateKey === dk && p.branchId === bId);
-      return calcDay(emp, dk, rec, punches, bId);
-    });
-    const t = { days: days.length, workMins:0, overtime:0, lateness:0, present:0, absent:0, leave:0, mission:0, incomplete:0 };
-    days.forEach(d => {
-      t.workMins += d.workMins;
-      t.overtime += d.overtime;
-      t.lateness += d.lateness;
-      if(d.status === 'غياب') t.absent++;
-      else if(d.status === 'أجازة') t.leave++;
-      else if(d.status === 'مهمة') t.mission++;
-      else if(d.status === 'بصمة ناقصة') t.incomplete++;
-      else t.present++;
-    });
-    return { branchId: bId, branchName: branchName(bId), firstDate: dates[0], lastDate: dates[dates.length-1], days, totals: t };
-  }).sort((a,b) => a.firstDate.localeCompare(b.firstDate));
-
-  const grand = { days:0, workMins:0, overtime:0, lateness:0, present:0, absent:0, leave:0, mission:0, incomplete:0 };
-  branchStats.forEach(b => {
-    grand.days += b.totals.days;
-    grand.workMins += b.totals.workMins;
-    grand.overtime += b.totals.overtime;
-    grand.lateness += b.totals.lateness;
-    grand.present += b.totals.present;
-    grand.absent += b.totals.absent;
-    grand.leave += b.totals.leave;
-    grand.mission += b.totals.mission;
-    grand.incomplete += b.totals.incomplete;
-  });
-  const overColor = grand.overtime >= 0 ? 'var(--primary)' : 'var(--danger)';
-
-  const grandSummary = `<div class="card">
-    <div class="card-header">
-      <div><div class="card-title">📊 الإجمالي الكامل</div><div class="card-subtitle">${from || 'البداية'} → ${to || 'الآن'}</div></div>
-    </div>
-    <div class="stats">
-      <div class="stat"><div class="stat-icon blue">📅</div><div class="stat-value">${grand.days}</div><div class="stat-label">أيام</div></div>
-      <div class="stat"><div class="stat-icon green">✅</div><div class="stat-value">${grand.present}</div><div class="stat-label">حضور</div></div>
-      <div class="stat"><div class="stat-icon red">❌</div><div class="stat-value">${grand.absent}</div><div class="stat-label">غياب</div></div>
-      <div class="stat"><div class="stat-icon blue">🏖</div><div class="stat-value">${grand.leave}</div><div class="stat-label">أجازة</div></div>
-      <div class="stat"><div class="stat-icon orange">⏰</div><div class="stat-value" style="font-size:16px">${fmtMins(grand.lateness)}</div><div class="stat-label">تأخير</div></div>
-      <div class="stat"><div class="stat-icon purple">⚖️</div><div class="stat-value" style="font-size:16px;color:${overColor}">${grand.overtime>=0?'+':''}${fmtMins(grand.overtime)}</div><div class="stat-label">إضافي/عجز</div></div>
-    </div>
-  </div>`;
-
-  let branchesHtml = '';
-  if(branchStats.length === 0){
-    branchesHtml = `<div class="card"><div class="empty"><div class="empty-icon">📭</div><div class="empty-title">لا توجد سجلات في هذه الفترة</div></div></div>`;
-  } else {
-    branchesHtml = branchStats.map(b => {
-      const c = b.totals.overtime >= 0 ? 'var(--primary)' : 'var(--danger)';
-      return `<div class="branch-section">
-        <div class="branch-section-header">
-          <div>
-            <div style="font-size:16px;font-weight:700">🏢 ${esc(b.branchName)}</div>
-            <div class="muted">${b.firstDate} → ${b.lastDate}</div>
-          </div>
-          <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px">
-            <span>📅 <b>${b.totals.days}</b> يوم</span>
-            <span>✅ <b style="color:var(--success)">${b.totals.present}</b></span>
-            <span>❌ <b style="color:var(--danger)">${b.totals.absent}</b></span>
-            <span>🏖 <b style="color:var(--primary)">${b.totals.leave}</b></span>
-            <span>⏰ <b style="color:var(--danger)">${fmtMins(b.totals.lateness)}</b></span>
-            <span>⚖️ <b style="color:${c}">${b.totals.overtime>=0?'+':''}${fmtMins(b.totals.overtime)}</b></span>
-          </div>
-        </div>
-        <div class="table-wrap"><table>
-          <thead><tr><th>التاريخ</th><th>الشفت</th><th>دخول</th><th>خروج</th><th>ساعات</th><th>إذن</th><th>تأخير</th><th>إضافي/عجز</th><th>الحالة</th></tr></thead>
-          <tbody>
-            ${b.days.map(d => {
-              const shiftTxt = d.shift ? `${d.shift.start} - ${d.shift.end}` : '—';
-              const detected = d.shift?.detected ? ' <span class="badge b-purple" style="font-size:9px">تلقائي</span>' : '';
-              const exc = d.excusedMins > 0 ? `<span class="badge b-blue">${fmtMins(d.excusedMins)}</span>` : '—';
-              const ovTxt = ['بصمة ناقصة','غياب','أجازة','مهمة'].includes(d.status) ? '—'
-                : d.overtime > 0 ? `<b style="color:var(--primary)">+${fmtMins(d.overtime)}</b>`
-                : d.overtime < 0 ? `<b style="color:var(--danger)">${fmtMins(d.overtime)}</b>` : '0';
-              const workTxt = d.status === 'غياب' ? '—' : fmtMins(d.workMins);
-              const lateTxt = d.lateness > 0 ? `<b style="color:var(--danger)">${fmtMins(d.lateness)}</b>` : '0';
-              const cls = d.status === 'منتظم' ? 'b-green' : d.status === 'تأخير' ? 'b-red' : d.status === 'غياب' ? 'b-gray' : d.status === 'أجازة' ? 'b-blue' : d.status === 'مهمة' ? 'b-purple' : 'b-orange';
-              return `<tr>
-                <td>${d.dateKey}<br><span class="muted" style="font-size:11px">${dayName(d.dateKey)}</span></td>
-                <td><span class="badge b-gray" style="font-size:10px">${shiftTxt}</span>${detected}</td>
-                <td>${d.timeIn || '—'}</td>
-                <td>${d.timeOut || '—'}</td>
-                <td><b>${workTxt}</b></td>
-                <td>${exc}</td>
-                <td>${lateTxt}</td>
-                <td>${ovTxt}</td>
-                <td><span class="badge ${cls}">${d.status}</span></td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table></div>
-      </div>`;
-    }).join('');
-  }
-
-  return `${header}
-  ${empInfo}
-  ${timelineHtml}
-  ${grandSummary}
-  <div class="card">
-    <div class="card-header">
-      <div><div class="card-title">📋 التفاصيل حسب الفرع</div></div>
-      <button class="btn btn-outline btn-sm" onclick="clearEmpSelection()">← رجوع للقائمة</button>
-    </div>
-    ${branchesHtml}
-  </div>`;
-}
-
-function generateEmployeeReport(){
-  const empId = UI.empReportId;
-  if(!empId){ alert('اختر الموظف'); return; }
-  const emp = DB.employees.find(e => e.id === empId);
-  if(!emp) return;
-  UI.empRepFrom = $('empRepFrom').value;
-  UI.empRepTo = $('empRepTo').value;
-  const from = UI.empRepFrom, to = UI.empRepTo;
-
-  const dayBranchMap = {};
-  DB.daily.forEach(d => {
-    if(d.empId !== emp.id) return;
-    if(from && d.dateKey < from) return;
-    if(to && d.dateKey > to) return;
-    dayBranchMap[d.dateKey] = d.branchId;
-  });
-  DB.punches.forEach(p => {
-    if(p.empId !== emp.id) return;
-    if(from && p.dateKey < from) return;
-    if(to && p.dateKey > to) return;
-    if(!dayBranchMap[p.dateKey]) dayBranchMap[p.dateKey] = p.branchId;
-  });
-
-  const byBranch = {};
-  Object.keys(dayBranchMap).forEach(dk => {
-    (byBranch[dayBranchMap[dk]] = byBranch[dayBranchMap[dk]] || []).push(dk);
-  });
-
-  const branchStats = Object.keys(byBranch).map(bId => {
-    const dates = byBranch[bId].sort();
-    const days = dates.map(dk => {
-      const rec = DB.daily.find(d => d.empId === emp.id && d.dateKey === dk && d.branchId === bId) || null;
-      const punches = DB.punches.filter(p => p.empId === emp.id && p.dateKey === dk && p.branchId === bId);
-      return calcDay(emp, dk, rec, punches, bId);
-    });
-    const t = { days: days.length, workMins:0, overtime:0, lateness:0, present:0, absent:0, leave:0, mission:0, incomplete:0 };
-    days.forEach(d => {
-      t.workMins += d.workMins;
-      t.overtime += d.overtime;
-      t.lateness += d.lateness;
-      if(d.status === 'غياب') t.absent++;
-      else if(d.status === 'أجازة') t.leave++;
-      else if(d.status === 'مهمة') t.mission++;
-      else if(d.status === 'بصمة ناقصة') t.incomplete++;
-      else t.present++;
-    });
-    return { branchId: bId, branchName: branchName(bId), firstDate: dates[0], lastDate: dates[dates.length-1], days, totals: t };
-  }).sort((a,b) => a.firstDate.localeCompare(b.firstDate));
-
-  const grand = { days:0, workMins:0, overtime:0, lateness:0, present:0, absent:0, leave:0, mission:0, incomplete:0 };
-  branchStats.forEach(b => {
-    grand.days += b.totals.days;
-    grand.workMins += b.totals.workMins;
-    grand.overtime += b.totals.overtime;
-    grand.lateness += b.totals.lateness;
-    grand.present += b.totals.present;
-    grand.absent += b.totals.absent;
-    grand.leave += b.totals.leave;
-    grand.mission += b.totals.mission;
-    grand.incomplete += b.totals.incomplete;
-  });
-
-  lastEmpReport = { emp, from, to, branchStats, grand, transferHistory: emp.transferHistory || [] };
-  renderPage();
-}
-
-function exportEmployeeReport(){
-  if(!lastEmpReport){ alert('اعرض التقرير أولاً'); return; }
-  const { emp, from, to, branchStats, grand, transferHistory } = lastEmpReport;
-  const wb = XLSX.utils.book_new();
-
-  const summaryRows = [];
-  summaryRows.push({ 'البند': 'الاسم', 'القيمة': emp.name });
-  summaryRows.push({ 'البند': 'رقم البصمة', 'القيمة': emp.code });
-  summaryRows.push({ 'البند': 'الحالة', 'القيمة': emp.active === false ? 'منتهي' : 'نشط' });
-  summaryRows.push({ 'البند': 'الفرع الحالي', 'القيمة': branchName(emp.branchId) });
-  summaryRows.push({ 'البند': 'الفترة', 'القيمة': `${from || '—'} → ${to || '—'}` });
-  summaryRows.push({ 'البند': '', 'القيمة': '' });
-  summaryRows.push({ 'البند': '📊 الإجمالي الكامل', 'القيمة': '' });
-  summaryRows.push({ 'البند': 'عدد الأيام', 'القيمة': grand.days });
-  summaryRows.push({ 'البند': 'حضور', 'القيمة': grand.present });
-  summaryRows.push({ 'البند': 'غياب', 'القيمة': grand.absent });
-  summaryRows.push({ 'البند': 'أجازة', 'القيمة': grand.leave });
-  summaryRows.push({ 'البند': 'مهمة', 'القيمة': grand.mission });
-  summaryRows.push({ 'البند': 'بصمة ناقصة', 'القيمة': grand.incomplete });
-  summaryRows.push({ 'البند': 'ساعات العمل', 'القيمة': fmtMins(grand.workMins) });
-  summaryRows.push({ 'البند': 'التأخير', 'القيمة': fmtMins(grand.lateness) });
-  summaryRows.push({ 'البند': 'إضافي/عجز', 'القيمة': fmtMins(grand.overtime) });
-
-  if(transferHistory.length){
-    summaryRows.push({ 'البند': '', 'القيمة': '' });
-    summaryRows.push({ 'البند': '🔄 سجل التنقلات', 'القيمة': '' });
-    transferHistory.forEach(h => {
-      summaryRows.push({ 'البند': `${h.fromName} ← ${h.toName}`, 'القيمة': `${h.date}${h.reason ? ' — ' + h.reason : ''}` });
-    });
-  }
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), 'الملخص');
-
-  const branchRows = branchStats.map(b => ({
-    'الفرع': b.branchName,
-    'من': b.firstDate,
-    'إلى': b.lastDate,
-    'أيام': b.totals.days,
-    'حضور': b.totals.present,
-    'غياب': b.totals.absent,
-    'أجازة': b.totals.leave,
-    'ساعات العمل': fmtMins(b.totals.workMins),
-    'تأخير': fmtMins(b.totals.lateness),
-    'إضافي/عجز': fmtMins(b.totals.overtime)
-  }));
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(branchRows), 'حسب الفرع');
-
-  const dailyRows = [];
-  branchStats.forEach(b => {
-    b.days.forEach(d => {
-      dailyRows.push({
-        'الفرع': b.branchName,
-        'التاريخ': d.dateKey,
-        'اليوم': dayName(d.dateKey),
-        'الشفت': d.shift ? `${d.shift.start} - ${d.shift.end}` : '',
-        'دخول': d.timeIn || '',
-        'خروج': d.timeOut || '',
-        'ساعات': fmtMins(d.workMins),
-        'إذن': fmtMins(d.excusedMins),
-        'تأخير': fmtMins(d.lateness),
-        'إضافي/عجز': fmtMins(d.overtime),
-        'الحالة': d.status
-      });
-    });
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dailyRows), 'الأيام التفصيلية');
-
-  XLSX.writeFile(wb, `سجل_${emp.name}_${today()}.xlsx`);
-}
-
-function selectEmpBranch(v){ UI.empBranchFilter = v; UI.empReportId = ''; lastEmpReport = null; renderPage(); }
-function selectEmployee(id){ UI.empReportId = id; lastEmpReport = null; renderPage(); }
-function clearEmpSelection(){ UI.empReportId = ''; lastEmpReport = null; renderPage(); }
-
-Object.assign(window, {
-  doLogin, doLogout, toggleSidebar, navigateTo, renderPage,
-  setSettingsTab, addBranch, setDefaultShift, editBranchPass, deleteBranch,
-  autoShiftHours, addShift, deleteShift,
-  updateEmpShiftOptions, addEmp, setEmpShift, deleteEmp, importEmployees,
-  setDailyBranch, setDailyDate, togglePermHours, saveRow, saveAll, copyFromYesterday,
-  handleUpload, generateReport, exportReport, viewBranchToday,
-  transferEmp, confirmTransfer, deactivateEmp, confirmDeactivate, reactivateEmp,
-  showEmpDetails, closeModal, openEmpHistory,
-  generateEmployeeReport, exportEmployeeReport,
-  selectEmpBranch, selectEmployee, clearEmpSelection,
-  setShiftBranchFilter, setEmpBranchFilter, setEmpActiveFilter,
-  shareDailyWhatsApp, shareReportWhatsApp, shareEmployeeWhatsApp,
-  sendWhatsApp, copyWhatsAppText, editBranchWhatsApp,
-  arNum, fmtDateArFull
-});
-window.$ = $;
-
-(async function init(){
-  showLoader(true);
-  try {
-    await checkSetup();
-    const uid = sessionStorage.getItem('uid');
-    if(uid){
-      const users = await fsAll('users');
-      const u = users.find(x => x.id === uid);
-      if(u){ currentUser = u; await loadAll(); enterApp(); }
-    }
-    ['loginUser','loginPass','loginName'].forEach(id => {
-      const el = $(id);
-      if(el) el.addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
-    });
-  } catch(e){
-    console.error('init failed:', e);
-    $('loginPage').style.display = 'flex';
-    $('app').style.display = 'none';
-    const err = $('loginErr');
-    err.textContent = '⚠️ خطأ في التهيئة: ' + (e?.message || e);
-    err.style.display = 'block';
-    $('loginHint').textContent = 'افتح Console (F12) للتفاصيل';
-  } finally {
-    showLoader(false);
-  }
-})();
-</script>
-</body>
-</html>
+                  <td>${ovTxt}</td
