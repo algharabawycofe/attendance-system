@@ -131,7 +131,7 @@ tbody tr:last-child td{border-bottom:none}
 .date-nav button{padding:6px 12px;font-size:12px;border:1.5px solid var(--gray-200);background:#fff;border-radius:7px;font-weight:600;color:var(--gray-700);transition:all .15s}
 .date-nav button:hover{border-color:var(--primary);color:var(--primary)}
 .date-nav button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-.tabs-inline{display:flex;gap:6px;padding:4px;background:var(--gray-100);border-radius:10px;margin-bottom:16px;width:fit-content}
+.tabs-inline{display:flex;gap:6px;padding:4px;background:var(--gray-100);border-radius:10px;margin-bottom:16px;width:fit-content;flex-wrap:wrap}
 .tab-inline{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:600;color:var(--gray-700);transition:all .15s}
 .tab-inline.active{background:#fff;color:var(--primary);box-shadow:var(--shadow)}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1500}
@@ -163,12 +163,58 @@ tbody tr:last-child td{border-bottom:none}
 .row-error{background:#fef2f2}
 .cmp-print-only{display:none}
 
+/* ===== Reset Options ===== */
+.reset-option{
+  display:flex;align-items:flex-start;gap:10px;padding:12px 14px;
+  background:#fff;border:1.5px solid var(--gray-200);border-radius:10px;
+  cursor:pointer;transition:all .15s
+}
+.reset-option:hover{border-color:var(--danger);background:#fef2f2}
+.reset-option input[type="checkbox"]{
+  margin-top:3px;width:18px;height:18px;accent-color:var(--danger);cursor:pointer;flex-shrink:0
+}
+.reset-option:has(input:checked){border-color:var(--danger);background:#fef2f2;box-shadow:0 0 0 3px rgba(239,68,68,.1)}
+
+/* ===== هوية الشركة + الفوتر في الطباعة ===== */
+.print-header,.print-watermark,.print-footer{display:none}
+
 @media print{
   .sidebar,.header,.btn,.no-print{display:none !important}
   .app{display:block}
   .main{padding:0;overflow:visible}
   .card,.report-card,.branch-section{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}
-  body{background:#fff}
+  body{background:#fff;padding-top:64px !important;padding-bottom:44px !important}
+
+  .print-header{
+    display:block;position:fixed;top:0;left:0;right:0;
+    text-align:center;font-size:20px;font-weight:800;
+    padding:12px 16px;border-bottom:2px solid #111;
+    background:#fff;z-index:1000;letter-spacing:.5px;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+
+  .print-watermark{
+    display:block;position:fixed;top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    width:55%;max-width:480px;opacity:.09;z-index:0;
+    pointer-events:none;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .print-watermark img{width:100%;height:auto;display:block}
+
+  .print-footer{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    justify-content:space-between;align-items:center;
+    padding:8px 16px;border-top:1px solid #999;
+    background:#fff;font-size:11px;color:#444;z-index:1000;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .print-footer .pf-right{font-weight:700}
+
+  .app{position:relative;z-index:1}
+  .main{padding-top:0 !important}
+  .cmp-emp-card,.report-card,.branch-section,.card{position:relative;z-index:1;background:#fff}
+
   .cmp-emp-card{page-break-after:always;page-break-inside:auto;box-shadow:none !important;border:1px solid #ddd;margin-bottom:0}
   .cmp-emp-card:last-child{page-break-after:auto}
   body.cmp-printing-single .cmp-emp-card:not(.cmp-print-target){display:none !important}
@@ -236,6 +282,11 @@ tbody tr:last-child td{border-bottom:none}
 
 <div id="loader" class="loader-overlay" style="display:none"><div class="spinner"></div></div>
 <div id="modalContainer"></div>
+
+<!-- 🆕 عناصر الطباعة: هيدر + علامة مائية + فوتر -->
+<div id="printHeader" class="print-header"></div>
+<div id="printWatermark" class="print-watermark"></div>
+<div id="printFooter" class="print-footer"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
@@ -343,6 +394,7 @@ async function fsBatchDel(n, fn){
   let c = 0;
   s.docs.forEach(d => { if(fn({id:d.id, ...d.data()})){ b.delete(d.ref); c++; } });
   if(c) await b.commit();
+  return c;
 }
 async function fsBatchAdd(n, items){
   const CH = 400;
@@ -392,6 +444,7 @@ function startLive(){
     const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     DB.settings = list.length ? list[0] : {};
     DB.settingsId = list.length ? list[0].id : null;
+    updatePrintBranding();
     if(currentUser) refreshPage();
   }, err => { console.error('settings live error', err); }));
 }
@@ -501,6 +554,7 @@ function enterApp(){
   startLive();
   buildNav();
   renderPage();
+  updatePrintBranding(); // 🆕
 }
 function toggleSidebar(){ $('sidebar').classList.toggle('open'); }
 function buildNav(){
@@ -538,6 +592,19 @@ function refreshPage(){
   if(document.querySelector('.row-saving')) return;
   renderPage();
 }
+
+function getCurrentPrintBranch(){
+  if(activePage === 'reports' && lastReport && lastReport.branchId) return branchName(lastReport.branchId);
+  if(activePage === 'compare' && lastComparison && lastComparison.branchId) return branchName(lastComparison.branchId);
+  if(activePage === 'employee' && UI.empReportId){
+    const emp = DB.employees.find(e => e.id === UI.empReportId);
+    if(emp) return branchName(emp.branchId);
+  }
+  if(activePage === 'daily' && UI.dailyBranch) return branchName(UI.dailyBranch);
+  if(currentUser?.branchId) return branchName(currentUser.branchId);
+  return '';
+}
+
 function renderPage(){
   const titles = { dashboard:'الرئيسية', daily:'التسجيل اليومي', settings:'الإعدادات', uploads:'رفع البصمة', reports:'التقارير', employee:'سجل الموظف', compare:'🔍 المقارنة' };
   $('pageTitle').textContent = titles[activePage] || '';
@@ -549,6 +616,7 @@ function renderPage(){
     </div>`;
   }
   $('mainContent').innerHTML = banner + (content[activePage]?.() || '');
+  updatePrintBranding(getCurrentPrintBranch()); // 🆕
 }
 
 function renderDashboard(){
@@ -1155,25 +1223,459 @@ function shareCompareWhatsApp(){
    ============================================================ */
 
 function renderSettings(){
+  const isAdmin = currentUser.role === 'admin';
   const tab = UI.settingsTab || 'branches';
+  const tabs = [
+    { id:'branches', label:'الفروع' },
+    { id:'shifts', label:'الشفتات' },
+    { id:'employees', label:'الموظفين' },
+    ...(isAdmin ? [
+      { id:'branding', label:'🎨 هوية الشركة' },
+      { id:'reset', label:'🗑️ تهيئة' }
+    ] : [])
+  ];
   return `<div class="card">
     <div class="card-header">
       <div><div class="card-title">الإعدادات</div><div class="card-subtitle">الفروع والموظفين والشفتات</div></div>
     </div>
     <div class="tabs-inline">
-      <button class="tab-inline ${tab === 'branches' ? 'active' : ''}" onclick="setSettingsTab('branches')">الفروع</button>
-      <button class="tab-inline ${tab === 'shifts' ? 'active' : ''}" onclick="setSettingsTab('shifts')">الشفتات</button>
-      <button class="tab-inline ${tab === 'employees' ? 'active' : ''}" onclick="setSettingsTab('employees')">الموظفين</button>
+      ${tabs.map(t => `<button class="tab-inline ${tab === t.id ? 'active' : ''}" onclick="setSettingsTab('${t.id}')">${t.label}</button>`).join('')}
     </div>
     <div id="settingsContent">
       ${tab === 'branches' ? renderBranchesTab() : ''}
       ${tab === 'shifts' ? renderShiftsTab() : ''}
       ${tab === 'employees' ? renderEmployeesTab() : ''}
+      ${tab === 'branding' ? renderBrandingTab() : ''}
+      ${tab === 'reset' ? renderResetTab() : ''}
     </div>
   </div>
-  ${currentUser.role === 'admin' ? renderSystemAdminCard() : ''}`;
+  ${isAdmin ? renderSystemAdminCard() : ''}`;
 }
 function setSettingsTab(t){ UI.settingsTab = t; renderPage(); }
+
+/* ============================================================
+   🎨 هوية الشركة (لوجو + اسم) + تطبيقها على الطباعة
+   ============================================================ */
+
+function renderBrandingTab(){
+  const name = DB.settings?.companyName || '';
+  const logo = DB.settings?.companyLogo || '';
+  return `
+    <div class="card" style="background:var(--gray-50);box-shadow:none;border:1px solid var(--gray-200)">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px">🎨 هوية الشركة (تظهر في الطباعة)</div>
+
+      <div class="form-row">
+        <div class="field" style="max-width:400px">
+          <label>اسم الشركة (يظهر في رأس كل صفحة)</label>
+          <input id="brandCompanyName" value="${esc(name)}" placeholder="مثال: شركة النور للإنتاج">
+        </div>
+        <button class="btn btn-primary" onclick="saveCompanyIdentity()">💾 حفظ الاسم</button>
+      </div>
+
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-200)">
+        <div style="font-size:13.5px;font-weight:700;margin-bottom:10px">🖼️ لوجو الشركة (يظهر كعلامة مائية شفافة)</div>
+
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+          <div style="flex:1;min-width:250px">
+            <input type="file" id="brandLogoFile" accept="image/*" style="display:none" onchange="uploadLogo(event)">
+            <div class="upload-zone" onclick="$('brandLogoFile').click()" style="padding:20px">
+              <div style="font-size:36px;margin-bottom:6px">🖼️</div>
+              <div style="font-size:13px;font-weight:700">اختيار لوجو (PNG / JPG / SVG)</div>
+              <div class="muted" style="margin-top:4px;font-size:11px">
+                💡 الصورة هتتضغط تلقائيًا لأقصى ٣٥٠ بكسل — الأفضل لوجو مربع أو عرضي بخلفية شفافة
+              </div>
+            </div>
+          </div>
+
+          ${logo ? `
+            <div style="text-align:center;padding:12px;border:1px solid var(--gray-200);border-radius:10px;background:#fff;min-width:180px">
+              <div class="muted" style="font-size:11px;margin-bottom:6px">معاينة اللوجو الحالي</div>
+              <img src="${logo}" style="max-width:160px;max-height:160px;display:block;margin:0 auto;border:1px solid var(--gray-100);border-radius:6px">
+              <button class="btn btn-danger btn-sm mt-3" onclick="removeLogo()">🗑️ حذف اللوجو</button>
+            </div>
+          ` : `
+            <div style="text-align:center;padding:20px;border:1px dashed var(--gray-300);border-radius:10px;background:#fff;min-width:180px">
+              <div class="muted" style="font-size:12px">لا يوجد لوجو مرفوع</div>
+            </div>
+          `}
+        </div>
+      </div>
+
+      ${(name || logo) ? `
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-200)">
+          <div style="font-size:13.5px;font-weight:700;margin-bottom:10px">👁️ معاينة الطباعة</div>
+          <div style="background:#fff;border:2px solid var(--gray-300);border-radius:8px;padding:0;overflow:hidden;position:relative;min-height:180px">
+            <div style="padding:10px 14px;border-bottom:2px solid #111;text-align:center;font-size:16px;font-weight:800">
+              ${esc(name || 'اسم الشركة')}
+            </div>
+            <div style="padding:30px 20px;text-align:center;color:var(--gray-500);font-size:12.5px;position:relative;min-height:100px">
+              ${logo ? `<img src="${logo}" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:45%;max-width:220px;opacity:.09;pointer-events:none">` : ''}
+              <div style="position:relative;z-index:1">
+                ✏️ هنا يظهر محتوى التقرير / المقارنة / سجل الموظف...<br>
+                <span class="muted">(اللوجو هيظهر كعلامة مائية في الخلفية)</span>
+              </div>
+            </div>
+            <div style="padding:6px 14px;border-top:1px solid #999;font-size:10px;color:#666;display:flex;justify-content:space-between">
+              <span>🏢 اسم الفرع</span>
+              <span>📅 ${new Date().toLocaleDateString('ar-EG')}</span>
+            </div>
+          </div>
+          <div class="muted" style="font-size:11px;margin-top:8px;text-align:center">
+            🔎 المعاينة تقريبية — الطباعة الفعلية بتشتغل على كل صفحة تلقائيًا
+          </div>
+        </div>
+      ` : ''}
+    </div>`;
+}
+
+async function saveCompanyIdentity(){
+  const name = $('brandCompanyName').value.trim();
+  showLoader(true);
+  try {
+    await saveMaintenanceSettings({ companyName: name });
+    updatePrintBranding(getCurrentPrintBranch());
+    alert('✅ تم حفظ اسم الشركة');
+    renderPage();
+  } catch(e){ alert('❌ ' + e.message); }
+  finally { showLoader(false); }
+}
+
+function fileToBase64Resized(file, maxSize = 350){
+  return new Promise((resolve, reject) => {
+    if(!file.type.startsWith('image/')){ reject(new Error('الملف ليس صورة')); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if(w > maxSize || h > maxSize){
+          if(w > h){ h = Math.round(h * maxSize / w); w = maxSize; }
+          else { w = Math.round(w * maxSize / h); h = maxSize; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        const hasAlpha = file.type === 'image/png' || file.type === 'image/svg+xml';
+        const mime = hasAlpha ? 'image/png' : 'image/jpeg';
+        const quality = hasAlpha ? undefined : 0.85;
+        const dataUrl = canvas.toDataURL(mime, quality);
+        if(dataUrl.length > 700000){
+          const smallCanvas = document.createElement('canvas');
+          const ratio = Math.min(1, 200 / Math.max(w, h));
+          smallCanvas.width = Math.round(w * ratio);
+          smallCanvas.height = Math.round(h * ratio);
+          const sctx = smallCanvas.getContext('2d');
+          sctx.clearRect(0, 0, smallCanvas.width, smallCanvas.height);
+          sctx.drawImage(img, 0, 0, smallCanvas.width, smallCanvas.height);
+          resolve(smallCanvas.toDataURL('image/jpeg', 0.8));
+        } else {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => reject(new Error('فشل تحميل الصورة'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('فشل قراءة الملف'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadLogo(ev){
+  const file = ev.target.files[0];
+  if(!file) return;
+  showLoader(true);
+  try {
+    const base64 = await fileToBase64Resized(file, 350);
+    await saveMaintenanceSettings({ companyLogo: base64 });
+    updatePrintBranding(getCurrentPrintBranch());
+    alert('✅ تم رفع اللوجو بنجاح');
+    renderPage();
+  } catch(e){
+    alert('❌ ' + e.message);
+  } finally {
+    showLoader(false);
+    ev.target.value = '';
+  }
+}
+
+async function removeLogo(){
+  if(!confirm('حذف اللوجو؟')) return;
+  showLoader(true);
+  try {
+    await saveMaintenanceSettings({ companyLogo: '' });
+    updatePrintBranding(getCurrentPrintBranch());
+    renderPage();
+  } catch(e){ alert('❌ ' + e.message); }
+  finally { showLoader(false); }
+}
+
+function updatePrintBranding(branchNameForPrint){
+  const name = DB.settings?.companyName || '';
+  const logo = DB.settings?.companyLogo || '';
+  const headerEl = $('printHeader');
+  const wmEl = $('printWatermark');
+  const footerEl = $('printFooter');
+
+  if(headerEl){
+    headerEl.textContent = name;
+    headerEl.style.display = name ? '' : 'none';
+  }
+  if(wmEl){
+    wmEl.innerHTML = logo ? `<img src="${logo}" alt="">` : '';
+    wmEl.style.display = logo ? '' : 'none';
+  }
+  if(footerEl){
+    const bName = branchNameForPrint || UI.printBranchName || '';
+    const dateStr = new Date().toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
+    const parts = [];
+    if(bName && bName !== '—') parts.push(`🏢 ${bName}`);
+    parts.push(`📅 ${dateStr}`);
+    footerEl.innerHTML = `<span class="pf-right">${parts.join(' &nbsp;|&nbsp; ')}</span>`;
+  }
+}
+
+/* ============================================================
+   🗑️ تهيئة / حذف البيانات
+   ============================================================ */
+
+function renderResetTab(){
+  return `
+    <div class="card" style="border:2px solid var(--danger);background:#fef2f2">
+      <div class="card-header">
+        <div>
+          <div class="card-title" style="color:var(--danger)">🗑️ تهيئة / حذف البيانات</div>
+          <div class="card-subtitle">اختر بعناية — العملية دي لا يمكن التراجع عنها</div>
+        </div>
+      </div>
+
+      <div class="alert alert-danger">
+        ⚠️ <b>تحذير:</b> الحذف نهائي! اعمل نسخة احتياطية الأول (من كارت النظام والإدارة تحت).
+      </div>
+
+      <div style="background:#fff;border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:14px">
+        <div style="font-size:13.5px;font-weight:700;margin-bottom:12px">1️⃣ نطاق الحذف</div>
+
+        <div class="field" style="margin-bottom:12px">
+          <label>🏢 الفرع</label>
+          <select id="resetBranch">
+            <option value="">— كل الفروع —</option>
+            ${DB.branches.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="form-row" style="margin-bottom:0">
+          <div class="field"><label>من تاريخ (اختياري)</label><input type="date" id="resetFrom"></div>
+          <div class="field"><label>إلى تاريخ (اختياري)</label><input type="date" id="resetTo"></div>
+        </div>
+        <div class="muted" style="font-size:11.5px;margin-top:8px">
+          💡 الفترة تنطبق على <b>التسجيل اليومي</b> و<b>البصمات</b> بس.
+          الموظفين والشفتات بيتحذفوا حسب الفرع كامل.
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:14px">
+        <div style="font-size:13.5px;font-weight:700;margin-bottom:12px">2️⃣ اختر ما تريد حذفه</div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
+          <label class="reset-option">
+            <input type="checkbox" class="rs-target" value="daily">
+            <div>
+              <div style="font-weight:700">📅 التسجيل اليومي</div>
+              <div class="muted" style="font-size:11.5px">حضور/غياب/إذن من جدول الفرع</div>
+              <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.daily.length)}</b></div>
+            </div>
+          </label>
+
+          <label class="reset-option">
+            <input type="checkbox" class="rs-target" value="punches">
+            <div>
+              <div style="font-weight:700">📥 البصمات</div>
+              <div class="muted" style="font-size:11.5px">البصمات المرفوعة من Excel</div>
+              <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.punches.length)}</b></div>
+            </div>
+          </label>
+
+          <label class="reset-option">
+            <input type="checkbox" class="rs-target" value="employees">
+            <div>
+              <div style="font-weight:700;color:var(--danger)">👥 الموظفين ⚠️</div>
+              <div class="muted" style="font-size:11.5px">حذف الموظفين نهائيًا</div>
+              <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.employees.length)}</b></div>
+            </div>
+          </label>
+
+          <label class="reset-option">
+            <input type="checkbox" class="rs-target" value="shifts">
+            <div>
+              <div style="font-weight:700">🕐 الشفتات</div>
+              <div class="muted" style="font-size:11.5px">حذف الشفتات</div>
+              <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.shifts.length)}</b></div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="previewReset()">👁️ معاينة العدد</button>
+        <button class="btn btn-danger" onclick="executeReset()">🗑️ تنفيذ الحذف</button>
+      </div>
+
+      <div id="resetPreview" style="margin-top:14px"></div>
+    </div>`;
+}
+
+function getResetConfig(){
+  const branchId = $('resetBranch').value;
+  const from = $('resetFrom').value;
+  const to = $('resetTo').value;
+  const targets = Array.from(document.querySelectorAll('.rs-target:checked')).map(c => c.value);
+  return { branchId, from, to, targets };
+}
+
+function countResetRecords({ branchId, from, to, targets }){
+  const result = {};
+  if(targets.includes('daily')){
+    result.daily = DB.daily.filter(d => {
+      if(branchId && d.branchId !== branchId) return false;
+      if(from && d.dateKey < from) return false;
+      if(to && d.dateKey > to) return false;
+      return true;
+    }).length;
+  }
+  if(targets.includes('punches')){
+    result.punches = DB.punches.filter(p => {
+      if(branchId && p.branchId !== branchId) return false;
+      if(from && p.dateKey < from) return false;
+      if(to && p.dateKey > to) return false;
+      return true;
+    }).length;
+  }
+  if(targets.includes('employees')){
+    result.employees = DB.employees.filter(e => !branchId || e.branchId === branchId).length;
+  }
+  if(targets.includes('shifts')){
+    result.shifts = DB.shifts.filter(s => !branchId || s.branchId === branchId).length;
+  }
+  return result;
+}
+
+function previewReset(){
+  const cfg = getResetConfig();
+  const el = $('resetPreview');
+  if(!cfg.targets.length){
+    el.innerHTML = `<div class="alert alert-warning">⚠️ اختر نوع واحد على الأقل من البيانات</div>`;
+    return;
+  }
+  const counts = countResetRecords(cfg);
+  const total = Object.values(counts).reduce((s, n) => s + n, 0);
+
+  const branchTxt = cfg.branchId ? `فرع: <b>${esc(branchName(cfg.branchId))}</b>` : 'كل الفروع';
+  const periodTxt = (cfg.from || cfg.to)
+    ? ` | من <b>${cfg.from || '—'}</b> إلى <b>${cfg.to || '—'}</b>`
+    : '';
+
+  const labels = {
+    daily: '📅 التسجيل اليومي',
+    punches: '📥 البصمات',
+    employees: '👥 الموظفين',
+    shifts: '🕐 الشفتات'
+  };
+
+  const rowsHtml = Object.entries(counts).map(([k, n]) =>
+    `<div style="display:flex;justify-content:space-between;padding:8px 12px;background:#fff;border-radius:8px;margin-bottom:6px;border:1px solid var(--gray-200)">
+      <span>${labels[k]}</span>
+      <span style="font-weight:700;color:${n > 0 ? 'var(--danger)' : 'var(--gray-500)'}">${arNum(n)} سجل</span>
+    </div>`
+  ).join('');
+
+  el.innerHTML = `
+    <div class="alert alert-info" style="display:block">
+      <div style="font-weight:700;margin-bottom:10px">📊 النطاق: ${branchTxt}${periodTxt}</div>
+      ${rowsHtml}
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #bfdbfe;font-weight:700;font-size:14px">
+        🗑️ الإجمالي المرشح للحذف: <span style="color:var(--danger)">${arNum(total)} سجل</span>
+      </div>
+      ${total === 0 ? '<div class="muted" style="margin-top:8px;font-size:12px">⚠️ مفيش بيانات مطابقة للنطاق المحدد</div>' : ''}
+    </div>`;
+}
+
+async function executeReset(){
+  const cfg = getResetConfig();
+  if(!cfg.targets.length){ alert('اختر حاجة واحدة على الأقل'); return; }
+
+  const counts = countResetRecords(cfg);
+  const total = Object.values(counts).reduce((s, n) => s + n, 0);
+  if(!total){ alert('مفيش بيانات مطابقة للحذف'); return; }
+
+  // تحذير خاص عند حذف موظفين بدون data
+  if(cfg.targets.includes('employees') && !cfg.targets.includes('daily') && !cfg.targets.includes('punches')){
+    if(!confirm('⚠️ تحذير: هتحذف موظفين بدون حذف تسجيلاتهم وبصماتهم\n\nده هيسيب بيانات orphaned. تحب تختار «التسجيل اليومي» + «البصمات» كمان؟\n\nاضغط Cancel للرجوع.')) return;
+  }
+
+  // تأكيد بكلمة مرور الصيانة
+  const hasPass = !!DB.settings?.maintenancePasswordHash;
+  if(hasPass){
+    const p = prompt('🔑 أدخل كلمة مرور الصيانة لتأكيد الحذف:');
+    if(!p) return;
+    const ph = await hash(p);
+    if(ph !== DB.settings.maintenancePasswordHash){
+      alert('❌ كلمة المرور غير صحيحة');
+      return;
+    }
+  }
+
+  const labels = { daily:'التسجيل اليومي', punches:'البصمات', employees:'الموظفين', shifts:'الشفتات' };
+  const summary = Object.entries(counts).map(([k, n]) => `• ${labels[k]}: ${n}`).join('\n');
+
+  if(!confirm(`⚠️ سيتم حذف نهائي:\n\n${summary}\n\nالإجمالي: ${total}\n\nهل أنت متأكد؟`)) return;
+  if(!confirm('🚨 تأكيد أخير — لا يمكن التراجع!\n\nاضغط OK للتنفيذ.')) return;
+
+  showLoader(true);
+  try {
+    let deletedTotal = 0;
+
+    if(cfg.targets.includes('daily')){
+      const c = await fsBatchDel('daily', d => {
+        if(cfg.branchId && d.branchId !== cfg.branchId) return false;
+        if(cfg.from && d.dateKey < cfg.from) return false;
+        if(cfg.to && d.dateKey > cfg.to) return false;
+        return true;
+      });
+      deletedTotal += c;
+    }
+    if(cfg.targets.includes('punches')){
+      const c = await fsBatchDel('punches', p => {
+        if(cfg.branchId && p.branchId !== cfg.branchId) return false;
+        if(cfg.from && p.dateKey < cfg.from) return false;
+        if(cfg.to && p.dateKey > cfg.to) return false;
+        return true;
+      });
+      deletedTotal += c;
+    }
+    if(cfg.targets.includes('employees')){
+      const c = await fsBatchDel('employees', e => !cfg.branchId || e.branchId === cfg.branchId);
+      deletedTotal += c;
+    }
+    if(cfg.targets.includes('shifts')){
+      const c = await fsBatchDel('shifts', s => !cfg.branchId || s.branchId === cfg.branchId);
+      deletedTotal += c;
+    }
+
+    await loadAll();
+    alert(`✅ تم الحذف بنجاح\n\nعدد السجلات المحذوفة: ${deletedTotal}`);
+    renderPage();
+  } catch(e){
+    alert('❌ خطأ: ' + e.message);
+  } finally {
+    showLoader(false);
+  }
+}
+
+/* ============================================================
+   كارت النظام والإدارة
+   ============================================================ */
 
 function renderSystemAdminCard(){
   const m = DB.settings?.maintenance || false;
@@ -2761,10 +3263,6 @@ function buildSummaryRows(rows){
   return Object.values(map).sort((a,b) => a.empName.localeCompare(b.empName,'ar'));
 }
 
-/* ============================================================
-   🆕 تجميع المقارنة حسب الموظف (للتاب التفصيلي الجديد)
-   ============================================================ */
-
 function buildComparisonByEmployee(rows){
   const map = {};
   rows.forEach(r => {
@@ -2789,16 +3287,11 @@ function buildComparisonByEmployee(rows){
     if(r.branchPermType === 'hour') m.totals.permTotal += Math.round(r.branchPermHours*60);
     else if(r.branchPermType === 'day' && r.branchRawMins) m.totals.permTotal += r.branchRawMins;
   });
-  // ترتيب الأيام تصاعدي جوه كل موظف
   Object.values(map).forEach(m => {
     m.days.sort((a,b) => a.dateKey.localeCompare(b.dateKey));
   });
   return Object.values(map).sort((a,b) => a.empName.localeCompare(b.empName,'ar'));
 }
-
-/* ============================================================
-   🖨️ الطباعة
-   ============================================================ */
 
 function printComparison(empId){
   if(!lastComparison || !lastComparison.rows.length){
@@ -2806,7 +3299,6 @@ function printComparison(empId){
     return;
   }
 
-  // لو مش على التاب التفصيلي، أو الفلتر مش "الكل" في حالة طباعة موظف واحد
   const needSwitch = (UI.cmpTab !== 'detailed') || (empId && (UI.cmpFilter || 'all') !== 'all');
   if(needSwitch){
     UI.cmpTab = 'detailed';
@@ -2817,7 +3309,6 @@ function printComparison(empId){
   }
 
   if(empId){
-    // طباعة موظف واحد بس
     document.querySelectorAll('.cmp-emp-card').forEach(c => c.classList.remove('cmp-print-target'));
     const target = document.querySelector(`.cmp-emp-card[data-cmp-emp="${empId}"]`);
     if(!target){
@@ -2839,14 +3330,9 @@ function printComparison(empId){
       setTimeout(cleanup, 500);
     }, 100);
   } else {
-    // طباعة كل الموظفين
     window.print();
   }
 }
-
-/* ============================================================
-   صفحة المقارنة
-   ============================================================ */
 
 function renderCompare(){
   const bId = UI.cmpBranch || '';
@@ -3144,7 +3630,7 @@ function exportComparison(){
 }
 
 /* ============================================================
-   💾 النسخ الاحتياطي والاسترجاع
+   💾 النسخ الاحتياطي والاسترجاع + 🔒 الصيانة
    ============================================================ */
 
 async function backupSystem(){
@@ -3256,10 +3742,6 @@ async function restoreSystem(ev){
   reader.readAsText(file);
 }
 
-/* ============================================================
-   🔒 وضع الصيانة
-   ============================================================ */
-
 async function saveMaintenanceSettings(updates){
   showLoader(true);
   try {
@@ -3343,6 +3825,8 @@ Object.assign(window, {
   arNum, arTime, fmtDateArFull,
   setCmpFilter, setCmpTab, generateComparison, exportComparison, shareCompareWhatsApp,
   printComparison,
+  saveCompanyIdentity, uploadLogo, removeLogo, updatePrintBranding,
+  previewReset, executeReset,
   backupSystem, restoreSystem, toggleMaintenance, changeMaintenancePassword, renderSystemAdminCard
 });
 window.$ = $;
@@ -3351,6 +3835,7 @@ window.$ = $;
   showLoader(true);
   try {
     await checkSetup();
+    updatePrintBranding();
     const uid = sessionStorage.getItem('uid');
     if(uid){
       const users = await fsAll('users');
