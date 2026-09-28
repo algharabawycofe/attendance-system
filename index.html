@@ -7,15 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱</text></svg>">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-:root{
---primary:#2563eb;--primary-dark:#1e40af;--primary-light:#dbeafe;
---success:#10b981;--warning:#f59e0b;--danger:#ef4444;
---whatsapp:#25D366;--whatsapp-dark:#128C7E;
---gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;
---gray-500:#6b7280;--gray-700:#374151;--gray-900:#111827;
---shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
---shadow-md:0 4px 6px rgba(0,0,0,.05),0 2px 4px rgba(0,0,0,.03);
-}
+:root{--primary:#2563eb;--primary-dark:#1e40af;--primary-light:#dbeafe;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--whatsapp:#25D366;--whatsapp-dark:#128C7E;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;--gray-500:#6b7280;--gray-700:#374151;--gray-900:#111827;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 6px rgba(0,0,0,.05),0 2px 4px rgba(0,0,0,.03)}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{font-family:'Segoe UI',system-ui,-apple-system,Tahoma,sans-serif;background:var(--gray-50);color:var(--gray-900);font-size:14px;line-height:1.5}
@@ -98,6 +90,7 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .stat-icon.orange{background:#fed7aa;color:var(--warning)}
 .stat-icon.red{background:#fee2e2;color:var(--danger)}
 .stat-icon.purple{background:#e9d5ff;color:#9333ea}
+.stat-icon.teal{background:#ccfbf1;color:#0d9488}
 .stat-value{font-size:26px;font-weight:800;color:var(--gray-900);line-height:1}
 .stat-label{font-size:12.5px;color:var(--gray-500);margin-top:4px}
 .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--gray-100);background:#fff}
@@ -116,6 +109,9 @@ tbody tr:last-child td{border-bottom:none}
 .b-purple{background:#e9d5ff;color:#6b21a8}
 .b-wa{background:#dcfce7;color:#166534}
 .b-holiday{background:#fce7f3;color:#9d174d}
+.b-leave{background:#fef3c7;color:#92400e}
+.b-advance{background:#dbeafe;color:#1e40af}
+.b-penalty{background:#fee2e2;color:#991b1b}
 .alert{padding:12px 14px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .alert-info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
 .alert-success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
@@ -162,6 +158,7 @@ tbody tr:last-child td{border-bottom:none}
 .row-warn{background:#fffbeb}
 .row-error{background:#fef2f2}
 .row-pending{background:#f8fafc}
+.row-hr-leave{background:#fef3c7}
 .cmp-print-only{display:none}
 .branch-card{background:#fff;border:1px solid var(--gray-200);border-radius:12px;padding:16px;transition:all .15s}
 .branch-card:hover{border-color:var(--primary);box-shadow:0 4px 12px rgba(37,99,235,.08)}
@@ -226,30 +223,60 @@ tbody tr:last-child td{border-bottom:none}
 .holiday-item .h-name{flex:1;margin:0 12px}
 .holiday-item .h-del{padding:5px 10px;background:#fee2e2;color:var(--danger);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer}
 .holiday-item .h-del:hover{background:#fecaca}
+.hr-item{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fff;border:1px solid var(--gray-200);border-radius:10px;margin-bottom:8px;gap:12px;flex-wrap:wrap}
+.hr-item .hr-main{display:flex;align-items:center;gap:12px;flex:1;min-width:200px}
+.hr-item .hr-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.hr-item .hr-icon.advance{background:#dbeafe;color:#1e40af}
+.hr-item .hr-icon.penalty{background:#fee2e2;color:#991b1b}
+.hr-item .hr-icon.leave{background:#fef3c7;color:#92400e}
+.hr-item .hr-info{flex:1;min-width:150px}
+.hr-item .hr-title{font-weight:700;font-size:14px;color:var(--gray-900);margin-bottom:2px}
+.hr-item .hr-sub{font-size:12px;color:var(--gray-500)}
+.hr-item .hr-amount{font-size:17px;font-weight:800;color:var(--gray-900);white-space:nowrap}
+.hr-item .hr-amount.advance{color:#1e40af}
+.hr-item .hr-amount.penalty{color:#991b1b}
+.hr-item .hr-actions{display:flex;gap:6px}
+.hr-summary-card{background:linear-gradient(135deg,#f0f9ff,#eff6ff);border:2px solid #bfdbfe;border-radius:14px;padding:20px;margin-bottom:16px}
+.hr-summary-title{font-size:16px;font-weight:800;color:#1e40af;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.hr-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:14px}
+.hr-summary-item{background:#fff;border-radius:10px;padding:14px;text-align:center;border:1px solid #dbeafe}
+.hr-summary-item .label{font-size:12px;color:var(--gray-500);margin-bottom:6px}
+.hr-summary-item .value{font-size:20px;font-weight:800}
+.hr-summary-item.advance .value{color:#1e40af}
+.hr-summary-item.penalty .value{color:#991b1b}
+.hr-summary-item.leave .value{color:#92400e}
+.hr-summary-list{background:#fff;border-radius:10px;padding:12px 16px;font-size:12.5px;border:1px solid #dbeafe}
+.hr-summary-list .row{display:flex;gap:10px;padding:6px 0;border-bottom:1px dashed #e5e7eb;align-items:center;flex-wrap:wrap}
+.hr-summary-list .row:last-child{border-bottom:none}
+.hr-summary-list .row .icon{font-size:15px}
+.hr-summary-list .row .date{color:var(--gray-500);font-family:monospace;font-size:11.5px;min-width:88px}
+.hr-summary-list .row .desc{flex:1;color:var(--gray-700)}
+.hr-summary-list .row .amt{font-weight:700;color:var(--gray-900)}
 .print-header,.print-footer{display:none}
 @media print{
-  .sidebar,.header,.btn,.no-print{display:none !important}
-  .app{display:block}
-  .main{padding:0;overflow:visible}
-  .card,.report-card,.branch-section,.branch-card{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}
-  body{background:#fff;padding-top:74px !important;padding-bottom:44px !important}
-  .print-header{display:flex;position:fixed;top:0;left:0;right:0;align-items:center;justify-content:center;padding:10px 16px;border-bottom:2px solid #111;background:#fff;z-index:1000;min-height:60px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .print-header .ph-logo{position:absolute;left:16px;top:50%;transform:translateY(-50%);max-height:48px;max-width:130px;object-fit:contain}
-  .print-header .ph-name{font-size:20px;font-weight:800;letter-spacing:.5px;padding:0 150px;text-align:center;line-height:1.2}
-  .print-footer{display:flex;position:fixed;bottom:0;left:0;right:0;justify-content:space-between;align-items:center;padding:8px 16px;border-top:1px solid #999;background:#fff;font-size:11px;color:#444;z-index:1000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .print-footer .pf-right{font-weight:700}
-  .app{position:relative;z-index:1}
-  .main{padding-top:0 !important}
-  .cmp-emp-card,.report-card,.branch-section,.card{position:relative;z-index:1;background:#fff}
-  .cmp-emp-card{page-break-after:always;page-break-inside:auto;box-shadow:none !important;border:1px solid #ddd;margin-bottom:0}
-  .cmp-emp-card:last-child{page-break-after:auto}
-  body.cmp-printing-single .cmp-emp-card:not(.cmp-print-target){display:none !important}
-  body.cmp-printing-single .cmp-emp-card.cmp-print-target{page-break-after:auto}
-  .cmp-print-only{display:block;font-size:11px;color:#666;margin-bottom:10px;border-bottom:1px solid #ddd;padding-bottom:6px}
-  .report-summary{gap:10px !important;font-size:11.5px !important}
-  .report-summary span{white-space:nowrap}
-  .stats{display:none !important}
-  .tabs-inline{display:none !important}
+.sidebar,.header,.btn,.no-print{display:none !important}
+.app{display:block}
+.main{padding:0;overflow:visible}
+.card,.report-card,.branch-section,.branch-card{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}
+body{background:#fff;padding-top:74px !important;padding-bottom:44px !important}
+.print-header{display:flex;position:fixed;top:0;left:0;right:0;align-items:center;justify-content:center;padding:10px 16px;border-bottom:2px solid #111;background:#fff;z-index:1000;min-height:60px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.print-header .ph-logo{position:absolute;left:16px;top:50%;transform:translateY(-50%);max-height:48px;max-width:130px;object-fit:contain}
+.print-header .ph-name{font-size:20px;font-weight:800;letter-spacing:.5px;padding:0 150px;text-align:center;line-height:1.2}
+.print-footer{display:flex;position:fixed;bottom:0;left:0;right:0;justify-content:space-between;align-items:center;padding:8px 16px;border-top:1px solid #999;background:#fff;font-size:11px;color:#444;z-index:1000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.print-footer .pf-right{font-weight:700}
+.app{position:relative;z-index:1}
+.main{padding-top:0 !important}
+.cmp-emp-card,.report-card,.branch-section,.card{position:relative;z-index:1;background:#fff}
+.cmp-emp-card{page-break-after:always;page-break-inside:auto;box-shadow:none !important;border:1px solid #ddd;margin-bottom:0}
+.cmp-emp-card:last-child{page-break-after:auto}
+body.cmp-printing-single .cmp-emp-card:not(.cmp-print-target){display:none !important}
+body.cmp-printing-single .cmp-emp-card.cmp-print-target{page-break-after:auto}
+.cmp-print-only{display:block;font-size:11px;color:#666;margin-bottom:10px;border-bottom:1px solid #ddd;padding-bottom:6px}
+.report-summary{gap:10px !important;font-size:11.5px !important}
+.report-summary span{white-space:nowrap}
+.stats{display:none !important}
+.tabs-inline{display:none !important}
+.hr-summary-card{page-break-inside:avoid}
 }
 </style>
 </head>
@@ -331,7 +358,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const DB = { branches:[], users:[], shifts:[], employees:[], punches:[], daily:[], holidays:[], settings:{}, settingsId:null };
+const DB = { branches:[], users:[], shifts:[], employees:[], punches:[], daily:[], holidays:[], hr:[], settings:{}, settingsId:null };
 let currentUser = null;
 let activePage = 'dashboard';
 let lastReport = null;
@@ -345,6 +372,42 @@ const STATUS = { present:'حاضر', absent:'غائب', leave:'أجازة', miss
 const PERM = { none:'بدون', hour:'إذن ساعات', day:'يوم كامل' };
 const DEFAULT_TOL = 15;
 const PBKDF2_ITER = 100000;
+
+// ═══════════════════════════════════════════════════════════
+// HR — حركات الفرع (سلف / جزاءات / أجازات طويلة)
+// ═══════════════════════════════════════════════════════════
+const HR_TYPES = {
+  advance: { label:'سلفة', icon:'💰', color:'advance', hasAmount:true },
+  penalty: { label:'جزاء', icon:'⚖️', color:'penalty', hasAmount:true },
+  leave:   { label:'أجازة طويلة', icon:'🏖️', color:'leave', hasAmount:false }
+};
+
+const HR_REASONS = {
+  advance: [
+    'مصاريف طارئة',
+    'مصاريف شخصية',
+    'علاج',
+    'تعليم',
+    'زواج',
+    'أخرى'
+  ],
+  penalty: [
+    'تأخير في التسليم',
+    'مخالفة تعليمات',
+    'إهمال',
+    'خسائر',
+    'سلوك',
+    'أخرى'
+  ],
+  leave: [
+    'أجازة سنوية',
+    'أجازة مرضية',
+    'أجازة طارئة',
+    'أجازة موسمية',
+    'عيد الشركة',
+    'أخرى'
+  ]
+};
 
 const $ = id => document.getElementById(id);
 const showLoader = v => $('loader').style.display = v ? 'flex' : 'none';
@@ -465,16 +528,63 @@ async function fsRestore(n, items){
     await b.commit();
   }
 }
+// ═══════════════════════════════════════════════════════════
+// HR — دوال مساعدة
+// ═══════════════════════════════════════════════════════════
 
+// كل حركات الفرع في فترة معينة
+function getBranchHrForPeriod(branchId, from, to){
+  return DB.hr.filter(h => {
+    if(h.branchId !== branchId) return false;
+    if(from && h.date < from) return false;
+    if(to && h.date > to) return false;
+    return true;
+  }).sort((a,b) => a.date.localeCompare(b.date));
+}
+
+// ملخص حركات الفرع (سلف / جزاءات / أجازات)
+function getBranchHrSummary(branchId, from, to){
+  const list = getBranchHrForPeriod(branchId, from, to);
+  const summary = {
+    advanceTotal: 0, advanceCount: 0,
+    penaltyTotal: 0, penaltyCount: 0,
+    leaveDays: 0, leaveCount: 0,
+    list
+  };
+  list.forEach(h => {
+    if(h.type === 'advance'){ summary.advanceTotal += num(h.amount); summary.advanceCount++; }
+    else if(h.type === 'penalty'){ summary.penaltyTotal += num(h.amount); summary.penaltyCount++; }
+    else if(h.type === 'leave'){
+      summary.leaveCount++;
+      const s = new Date(h.date + 'T00:00:00');
+      const e = new Date((h.endDate || h.date) + 'T00:00:00');
+      const diff = Math.round((e - s) / 86400000) + 1;
+      summary.leaveDays += Math.max(0, diff);
+    }
+  });
+  return summary;
+}
+
+// هل اليوم داخل فترة أجازة طويلة للفرع؟
+function getLeaveForDay(branchId, dateKey){
+  return DB.hr.find(h => {
+    if(h.type !== 'leave') return false;
+    if(h.branchId !== branchId) return false;
+    const end = h.endDate || h.date;
+    return dateKey >= h.date && dateKey <= end;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
 async function loadAll(){
   showLoader(true);
   try {
-    const [b, u, s, e, p, d, h, st] = await Promise.all([
+    const [b, u, s, e, p, d, h, hr, st] = await Promise.all([
       fsAll('branches'), fsAll('users'), fsAll('shifts'),
       fsAll('employees'), fsAll('punches'), fsAll('daily'),
-      fsAll('holidays'), fsAll('settings')
+      fsAll('holidays'), fsAll('hr'), fsAll('settings')
     ]);
-    Object.assign(DB, { branches:b, users:u, shifts:s, employees:e, punches:p, daily:d, holidays:h });
+    Object.assign(DB, { branches:b, users:u, shifts:s, employees:e, punches:p, daily:d, holidays:h, hr });
     DB.settings = st.length ? st[0] : {};
     DB.settingsId = st.length ? st[0].id : null;
   } finally {
@@ -484,7 +594,7 @@ async function loadAll(){
 function startLive(){
   unsubs.forEach(u => { try{ u(); }catch(e){} });
   unsubs = [];
-  ['daily','punches','employees','shifts','branches','users','holidays'].forEach(col => {
+  ['daily','punches','employees','shifts','branches','users','holidays','hr'].forEach(col => {
     unsubs.push(onSnapshot(collection(db, col), snap => {
       DB[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       if(currentUser && !['reports','employee','compare'].includes(activePage)) refreshPage();
@@ -609,9 +719,9 @@ function enterApp(){
   $('userAvatar').textContent = (currentUser.name || 'م').charAt(0).toUpperCase();
   $('sidebarRole').textContent = role;
   if(currentUser.role === 'admin'){
-    if(!['dashboard','daily','settings','uploads','reports','employee','compare'].includes(activePage)) activePage = 'dashboard';
+    if(!['dashboard','daily','settings','uploads','reports','employee','compare','hr'].includes(activePage)) activePage = 'dashboard';
   } else {
-    activePage = 'daily';
+    if(!['daily','hr'].includes(activePage)) activePage = 'daily';
   }
   startLive();
   buildNav();
@@ -624,12 +734,16 @@ function buildNav(){
   const items = isAdmin ? [
     { id:'dashboard', icon:'📊', label:'الرئيسية' },
     { id:'daily', icon:'📅', label:'التسجيل اليومي' },
+    { id:'hr', icon:'💼', label:'السلف والجزاءات' },
     { id:'settings', icon:'⚙️', label:'الإعدادات' },
     { id:'uploads', icon:'📥', label:'رفع البصمة' },
     { id:'reports', icon:'📈', label:'التقارير' },
     { id:'employee', icon:'👤', label:'سجل الموظف' },
     { id:'compare', icon:'🔍', label:'المقارنة' }
-  ] : [{ id:'daily', icon:'📅', label:'التسجيل اليومي' }];
+  ] : [
+    { id:'daily', icon:'📅', label:'التسجيل اليومي' },
+    { id:'hr', icon:'💼', label:'السلف والجزاءات' }
+  ];
   $('navMenu').innerHTML = `
     <div class="nav-group">
       <div class="nav-label">${isAdmin ? 'الإدارة' : 'الفرع'}</div>
@@ -663,14 +777,15 @@ function getCurrentPrintBranch(){
     if(emp) return branchName(emp.branchId);
   }
   if(activePage === 'daily' && UI.dailyBranch) return branchName(UI.dailyBranch);
+  if(activePage === 'hr' && UI.hrBranch) return branchName(UI.hrBranch);
   if(currentUser?.branchId) return branchName(currentUser.branchId);
   return '';
 }
 
 function renderPage(){
-  const titles = { dashboard:'الرئيسية', daily:'التسجيل اليومي', settings:'الإعدادات', uploads:'رفع البصمة', reports:'التقارير', employee:'سجل الموظف', compare:'🔍 المقارنة' };
+  const titles = { dashboard:'الرئيسية', daily:'التسجيل اليومي', hr:'💼 السلف والجزاءات', settings:'الإعدادات', uploads:'رفع البصمة', reports:'التقارير', employee:'سجل الموظف', compare:'🔍 المقارنة' };
   $('pageTitle').textContent = titles[activePage] || '';
-  const content = { dashboard: renderDashboard, daily: renderDaily, settings: renderSettings, uploads: renderUploads, reports: renderReports, employee: renderEmployeeHistory, compare: renderCompare };
+  const content = { dashboard: renderDashboard, daily: renderDaily, hr: renderHr, settings: renderSettings, uploads: renderUploads, reports: renderReports, employee: renderEmployeeHistory, compare: renderCompare };
   let banner = '';
   if(DB.settings?.maintenance){
     banner = `<div class="alert alert-danger" style="margin-bottom:16px;font-size:14px">
@@ -691,6 +806,7 @@ function renderDashboard(){
   const todayEntries = DB.daily.filter(d => d.dateKey === t).length;
   const totalPunches = DB.punches.length;
   const holidaysCount = DB.holidays.length;
+  const hrCount = DB.hr.length;
   const branchCards = DB.branches.map(b => {
     const emps = DB.employees.filter(e => e.branchId === b.id && e.active !== false).length;
     const todayC = DB.daily.filter(d => d.branchId === b.id && d.dateKey === t).length;
@@ -715,6 +831,7 @@ function renderDashboard(){
       <div class="stat"><div class="stat-icon green">👥</div><div class="stat-value">${activeEmps}</div><div class="stat-label">الموظفين</div></div>
       <div class="stat"><div class="stat-icon orange">✅</div><div class="stat-value">${todayEntries}</div><div class="stat-label">تسجيلات اليوم</div></div>
       <div class="stat"><div class="stat-icon purple">📥</div><div class="stat-value">${totalPunches}</div><div class="stat-label">البصمات</div></div>
+      <div class="stat"><div class="stat-icon teal">💼</div><div class="stat-value">${hrCount}</div><div class="stat-label">حركات الفروع</div></div>
       <div class="stat"><div class="stat-icon red">🎉</div><div class="stat-value">${holidaysCount}</div><div class="stat-label">الإجازات الرسمية</div></div>
     </div>
     <div class="card">
@@ -726,6 +843,294 @@ function renderDashboard(){
 }
 function viewBranchToday(bId){ UI.dailyBranch = bId; navigateTo('daily'); }
 
+// ═══════════════════════════════════════════════════════════
+// صفحة السلف والجزاءات (HR) — جديدة
+// ═══════════════════════════════════════════════════════════
+function renderHr(){
+  const isAdmin = currentUser.role === 'admin';
+  const bId = isAdmin ? (UI.hrBranch || '') : currentUser.branchId;
+  const from = UI.hrFrom || '';
+  const to = UI.hrTo || '';
+  const filterType = UI.hrFilterType || 'all';
+
+  const branchField = isAdmin ? `
+    <div class="field" style="max-width:260px">
+      <label>🏢 الفرع</label>
+      <select onchange="setHrBranch(this.value)">
+        <option value="">— اختر الفرع —</option>
+        ${DB.branches.map(b => `<option value="${b.id}" ${bId === b.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}
+      </select>
+    </div>` : '';
+
+  if(!bId){
+    return `<div class="card">
+      <div class="card-header">
+        <div><div class="card-title">💼 السلف والجزاءات والأجازات</div>
+        <div class="card-subtitle">معاملات الفرع (مش على موظف معيّن)</div></div>
+      </div>
+      ${isAdmin ? `<div class="form-row">${branchField}</div>` : ''}
+      <div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">اختر الفرع أولاً</div></div>
+    </div>`;
+  }
+
+  const allList = getBranchHrForPeriod(bId, from, to);
+  const filtered = filterType === 'all' ? allList : allList.filter(h => h.type === filterType);
+  const summary = getBranchHrSummary(bId, from, to);
+
+  // كارت الملخص
+  const summaryCard = `
+    <div class="hr-summary-card">
+      <div class="hr-summary-title">📊 ملخص حركات ${esc(branchName(bId))} ${from || to ? `— من ${from || 'البداية'} إلى ${to || 'الآن'}` : ''}</div>
+      <div class="hr-summary-grid">
+        <div class="hr-summary-item advance">
+          <div class="label">💰 إجمالي السلف</div>
+          <div class="value">${arNum(summary.advanceTotal.toLocaleString('en-US'))} ج.م</div>
+          <div class="muted" style="margin-top:4px">${arNum(summary.advanceCount)} عملية</div>
+        </div>
+        <div class="hr-summary-item penalty">
+          <div class="label">⚖️ إجمالي الجزاءات</div>
+          <div class="value">${arNum(summary.penaltyTotal.toLocaleString('en-US'))} ج.م</div>
+          <div class="muted" style="margin-top:4px">${arNum(summary.penaltyCount)} عملية</div>
+        </div>
+        <div class="hr-summary-item leave">
+          <div class="label">🏖️ الأجازات الطويلة</div>
+          <div class="value">${arNum(summary.leaveDays)} يوم</div>
+          <div class="muted" style="margin-top:4px">${arNum(summary.leaveCount)} فترة</div>
+        </div>
+      </div>
+    </div>`;
+
+  // قائمة الحركات
+  const itemsHtml = filtered.length ? filtered.map(h => {
+    const info = HR_TYPES[h.type] || HR_TYPES.advance;
+    let sub = '';
+    if(h.type === 'leave'){
+      const end = h.endDate || h.date;
+      const s = new Date(h.date + 'T00:00:00');
+      const e = new Date(end + 'T00:00:00');
+      const days = Math.round((e - s) / 86400000) + 1;
+      sub = `${fmtDateArFull(h.date)} ← ${fmtDateArFull(end)} (${arNum(days)} يوم)${h.reason ? ' — ' + esc(h.reason) : ''}`;
+    } else {
+      sub = `${fmtDateArFull(h.date)}${h.reason ? ' — ' + esc(h.reason) : ''}${h.notes ? ' — ' + esc(h.notes) : ''}`;
+    }
+    const amtHtml = info.hasAmount
+      ? `<div class="hr-amount ${info.color}">${arNum(num(h.amount).toLocaleString('en-US'))} ج.م</div>`
+      : '';
+    return `<div class="hr-item">
+      <div class="hr-main">
+        <div class="hr-icon ${info.color}">${info.icon}</div>
+        <div class="hr-info">
+          <div class="hr-title">${info.label}</div>
+          <div class="hr-sub">${sub}</div>
+        </div>
+      </div>
+      ${amtHtml}
+      <div class="hr-actions">
+        <button class="btn btn-outline btn-sm" onclick="editHrTransaction('${h.id}')">✏️ تعديل</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteHrTransaction('${h.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('') : `<div class="empty"><div class="empty-icon">💼</div><div class="empty-title">لا توجد حركات</div>
+    <button class="btn btn-primary mt-3" onclick="openHrModal()">➕ إضافة حركة</button></div>`;
+
+  return `
+    <div class="card no-print">
+      <div class="card-header">
+        <div>
+          <div class="card-title">💼 السلف والجزاءات والأجازات الطويلة</div>
+          <div class="card-subtitle">حركات على الفرع — تظهر في تقرير المقارنة</div>
+        </div>
+        <button class="btn btn-primary" onclick="openHrModal()">➕ إضافة حركة جديدة</button>
+      </div>
+      <div class="form-row">
+        ${branchField}
+        <div class="field" style="max-width:160px"><label>من</label><input type="date" value="${from}" onchange="setHrFrom(this.value)"></div>
+        <div class="field" style="max-width:160px"><label>إلى</label><input type="date" value="${to}" onchange="setHrTo(this.value)"></div>
+        <div class="field" style="max-width:180px">
+          <label>النوع</label>
+          <select onchange="setHrFilterType(this.value)">
+            <option value="all" ${filterType === 'all' ? 'selected' : ''}>الكل</option>
+            <option value="advance" ${filterType === 'advance' ? 'selected' : ''}>💰 سلف</option>
+            <option value="penalty" ${filterType === 'penalty' ? 'selected' : ''}>⚖️ جزاءات</option>
+            <option value="leave" ${filterType === 'leave' ? 'selected' : ''}>🏖️ أجازات طويلة</option>
+          </select>
+        </div>
+        ${(from || to || filterType !== 'all') ? `<button class="btn btn-outline" onclick="clearHrFilters()">🔄 مسح الفلاتر</button>` : ''}
+      </div>
+    </div>
+    ${summaryCard}
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">📋 الحركات (${arNum(filtered.length)})</div></div>
+      </div>
+      ${itemsHtml}
+    </div>`;
+}
+
+function setHrBranch(v){ UI.hrBranch = v; renderPage(); }
+function setHrFrom(v){ UI.hrFrom = v; renderPage(); }
+function setHrTo(v){ UI.hrTo = v; renderPage(); }
+function setHrFilterType(v){ UI.hrFilterType = v; renderPage(); }
+function clearHrFilters(){ UI.hrFrom = ''; UI.hrTo = ''; UI.hrFilterType = 'all'; renderPage(); }
+
+function openHrModal(editId){
+  const isAdmin = currentUser.role === 'admin';
+  const bId = isAdmin ? (UI.hrBranch || '') : currentUser.branchId;
+  if(!bId){ alert('اختر الفرع أولاً'); return; }
+
+  const editing = editId ? DB.hr.find(h => h.id === editId) : null;
+  const curType = editing?.type || 'advance';
+  const curDate = editing?.date || today();
+  const curEnd = editing?.endDate || '';
+  const curAmount = editing?.amount ?? '';
+  const curReason = editing?.reason || '';
+  const curNotes = editing?.notes || '';
+
+  const reasons = HR_REASONS[curType] || [];
+  const reasonOptions = reasons.map(r => `<option value="${esc(r)}" ${curReason === r ? 'selected' : ''}>${esc(r)}</option>`).join('');
+
+  showModal(`
+    <div class="modal-header">${editing ? '✏️ تعديل حركة' : '➕ إضافة حركة جديدة'}</div>
+    <div style="background:var(--gray-50);padding:12px;border-radius:10px;margin-bottom:16px;font-size:13px">
+      <b>🏢 ${esc(branchName(bId))}</b>
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label>النوع *</label>
+      <select id="hrType" onchange="onHrTypeChange()">
+        ${Object.entries(HR_TYPES).map(([k,v]) => `<option value="${k}" ${curType === k ? 'selected' : ''}>${v.icon} ${v.label}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="form-row" style="margin-bottom:14px">
+      <div class="field">
+        <label id="hrDateLabel">التاريخ *</label>
+        <input type="date" id="hrDate" value="${curDate}">
+      </div>
+      <div class="field" id="hrEndWrap" style="display:none">
+        <label>تاريخ النهاية *</label>
+        <input type="date" id="hrEndDate" value="${curEnd}">
+      </div>
+    </div>
+
+    <div class="field" id="hrAmountWrap" style="margin-bottom:14px;display:none">
+      <label>المبلغ (ج.م) *</label>
+      <input type="number" id="hrAmount" value="${curAmount}" min="0" step="0.01" placeholder="0.00">
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label>السبب *</label>
+      <select id="hrReason">
+        <option value="">— اختر السبب —</option>
+        ${reasonOptions}
+      </select>
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label>ملاحظات (اختياري)</label>
+      <input id="hrNotes" value="${esc(curNotes)}" placeholder="أي تفاصيل إضافية">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveHrTransaction(${editing ? `'${editing.id}'` : 'null'})">
+        ${editing ? '💾 حفظ التعديلات' : '✅ إضافة'}
+      </button>
+      <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
+    </div>
+  `);
+
+  setTimeout(() => onHrTypeChange(), 50);
+}
+
+function onHrTypeChange(){
+  const type = $('hrType')?.value || 'advance';
+  const info = HR_TYPES[type];
+  const amountWrap = $('hrAmountWrap');
+  const endWrap = $('hrEndWrap');
+  const dateLabel = $('hrDateLabel');
+  const reasonSel = $('hrReason');
+
+  if(amountWrap) amountWrap.style.display = info.hasAmount ? '' : 'none';
+  if(endWrap) endWrap.style.display = type === 'leave' ? '' : 'none';
+  if(dateLabel) dateLabel.textContent = type === 'leave' ? 'تاريخ البداية *' : 'التاريخ *';
+
+  const curReason = reasonSel?.value || '';
+  const reasons = HR_REASONS[type] || [];
+  if(reasonSel){
+    reasonSel.innerHTML = '<option value="">— اختر السبب —</option>' +
+      reasons.map(r => `<option value="${esc(r)}" ${curReason === r ? 'selected' : ''}>${esc(r)}</option>`).join('');
+  }
+}
+
+async function saveHrTransaction(editId){
+  const isAdmin = currentUser.role === 'admin';
+  const bId = isAdmin ? (UI.hrBranch || '') : currentUser.branchId;
+  if(!bId){ alert('اختر الفرع'); return; }
+
+  const type = $('hrType').value;
+  const date = $('hrDate').value;
+  const endDate = $('hrEndDate').value;
+  const amount = $('hrAmount').value;
+  const reason = $('hrReason').value;
+  const notes = $('hrNotes').value.trim();
+
+  if(!date){ alert('اختر التاريخ'); return; }
+  if(!reason){ alert('اختر السبب'); return; }
+
+  const info = HR_TYPES[type];
+  if(info.hasAmount){
+    const amt = num(amount);
+    if(amt <= 0){ alert('أدخل مبلغ صحيح أكبر من صفر'); return; }
+  }
+  if(type === 'leave'){
+    if(!endDate){ alert('اختر تاريخ نهاية الأجازة'); return; }
+    if(endDate < date){ alert('تاريخ النهاية لازم يكون بعد أو يساوي البداية'); return; }
+  }
+
+  const data = {
+    branchId: bId,
+    type,
+    date,
+    endDate: type === 'leave' ? endDate : '',
+    amount: info.hasAmount ? num(amount) : 0,
+    reason,
+    notes,
+    updatedBy: currentUser.name,
+    updatedAt: Date.now()
+  };
+
+  showLoader(true);
+  try {
+    if(editId){
+      await fsUpd('hr', editId, data);
+    } else {
+      data.createdBy = currentUser.name;
+      data.createdAt = Date.now();
+      await fsAdd('hr', data);
+    }
+    await loadAll();
+    closeModal();
+    renderPage();
+  } catch(e){ alert('❌ ' + e.message); }
+  finally { showLoader(false); }
+}
+
+function editHrTransaction(id){ openHrModal(id); }
+
+async function deleteHrTransaction(id){
+  if(!confirm('🗑️ حذف هذه الحركة نهائياً؟')) return;
+  showLoader(true);
+  try {
+    await fsDel('hr', id);
+    await loadAll();
+    renderPage();
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// التسجيل اليومي
+// ═══════════════════════════════════════════════════════════
 function renderDaily(){
   const isAdmin = currentUser.role === 'admin';
   const date = UI.dailyDate || today();
@@ -863,6 +1268,12 @@ function renderDaily(){
     </div>`;
   }).join('');
 
+  // كارت صغير لو فيه أجازة طويلة للفرع اليوم
+  const leaveToday = getLeaveForDay(bId, date);
+  const leaveBanner = leaveToday ? `<div class="alert alert-warning">
+    🏖️ <b>أجازة طويلة:</b> ${esc(leaveToday.reason || 'أجازة')} — من ${leaveToday.date} إلى ${leaveToday.endDate || leaveToday.date}
+  </div>` : '';
+
   return `<div class="card no-print">
     <div class="card-header">
       <div>
@@ -878,6 +1289,7 @@ function renderDaily(){
       </div>
     </div>
     ${holidayBanner}
+    ${leaveBanner}
     <div class="form-row">
       ${branchField}${dateNav}
       <div class="field" style="max-width:240px">
@@ -906,7 +1318,7 @@ function renderDaily(){
 function setDailyBranch(b){ UI.dailyBranch = b; renderPage(); }
 function setDailyDate(d){ UI.dailyDate = d; renderPage(); }
 function setDailyFilter(f){ UI.dailyFilter = f; renderPage(); }
-function setDailySearch(v){ UI.dailySearch = v; const ae = document.activeElement; renderPage(); const el = document.querySelector('.search-box input'); if(el) el.focus(); }
+function setDailySearch(v){ UI.dailySearch = v; renderPage(); const el = document.querySelector('.search-box input'); if(el) el.focus(); }
 
 function setStatus(empId, status){
   const card = document.querySelector(`.emp-card[data-empid="${empId}"]`);
@@ -1087,21 +1499,36 @@ async function saveAll(bId, date){
   try {
     cards.forEach(card => { clearTimeout(card.__t); card.classList.remove('saving'); });
     const old = DB.daily.filter(d => d.branchId === bId && d.dateKey === date);
+    const oldMap = {};
+    old.forEach(d => { oldMap[d.empId] = d; });
+
+    // نبني السجلات من كل موظفين الفرع (مش من الكروت الظاهرة فقط)
+    const allEmps = DB.employees.filter(e => e.branchId === bId && e.active !== false);
     const newRecords = [];
-    cards.forEach(card => {
-      const empId = card.dataset.empid;
-      const emp = DB.employees.find(e => e.id === empId);
-      const data = cardDataFromEl(card, bId, date);
-      const err = validateCardData(data);
-      if(err){ console.warn('skip:', err); return; }
-      if(isCardEmpty(data, emp, bId)) return;
-      newRecords.push(data);
+
+    allEmps.forEach(emp => {
+      const card = document.querySelector(`.emp-card[data-empid="${emp.id}"]`);
+      if(card){
+        // الكارت ظاهر → نقرأ منه
+        const data = cardDataFromEl(card, bId, date);
+        const err = validateCardData(data);
+        if(err){ console.warn('skip:', err); return; }
+        if(isCardEmpty(data, emp, bId)) return;
+        newRecords.push(data);
+      } else if(oldMap[emp.id]){
+        // الكارت مخفي لكن فيه سجل قديم → نحتفظ به
+        newRecords.push(oldMap[emp.id]);
+      }
     });
+
     const totalOps = old.length + newRecords.length;
     if(totalOps <= 450){
       const b = writeBatch(db);
       old.forEach(d => b.delete(doc(db, 'daily', d.id)));
-      newRecords.forEach(data => b.set(doc(collection(db, 'daily')), data));
+      newRecords.forEach(data => {
+        const { id, ...rest } = data;
+        b.set(doc(collection(db, 'daily')), rest);
+      });
       await b.commit();
     } else {
       for(let i=0; i<old.length; i+=400){
@@ -1111,7 +1538,10 @@ async function saveAll(bId, date){
       }
       for(let i=0; i<newRecords.length; i+=400){
         const b = writeBatch(db);
-        newRecords.slice(i, i+400).forEach(data => b.set(doc(collection(db, 'daily')), data));
+        newRecords.slice(i, i+400).forEach(data => {
+          const { id, ...rest } = data;
+          b.set(doc(collection(db, 'daily')), rest);
+        });
         await b.commit();
       }
     }
@@ -1150,11 +1580,9 @@ async function copyFromYesterday(bId, date){
 }
 
 const AR_DIGITS = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-
 function arNum(v){
   return String(v==null?'':v).replace(/[0-9]/g, d => AR_DIGITS[+d]);
 }
-
 function fmtDateArFull(dateKey){
   if(!dateKey) return '—';
   const d = new Date(dateKey + 'T00:00:00');
@@ -1164,7 +1592,6 @@ function fmtDateArFull(dateKey){
   try { month = d.toLocaleDateString('ar-EG', { month:'long' }); } catch(e){ month = ''; }
   return `${day} ${arNum(d.getDate())} ${month} ${arNum(d.getFullYear())}`.replace(/\s+/g,' ');
 }
-
 function arTime(hm){
   if(!hm || hm === '—') return '—';
   const parts = String(hm).split(':');
@@ -1176,11 +1603,13 @@ function arTime(hm){
   if(h12 === 0) h12 = 12;
   return `${arNum(h12)}:${arNum(String(m).padStart(2,'0'))} ${period}`;
 }
-
 function fmtMinsAr(m){ return arNum(fmtMins(m)); }
 
-const NON_PRESENT = ['غياب','أجازة','مهمة','بصمة ناقصة'];
+const NON_PRESENT = ['غياب','أجازة','مهمة','بصمة ناقصة','أجازة رسمية'];
 
+// ═══════════════════════════════════════════════════════════
+// WhatsApp
+// ═══════════════════════════════════════════════════════════
 function buildDailyWhatsAppText(bId, date){
   const branch = getBranch(bId);
   const emps = DB.employees
@@ -1224,6 +1653,8 @@ function buildDailyWhatsAppText(bId, date){
   txt += `🏢 الفرع: ${branch?.name || '—'}\n`;
   txt += `📅 التاريخ: ${fmtDateArFull(date)}\n`;
   if(isHoliday(date)) txt += `🎉 ${getHoliday(date).name}\n`;
+  const leaveDay = getLeaveForDay(bId, date);
+  if(leaveDay) txt += `🏖️ أجازة: ${leaveDay.reason || ''}\n`;
   txt += `━━━━━━━━━━━━━━━━━━\n`;
   txt += `👥 إجمالي الموظفين: ${arNum(emps.length)}\n`;
   txt += `✅ حاضر: ${arNum(present)}\n`;
@@ -1332,6 +1763,17 @@ function buildCompareWhatsAppText(){
   txt += `⚠️ فروقات: ${arNum(summary.warn)}\n`;
   txt += `❌ تناقضات: ${arNum(summary.error)}\n`;
   if(summary.pending) txt += `📭 معلّق: ${arNum(summary.pending)}\n`;
+
+  // HR summary
+  const hrSum = getBranchHrSummary(branchId, from, to);
+  if(hrSum.advanceCount || hrSum.penaltyCount || hrSum.leaveCount){
+    txt += `━━━━━━━━━━━━━━━━━━\n`;
+    txt += `💼 حركات الفرع:\n`;
+    if(hrSum.advanceCount) txt += `💰 سلف: ${arNum(hrSum.advanceTotal.toLocaleString('en-US'))} ج.م (${arNum(hrSum.advanceCount)})\n`;
+    if(hrSum.penaltyCount) txt += `⚖️ جزاءات: ${arNum(hrSum.penaltyTotal.toLocaleString('en-US'))} ج.م (${arNum(hrSum.penaltyCount)})\n`;
+    if(hrSum.leaveCount)   txt += `🏖️ أجازات: ${arNum(hrSum.leaveDays)} يوم (${arNum(hrSum.leaveCount)} فترة)\n`;
+  }
+
   txt += `━━━━━━━━━━━━━━━━━━\n`;
   const issues = rows.filter(r => r.level === 'error' || r.level === 'warn');
   if(!issues.length){
@@ -1363,8 +1805,9 @@ function buildCompareWhatsAppText(){
 function openWhatsAppShare(text, title){
   if(!text){ alert('لا يوجد محتوى لمشاركته'); return; }
   let defaultPhone = '';
-  if(UI.dailyBranch){
-    const b = getBranch(UI.dailyBranch);
+  const bid = UI.dailyBranch || UI.hrBranch || UI.cmpBranch;
+  if(bid){
+    const b = getBranch(bid);
     if(b?.whatsapp) defaultPhone = b.whatsapp;
   } else if(currentUser?.branchId){
     const b = getBranch(currentUser.branchId);
@@ -1458,7 +1901,10 @@ function shareCompareWhatsApp(){
   if(!text){ alert('اعرض المقارنة أولاً'); return; }
   openWhatsAppShare(text, `مقارنة ${branchName(lastComparison.branchId)}`);
 }
-
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// الإعدادات
+// ═══════════════════════════════════════════════════════════
 function renderSettings(){
   const isAdmin = currentUser.role === 'admin';
   const tab = UI.settingsTab || 'branches';
@@ -1572,7 +2018,6 @@ function renderCompareSettingsTab(){
   return `
     <div class="card" style="background:var(--gray-50);box-shadow:none;border:1px solid var(--gray-200)">
       <div style="font-size:14px;font-weight:700;margin-bottom:14px">⚖️ إعدادات المقارنة</div>
-
       <div class="form-row">
         <div class="field" style="max-width:280px">
           <label>⏱️ مدة السماح (بالدقايق)</label>
@@ -1583,15 +2028,10 @@ function renderCompareSettingsTab(){
         </div>
         <button class="btn btn-primary" onclick="saveCompareTolerance()">💾 حفظ</button>
       </div>
-
       <div class="alert alert-info" style="margin-top:14px;display:block">
         💡 <b>مثال:</b> لو السماحية <b>${t} دقيقة</b>، وفرق الدخول 12 دقيقة →
         <span style="color:var(--success);font-weight:700">مطابق ✓</span> —
         لكن لو الفرق 20 دقيقة → <span style="color:var(--warning);font-weight:700">فرق ⚠️</span>
-      </div>
-
-      <div class="alert alert-info" style="margin-top:10px;display:block;background:#f0f9ff;border-color:#bae6fd;color:#075985">
-        📌 <b>ملحوظة:</b> الإذن اللي بيتكتب في التسجيل اليومي بيظهر كـ <b>معلومة فقط</b> في تقرير المقارنة — مش بيأثر على ساعات البصمة، وبيتخصم بس من ساعات الفرع.
       </div>
     </div>`;
 }
@@ -1614,7 +2054,6 @@ function renderBrandingTab(){
   return `
     <div class="card" style="background:var(--gray-50);box-shadow:none;border:1px solid var(--gray-200)">
       <div style="font-size:14px;font-weight:700;margin-bottom:14px">🎨 هوية الشركة (تظهر في الطباعة)</div>
-
       <div class="form-row">
         <div class="field" style="max-width:400px">
           <label>اسم الشركة (يظهر في رأس كل صفحة)</label>
@@ -1622,10 +2061,8 @@ function renderBrandingTab(){
         </div>
         <button class="btn btn-primary" onclick="saveCompanyIdentity()">💾 حفظ الاسم</button>
       </div>
-
       <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-200)">
         <div style="font-size:13.5px;font-weight:700;margin-bottom:10px">🖼️ لوجو الشركة</div>
-
         <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
           <div style="flex:1;min-width:250px">
             <input type="file" id="brandLogoFile" accept="image/*" style="display:none" onchange="uploadLogo(event)">
@@ -1634,7 +2071,6 @@ function renderBrandingTab(){
               <div style="font-size:13px;font-weight:700">اختيار لوجو (PNG / JPG / SVG)</div>
             </div>
           </div>
-
           ${logo ? `
             <div style="text-align:center;padding:12px;border:1px solid var(--gray-200);border-radius:10px;background:#fff;min-width:180px">
               <div class="muted" style="font-size:11px;margin-bottom:6px">معاينة اللوجو الحالي</div>
@@ -1772,14 +2208,11 @@ function renderResetTab(){
           <div class="card-subtitle">اختر بعناية — العملية دي لا يمكن التراجع عنها</div>
         </div>
       </div>
-
       <div class="alert alert-danger">
         ⚠️ <b>تحذير:</b> الحذف نهائي! اعمل نسخة احتياطية الأول.
       </div>
-
       <div style="background:#fff;border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:14px">
         <div style="font-size:13.5px;font-weight:700;margin-bottom:12px">1️⃣ نطاق الحذف</div>
-
         <div class="field" style="margin-bottom:12px">
           <label>🏢 الفرع</label>
           <select id="resetBranch">
@@ -1787,16 +2220,13 @@ function renderResetTab(){
             ${DB.branches.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('')}
           </select>
         </div>
-
         <div class="form-row" style="margin-bottom:0">
           <div class="field"><label>من تاريخ (اختياري)</label><input type="date" id="resetFrom"></div>
           <div class="field"><label>إلى تاريخ (اختياري)</label><input type="date" id="resetTo"></div>
         </div>
       </div>
-
       <div style="background:#fff;border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:14px">
         <div style="font-size:13.5px;font-weight:700;margin-bottom:12px">2️⃣ اختر ما تريد حذفه</div>
-
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
           <label class="reset-option">
             <input type="checkbox" class="rs-target" value="daily">
@@ -1805,7 +2235,6 @@ function renderResetTab(){
               <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.daily.length)}</b></div>
             </div>
           </label>
-
           <label class="reset-option">
             <input type="checkbox" class="rs-target" value="punches">
             <div>
@@ -1813,7 +2242,13 @@ function renderResetTab(){
               <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.punches.length)}</b></div>
             </div>
           </label>
-
+          <label class="reset-option">
+            <input type="checkbox" class="rs-target" value="hr">
+            <div>
+              <div style="font-weight:700">💼 حركات الفروع (سلف/جزاءات/أجازات)</div>
+              <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.hr.length)}</b></div>
+            </div>
+          </label>
           <label class="reset-option">
             <input type="checkbox" class="rs-target" value="employees">
             <div>
@@ -1821,7 +2256,6 @@ function renderResetTab(){
               <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.employees.length)}</b></div>
             </div>
           </label>
-
           <label class="reset-option">
             <input type="checkbox" class="rs-target" value="shifts">
             <div>
@@ -1829,7 +2263,6 @@ function renderResetTab(){
               <div class="muted" style="font-size:11px">عدد الإجمالي: <b>${arNum(DB.shifts.length)}</b></div>
             </div>
           </label>
-
           <label class="reset-option">
             <input type="checkbox" class="rs-target" value="holidays">
             <div>
@@ -1839,12 +2272,10 @@ function renderResetTab(){
           </label>
         </div>
       </div>
-
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn btn-outline" onclick="previewReset()">👁️ معاينة العدد</button>
         <button class="btn btn-danger" onclick="executeReset()">🗑️ تنفيذ الحذف</button>
       </div>
-
       <div id="resetPreview" style="margin-top:14px"></div>
     </div>`;
 }
@@ -1875,6 +2306,14 @@ function countResetRecords({ branchId, from, to, targets }){
       return true;
     }).length;
   }
+  if(targets.includes('hr')){
+    result.hr = DB.hr.filter(h => {
+      if(branchId && h.branchId !== branchId) return false;
+      if(from && h.date < from) return false;
+      if(to && h.date > to) return false;
+      return true;
+    }).length;
+  }
   if(targets.includes('employees')){
     result.employees = DB.employees.filter(e => !branchId || e.branchId === branchId).length;
   }
@@ -1897,7 +2336,7 @@ function previewReset(){
   const counts = countResetRecords(cfg);
   const total = Object.values(counts).reduce((s, n) => s + n, 0);
   const branchTxt = cfg.branchId ? `فرع: <b>${esc(branchName(cfg.branchId))}</b>` : 'كل الفروع';
-  const labels = { daily:'📅 التسجيل اليومي', punches:'📥 البصمات', employees:'👥 الموظفين', shifts:'🕐 الشفتات', holidays:'🎉 الإجازات' };
+  const labels = { daily:'📅 التسجيل اليومي', punches:'📥 البصمات', hr:'💼 حركات الفروع', employees:'👥 الموظفين', shifts:'🕐 الشفتات', holidays:'🎉 الإجازات' };
   const rowsHtml = Object.entries(counts).map(([k, n]) =>
     `<div style="display:flex;justify-content:space-between;padding:8px 12px;background:#fff;border-radius:8px;margin-bottom:6px;border:1px solid var(--gray-200)">
       <span>${labels[k]}</span>
@@ -1929,7 +2368,7 @@ async function executeReset(){
     if(!ok){ alert('❌ كلمة المرور غير صحيحة'); return; }
   }
 
-  const labels = { daily:'التسجيل اليومي', punches:'البصمات', employees:'الموظفين', shifts:'الشفتات', holidays:'الإجازات' };
+  const labels = { daily:'التسجيل اليومي', punches:'البصمات', hr:'حركات الفروع', employees:'الموظفين', shifts:'الشفتات', holidays:'الإجازات' };
   const summary = Object.entries(counts).map(([k, n]) => `• ${labels[k]}: ${n}`).join('\n');
   if(!confirm(`⚠️ سيتم حذف نهائي:\n\n${summary}\n\nالإجمالي: ${total}\n\nهل أنت متأكد؟`)) return;
   if(!confirm('🚨 تأكيد أخير — لا يمكن التراجع!')) return;
@@ -1951,6 +2390,15 @@ async function executeReset(){
         if(cfg.branchId && p.branchId !== cfg.branchId) return false;
         if(cfg.from && p.dateKey < cfg.from) return false;
         if(cfg.to && p.dateKey > cfg.to) return false;
+        return true;
+      });
+      deletedTotal += c;
+    }
+    if(cfg.targets.includes('hr')){
+      const c = await fsBatchDel('hr', h => {
+        if(cfg.branchId && h.branchId !== cfg.branchId) return false;
+        if(cfg.from && h.date < cfg.from) return false;
+        if(cfg.to && h.date > cfg.to) return false;
         return true;
       });
       deletedTotal += c;
@@ -1988,14 +2436,13 @@ function renderSystemAdminCard(){
           <div class="card-subtitle">النسخ الاحتياطي ووضع الصيانة</div>
         </div>
       </div>
-
       <div style="border:1px solid var(--gray-200);border-radius:12px;padding:18px;margin-bottom:14px;background:var(--gray-50)">
         <div style="font-size:15px;font-weight:700;margin-bottom:6px">💾 النسخ الاحتياطي الكامل</div>
         <div class="muted" style="font-size:12.5px;line-height:1.7">
           ملف JSON يحتوي على <b>كل الداتا</b>: الفروع (${DB.branches.length}) • المستخدمين (${DB.users.length})<br>
           الموظفين (${DB.employees.length}) • الشفتات (${DB.shifts.length})<br>
           البصمات (${DB.punches.length}) • التسجيل اليومي (${DB.daily.length})<br>
-          الإجازات (${DB.holidays.length})
+          الإجازات (${DB.holidays.length}) • حركات الفروع (${DB.hr.length})
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
           <button class="btn btn-primary" onclick="backupSystem()">📥 تنزيل نسخة احتياطية</button>
@@ -2003,7 +2450,6 @@ function renderSystemAdminCard(){
           <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreSystem(event)">
         </div>
       </div>
-
       <div style="border:2px solid ${m ? 'var(--danger)' : 'var(--gray-200)'};border-radius:12px;padding:18px;background:${m ? '#fef2f2' : '#fff'}">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px">
           <div style="flex:1;min-width:220px">
@@ -2030,6 +2476,7 @@ function renderBranchesTab(){
     const emps = DB.employees.filter(e => e.branchId === b.id && e.active !== false).length;
     const bShifts = DB.shifts.filter(s => s.branchId === b.id);
     const totalPunches = DB.punches.filter(p => p.branchId === b.id).length;
+    const totalHr = DB.hr.filter(h => h.branchId === b.id).length;
     return `<div class="branch-card">
       <div class="branch-card-header">
         <div>
@@ -2038,11 +2485,11 @@ function renderBranchesTab(){
         </div>
         <span class="badge b-blue">${emps} موظف</span>
       </div>
-
       <div class="branch-card-info">
         <div class="row"><span class="lbl">المستخدم</span><b>${esc(u?.username || '—')}</b></div>
         <div class="row"><span class="lbl">واتساب</span>${b.whatsapp ? `<span class="badge b-wa">📱 ${esc(b.whatsapp)}</span>` : '<span class="muted">—</span>'}</div>
         <div class="row"><span class="lbl">البصمات</span><span class="badge b-gray">${totalPunches}</span></div>
+        <div class="row"><span class="lbl">حركات HR</span><span class="badge b-purple">${totalHr}</span></div>
         <div class="row" style="margin-top:6px">
           <span class="lbl">الشفت</span>
           <select onchange="setDefaultShift('${b.id}', this.value)" style="flex:1;font-size:12px;padding:6px 8px;border:1px solid var(--gray-200);border-radius:7px;background:#fff">
@@ -2051,7 +2498,6 @@ function renderBranchesTab(){
           </select>
         </div>
       </div>
-
       <div class="branch-card-footer">
         <button class="btn btn-outline btn-sm" onclick="editBranchWhatsApp('${b.id}')">📱 واتساب</button>
         <button class="btn btn-outline btn-sm" onclick="editBranchPass('${b.id}')">🔑 المرور</button>
@@ -2067,7 +2513,6 @@ function renderBranchesTab(){
       </div>
       <button class="btn btn-primary" onclick="openAddBranchModal()">➕ إضافة فرع جديد</button>
     </div>
-
     ${DB.branches.length ? `
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">${cards}</div>
     ` : `
@@ -2088,10 +2533,8 @@ function openAddBranchModal(){
       <label>🏢 اسم الفرع *</label>
       <input id="brName" placeholder="مثال: فرع القاهرة">
     </div>
-
     <div style="border-top:1px dashed var(--gray-200);margin:16px 0;padding-top:16px">
       <div style="font-size:13px;font-weight:700;margin-bottom:12px">🔐 بيانات الدخول</div>
-
       <div class="field" style="margin-bottom:12px">
         <label>👤 اسم المستخدم *</label>
         <input id="brUser" dir="ltr" style="text-align:left" placeholder="cairo1">
@@ -2105,7 +2548,6 @@ function openAddBranchModal(){
         <input id="brMgr" placeholder="اتركه فارغ لاستخدام اسم الفرع">
       </div>
     </div>
-
     <div style="border-top:1px dashed var(--gray-200);margin:16px 0;padding-top:16px">
       <div style="font-size:13px;font-weight:700;margin-bottom:12px">📱 واتساب (اختياري)</div>
       <div class="field">
@@ -2113,13 +2555,11 @@ function openAddBranchModal(){
         <input id="brWa" type="tel" dir="ltr" style="text-align:left" placeholder="201012345678">
       </div>
     </div>
-
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="submitAddBranch()">✅ إضافة الفرع</button>
       <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
     </div>
   `);
-
   setTimeout(() => $('brName')?.focus(), 100);
 }
 
@@ -2130,16 +2570,11 @@ async function submitAddBranch(){
   const mgr = $('brMgr').value.trim() || name;
   const wa = $('brWa').value.trim().replace(/[^\d+]/g,'').replace(/^\+/,'');
 
-  if(!name || !user || !pass){
-    alert('❌ أكمل الحقول المطلوبة'); return;
-  }
-  if(pass.length < 6){
-    alert('❌ كلمة المرور لازم ٦ أحرف على الأقل'); return;
-  }
+  if(!name || !user || !pass){ alert('❌ أكمل الحقول المطلوبة'); return; }
+  if(pass.length < 6){ alert('❌ كلمة المرور لازم ٦ أحرف على الأقل'); return; }
   if(DB.users.some(u => u.username.toLowerCase() === user.toLowerCase())){
     alert('❌ اسم المستخدم مستخدم بالفعل'); return;
   }
-
   showLoader(true);
   try {
     const b = await fsAdd('branches', { name, defaultShiftId:'', whatsapp: wa, createdAt: Date.now() });
@@ -2190,7 +2625,7 @@ async function editBranchPass(bId){
 }
 
 async function deleteBranch(id){
-  if(!confirm('⚠️ سيتم حذف الفرع وكل بياناته. متابعة؟')) return;
+  if(!confirm('⚠️ سيتم حذف الفرع وكل بياناته (بما فيها السلف والجزاءات). متابعة؟')) return;
   showLoader(true);
   try {
     await fsDel('branches', id);
@@ -2199,6 +2634,7 @@ async function deleteBranch(id){
     await fsBatchDel('shifts', s => s.branchId === id);
     await fsBatchDel('punches', p => p.branchId === id);
     await fsBatchDel('daily', d => d.branchId === id);
+    await fsBatchDel('hr', h => h.branchId === id);
     await loadAll();
     renderPage();
   } catch(e){ alert(e.message); }
@@ -2630,6 +3066,9 @@ async function importEmployees(ev){
   reader.readAsArrayBuffer(file);
 }
 
+// ═══════════════════════════════════════════════════════════
+// رفع البصمة
+// ═══════════════════════════════════════════════════════════
 function renderUploads(){
   const branchOpts = DB.branches.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('');
   const bFilter = UI.upBranchFilter || '';
@@ -2760,6 +3199,9 @@ async function handleUpload(ev){
   reader.readAsArrayBuffer(file);
 }
 
+// ═══════════════════════════════════════════════════════════
+// حساب اليوم / detect shift
+// ═══════════════════════════════════════════════════════════
 function detectShift(empId, excludeDate){
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 45);
   const cutoffKey = localKey(cutoff);
@@ -2801,6 +3243,12 @@ function calcDay(emp, dateKey, dailyRec, punches, branchId){
   if(isHoliday(dateKey)){
     return mkDay(dateKey, 'أجازة رسمية', 0, 0, 0, 0, 0,
       { start:'—', end:'—', hours:0, graceMins:0, offDays:[], name:'إجازة' }, '—', '—');
+  }
+  // أجازة طويلة للفرع → نتخطى
+  const leaveDay = getLeaveForDay(branchId || emp.branchId, dateKey);
+  if(leaveDay){
+    return mkDay(dateKey, 'أجازة: ' + (leaveDay.reason || 'أجازة طويلة'), 0, 0, 0, 0, 0,
+      { start:'—', end:'—', hours:0, graceMins:0, offDays:[], name:'أجازة' }, '—', '—');
   }
   let sh = null;
   if(dailyRec?.shiftId) sh = getShift(dailyRec.shiftId);
@@ -2882,12 +3330,15 @@ function calcEmp(emp, from, to, branchId){
     else if(d.status === 'أجازة') t.leave++;
     else if(d.status === 'مهمة') t.mission++;
     else if(d.status === 'بصمة ناقصة') t.incomplete++;
-    else if(d.status === 'أجازة رسمية') t.holiday++;
+    else if(d.status === 'أجازة رسمية' || d.status.startsWith('أجازة:')) t.holiday++;
     else t.present++;
   });
   return { emp, days: results, totals: t };
 }
 
+// ═══════════════════════════════════════════════════════════
+// التقارير
+// ═══════════════════════════════════════════════════════════
 function renderReports(){
   const bId = UI.repBranch || (DB.branches[0]?.id || '');
   const view = UI.repView || 'detailed';
@@ -2951,11 +3402,12 @@ function renderReports(){
             <thead><tr><th>التاريخ</th><th>الشفت</th><th>دخول</th><th>خروج</th><th>ساعات</th><th>إذن</th><th>تأخير</th><th>إضافي/عجز</th><th>الحالة</th></tr></thead>
             <tbody>
               ${r.days.map(d => {
-                if(d.status === 'أجازة رسمية'){
+                if(d.status === 'أجازة رسمية' || d.status.startsWith('أجازة:')){
+                  const label = d.status === 'أجازة رسمية' ? '🎉 ' + (getHoliday(d.dateKey)?.name || 'إجازة رسمية') : '🏖️ ' + d.status;
                   return `<tr style="background:#fce7f3">
                     <td>${d.dateKey}<br><span class="muted" style="font-size:11px">${dayName(d.dateKey)}</span></td>
-                    <td colspan="7" style="text-align:center"><span class="badge b-holiday">🎉 ${esc(getHoliday(d.dateKey)?.name || 'إجازة رسمية')}</span></td>
-                    <td><span class="badge b-holiday">إجازة رسمية</span></td>
+                    <td colspan="7" style="text-align:center"><span class="badge b-holiday">${esc(label)}</span></td>
+                    <td><span class="badge b-holiday">${d.status.startsWith('أجازة:') ? 'أجازة طويلة' : 'إجازة رسمية'}</span></td>
                   </tr>`;
                 }
                 const shiftTxt = d.shift ? `${d.shift.start} - ${d.shift.end}` : '—';
@@ -3036,6 +3488,10 @@ function generateReport(){
     if(to && p.dateKey > to) return;
     empIds.add(p.empId);
   });
+  // إضافة كل موظفي الفرع لو مفيش فلترة تاريخ (عشان تظهر الأجازات الطويلة)
+  if(!from && !to){
+    DB.employees.filter(e => e.branchId === bId && e.active !== false).forEach(e => empIds.add(e.id));
+  }
   const emps = Array.from(empIds).map(id => DB.employees.find(e => e.id === id)).filter(Boolean);
   const rows = emps.map(e => calcEmp(e, from, to, bId)).filter(r => r.days.length > 0);
   lastReport = { rows, branchId: bId, from, to };
@@ -3070,6 +3526,9 @@ function exportReport(){
   XLSX.writeFile(wb, `تقرير_${branchName(lastReport.branchId)}_${today()}.xlsx`);
 }
 
+// ═══════════════════════════════════════════════════════════
+// سجل الموظف
+// ═══════════════════════════════════════════════════════════
 function renderEmployeeHistory(){
   const filterBranchId = UI.empBranchFilter || '';
   const empId = UI.empReportId || '';
@@ -3107,7 +3566,6 @@ function renderEmployeeHistory(){
     <div class="field" style="max-width:160px"><label>من</label><input type="date" id="empRepFrom" value="${UI.empRepFrom || ''}"></div>
     <div class="field" style="max-width:160px"><label>إلى</label><input type="date" id="empRepTo" value="${UI.empRepTo || ''}"></div>
     <button class="btn btn-primary" onclick="generateEmployeeReport()">🔄 تحديث</button>
-    <button class="btn btn-outline" onclick="exportEmployeeReport()" ${!lastEmpReport ? 'disabled' : ''}>📥 Excel</button>
     <button class="btn btn-whatsapp" onclick="shareEmployeeWhatsApp()" ${!lastEmpReport ? 'disabled' : ''}>📤 واتساب</button>
   ` : '';
 
@@ -3223,7 +3681,7 @@ function renderEmployeeHistory(){
       else if(d.status === 'أجازة') t.leave++;
       else if(d.status === 'مهمة') t.mission++;
       else if(d.status === 'بصمة ناقصة') t.incomplete++;
-      else if(d.status === 'أجازة رسمية') t.holiday++;
+      else if(d.status === 'أجازة رسمية' || d.status.startsWith('أجازة:')) t.holiday++;
       else t.present++;
     });
     return { branchId: bId, branchName: branchName(bId), firstDate: dates[0], lastDate: dates[dates.length-1], days, totals: t };
@@ -3281,10 +3739,11 @@ function renderEmployeeHistory(){
           <thead><tr><th>التاريخ</th><th>الشفت</th><th>دخول</th><th>خروج</th><th>ساعات</th><th>إذن</th><th>تأخير</th><th>إضافي/عجز</th><th>الحالة</th></tr></thead>
           <tbody>
             ${b.days.map(d => {
-              if(d.status === 'أجازة رسمية'){
-                return `<tr style="background:#fce7f3">
+              if(d.status === 'أجازة رسمية' || d.status.startsWith('أجازة:')){
+                const label = d.status === 'أجازة رسمية' ? '🎉 ' + (getHoliday(d.dateKey)?.name || 'إجازة') : '🏖️ ' + d.status;
+                return `<tr style="background:#fef3c7">
                   <td>${d.dateKey}<br><span class="muted" style="font-size:11px">${dayName(d.dateKey)}</span></td>
-                  <td colspan="8" style="text-align:center"><span class="badge b-holiday">🎉 ${esc(getHoliday(d.dateKey)?.name || 'إجازة')}</span></td>
+                  <td colspan="8" style="text-align:center"><span class="badge b-holiday">${esc(label)}</span></td>
                 </tr>`;
               }
               const shiftTxt = d.shift ? `${d.shift.start} - ${d.shift.end}` : '—';
@@ -3336,24 +3795,20 @@ function generateEmployeeReport(){
   lastEmpReport = { emp, from:UI.empRepFrom, to:UI.empRepTo };
   renderPage();
 }
-
-function exportEmployeeReport(){
-  if(!lastEmpReport){ alert('اعرض التقرير أولاً'); return; }
-  const emp = lastEmpReport.emp;
-  alert('لعرض التفاصيل استخدم زر Excel في صفحة التقارير بعد اختيار الفرع');
-}
-
+function exportEmployeeReport(){ alert('استخدم زر Excel في صفحة التقارير'); }
 function selectEmpBranch(v){ UI.empBranchFilter = v; UI.empReportId = ''; lastEmpReport = null; renderPage(); }
 function selectEmployee(id){ UI.empReportId = id; lastEmpReport = null; renderPage(); }
 function clearEmpSelection(){ UI.empReportId = ''; lastEmpReport = null; renderPage(); }
 
+// ═══════════════════════════════════════════════════════════
+// المقارنة (مع كارت HR الجديد)
+// ═══════════════════════════════════════════════════════════
 function timeToMins(t){
   if(!t || t === '—') return null;
   const [h,m] = String(t).split(':').map(Number);
   if(isNaN(h) || isNaN(m)) return null;
   return h*60 + m;
 }
-
 function calcBranchNetMins(dailyRec){
   const inM = timeToMins(dailyRec.timeIn);
   const outM = timeToMins(dailyRec.timeOut);
@@ -3367,7 +3822,6 @@ function calcBranchNetMins(dailyRec){
   else if(perm === 'day') permMins = workMins;
   return Math.max(0, workMins - permMins);
 }
-
 function calcPunchMins(pIn, pOut){
   const inM = timeToMins(pIn);
   const outM = timeToMins(pOut);
@@ -3390,6 +3844,8 @@ function compareDayFull(emp, dateKey, dailyRec, punches){
     inDiff: null, outDiff: null, netDiff: null,
     permInfo: '',
     isHoliday: false,
+    isLeave: false,
+    leaveLabel: '',
     issues: [], level: 'match'
   };
 
@@ -3397,6 +3853,16 @@ function compareDayFull(emp, dateKey, dailyRec, punches){
     r.isHoliday = true;
     r.level = 'match';
     r.issues.push(`🎉 ${getHoliday(dateKey).name}`);
+    return r;
+  }
+
+  // أجازة طويلة → نتخطى المقارنة
+  const leaveDay = getLeaveForDay(emp.branchId, dateKey);
+  if(leaveDay){
+    r.isLeave = true;
+    r.leaveLabel = leaveDay.reason || 'أجازة طويلة';
+    r.level = 'match';
+    r.issues.push(`🏖️ ${r.leaveLabel}`);
     return r;
   }
 
@@ -3435,7 +3901,6 @@ function compareDayFull(emp, dateKey, dailyRec, punches){
   }
 
   const bStatus = r.branchStatus;
-
   if(bStatus === 'absent' || bStatus === 'leave' || bStatus === 'mission'){
     if(r.hasPunch){
       r.level = 'error';
@@ -3445,7 +3910,6 @@ function compareDayFull(emp, dateKey, dailyRec, punches){
     }
     return r;
   }
-
   if(!r.hasPunch){
     r.level = 'error';
     r.issues.push('الفرع قال «حاضر» لكن مفيش بصمة');
@@ -3466,7 +3930,6 @@ function compareDayFull(emp, dateKey, dailyRec, punches){
     r.level = 'warn';
     r.issues.push(`فرق دخول ${Math.abs(inDiffRaw)} دقيقة`);
   }
-
   if(outDiffRaw === null){
     if(r.level !== 'error') r.level = 'warn';
     r.issues.push('خروج ناقص');
@@ -3474,7 +3937,6 @@ function compareDayFull(emp, dateKey, dailyRec, punches){
     if(r.level !== 'error') r.level = 'warn';
     r.issues.push(`فرق خروج ${Math.abs(outDiffRaw)} دقيقة`);
   }
-
   if(r.branchNetMins !== null && r.punchMins !== null){
     r.netDiff = r.branchNetMins - r.punchMins;
     if(Math.abs(r.netDiff) > TOL){
@@ -3482,13 +3944,11 @@ function compareDayFull(emp, dateKey, dailyRec, punches){
       r.issues.push(`فرق صافي ${Math.abs(r.netDiff)} دقيقة`);
     }
   }
-
   if(r.branchPermType === 'hour' && r.branchPermHours > 0){
     r.permInfo = `إذن ${r.branchPermHours} س`;
   } else if(r.branchPermType === 'day'){
     r.permInfo = 'إذن يوم كامل';
   }
-
   return r;
 }
 
@@ -3509,6 +3969,17 @@ function buildComparisonRows(branchId, from, to){
     if(to && p.dateKey > to) return;
     allDates.add(p.dateKey);
   });
+  // إضافة أيام الأجازات الطويلة
+  getBranchHrForPeriod(branchId, from, to).filter(h => h.type === 'leave').forEach(h => {
+    const end = h.endDate || h.date;
+    let cur = new Date(h.date + 'T00:00:00');
+    const last = new Date(end + 'T00:00:00');
+    while(cur <= last){
+      const k = localKey(cur);
+      if((!from || k >= from) && (!to || k <= to)) allDates.add(k);
+      cur.setDate(cur.getDate() + 1);
+    }
+  });
 
   const sortedDates = Array.from(allDates).sort();
   emps.forEach(emp => {
@@ -3524,7 +3995,7 @@ function buildComparisonRows(branchId, from, to){
         p.empId === emp.id && p.dateKey === dateKey && p.branchId === branchId
       );
       const cmp = compareDayFull(emp, dateKey, rec, punches);
-      if(cmp.level === 'missing' && !rec && !punches.length) return;
+      if(cmp.level === 'missing' && !rec && !punches.length && !cmp.isLeave) return;
       rows.push(cmp);
     });
   });
@@ -3618,6 +4089,54 @@ function printComparison(empId){
   }
 }
 
+function renderHrSummaryCard(branchId, from, to){
+  const sum = getBranchHrSummary(branchId, from, to);
+  if(!sum.advanceCount && !sum.penaltyCount && !sum.leaveCount) return '';
+
+  const listRows = sum.list.map(h => {
+    const info = HR_TYPES[h.type] || HR_TYPES.advance;
+    let dateTxt = h.date;
+    let desc = info.label;
+    if(h.type === 'leave'){
+      const end = h.endDate || h.date;
+      const days = Math.round((new Date(end) - new Date(h.date)) / 86400000) + 1;
+      dateTxt = `${h.date} → ${end}`;
+      desc = `🏖️ ${h.reason || 'أجازة'} (${arNum(days)} يوم)`;
+    } else {
+      desc = `${info.icon} ${info.label}${h.reason ? ' — ' + esc(h.reason) : ''}${h.notes ? ' — ' + esc(h.notes) : ''}`;
+    }
+    const amtHtml = info.hasAmount ? `<span class="amt">${arNum(num(h.amount).toLocaleString('en-US'))} ج.م</span>` : '';
+    return `<div class="row">
+      <span class="icon">${info.icon}</span>
+      <span class="date">${arNum(dateTxt)}</span>
+      <span class="desc">${desc}</span>
+      ${amtHtml}
+    </div>`;
+  }).join('');
+
+  return `<div class="hr-summary-card">
+    <div class="hr-summary-title">💼 حركات الفرع في الفترة</div>
+    <div class="hr-summary-grid">
+      <div class="hr-summary-item advance">
+        <div class="label">💰 إجمالي السلف</div>
+        <div class="value">${arNum(sum.advanceTotal.toLocaleString('en-US'))} ج.م</div>
+        <div class="muted" style="margin-top:4px">${arNum(sum.advanceCount)} عملية</div>
+      </div>
+      <div class="hr-summary-item penalty">
+        <div class="label">⚖️ إجمالي الجزاءات</div>
+        <div class="value">${arNum(sum.penaltyTotal.toLocaleString('en-US'))} ج.م</div>
+        <div class="muted" style="margin-top:4px">${arNum(sum.penaltyCount)} عملية</div>
+      </div>
+      <div class="hr-summary-item leave">
+        <div class="label">🏖️ الأجازات الطويلة</div>
+        <div class="value">${arNum(sum.leaveDays)} يوم</div>
+        <div class="muted" style="margin-top:4px">${arNum(sum.leaveCount)} فترة</div>
+      </div>
+    </div>
+    <div class="hr-summary-list">${listRows}</div>
+  </div>`;
+}
+
 function renderCompare(){
   const bId = UI.cmpBranch || '';
   const from = UI.cmpFrom || '';
@@ -3632,7 +4151,6 @@ function renderCompare(){
   let body = '';
   if(lastComparison && lastComparison.rows.length){
     const { rows, summary } = lastComparison;
-
     const branchRecCount = rows.filter(r => r.branchIn || r.branchOut).length;
     const noBranchData = branchRecCount === 0;
 
@@ -3649,11 +4167,11 @@ function renderCompare(){
       <div class="alert alert-warning" style="font-size:14px;padding:16px;display:block">
         <div>
           <b>⚠️ الفرع لم يسجّل أي يوم في الفترة المحددة</b>
-          <div style="font-size:12.5px;margin-top:6px">
-            المقارنة معطّلة — تواصل مع الفرع ليسجّل بياناته أولاً.
-          </div>
+          <div style="font-size:12.5px;margin-top:6px">المقارنة معطّلة — تواصل مع الفرع ليسجّل بياناته أولاً.</div>
         </div>
       </div>` : '';
+
+    const hrCard = renderHrSummaryCard(bId, from, to);
 
     let content = '';
     if(tab === 'detailed'){
@@ -3676,6 +4194,12 @@ function renderCompare(){
             return `<tr style="background:#fce7f3">
               <td>${arNum(r.dateKey)}<br><span class="muted" style="font-size:11px">${r.day}</span></td>
               <td colspan="7" style="text-align:center"><span class="badge b-holiday">🎉 ${esc(r.issues[0] || 'إجازة رسمية')}</span></td>
+            </tr>`;
+          }
+          if(r.isLeave){
+            return `<tr class="row-hr-leave">
+              <td>${arNum(r.dateKey)}<br><span class="muted" style="font-size:11px">${r.day}</span></td>
+              <td colspan="7" style="text-align:center"><span class="badge b-leave">🏖️ أجازة: ${esc(r.leaveLabel)}</span></td>
             </tr>`;
           }
           const cls = r.level === 'match' ? 'row-match'
@@ -3746,14 +4270,9 @@ function renderCompare(){
           </div>
           <div class="table-wrap"><table>
             <thead><tr>
-              <th>التاريخ</th>
-              <th>جدول الفرع</th>
-              <th>البصمة</th>
-              <th>صافي الفرع</th>
-              <th>ساعات البصمة</th>
-              <th>الفرق</th>
-              <th>الملاحظات</th>
-              <th>النتيجة</th>
+              <th>التاريخ</th><th>جدول الفرع</th><th>البصمة</th>
+              <th>صافي الفرع</th><th>ساعات البصمة</th><th>الفرق</th>
+              <th>الملاحظات</th><th>النتيجة</th>
             </tr></thead>
             <tbody>${daysRowsHtml}</tbody>
           </table></div>
@@ -3814,7 +4333,7 @@ function renderCompare(){
         </div>`;
     }
 
-    body = banner + summaryHtml + `
+    body = banner + summaryHtml + hrCard + `
       <div class="tabs-inline no-print">
         <button class="tab-inline ${tab === 'detailed' ? 'active' : ''}" onclick="setCmpTab('detailed')">📋 تفصيلي</button>
         <button class="tab-inline ${tab === 'summary' ? 'active' : ''}" onclick="setCmpTab('summary')">📊 ملخص</button>
@@ -3836,7 +4355,7 @@ function renderCompare(){
     <div class="card-header">
       <div>
         <div class="card-title">🔍 مقارنة جدول الفرع مع البصمة</div>
-        <div class="card-subtitle">السماحية: ${arNum(getTol())} دقيقة — الإجازات الرسمية مستثناة تلقائياً</div>
+        <div class="card-subtitle">السماحية: ${arNum(getTol())} دقيقة — الإجازات الرسمية والأجازات الطويلة مستثناة تلقائياً</div>
       </div>
     </div>
     <div class="form-row">
@@ -3896,10 +4415,11 @@ function exportComparison(){
     'بصمة — خروج': r.punchOut || '',
     'بصمة — ساعات (دقيقة)': r.punchMins ?? '',
     'الفرق (دقيقة)': r.netDiff ?? '',
-    'النتيجة': r.isHoliday ? 'إجازة رسمية' : r.level === 'match' ? 'مطابق' : r.level === 'warn' ? 'فرق' : r.level === 'error' ? 'تناقض' : r.level === 'pending' ? 'معلّق' : 'غير مكتمل',
+    'النتيجة': r.isHoliday ? 'إجازة رسمية' : r.isLeave ? 'أجازة طويلة' : r.level === 'match' ? 'مطابق' : r.level === 'warn' ? 'فرق' : r.level === 'error' ? 'تناقض' : r.level === 'pending' ? 'معلّق' : 'غير مكتمل',
     'الملاحظات': r.issues.join(' | ')
   }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detailed), 'تفصيلي');
+
   const summary = buildSummaryRows(rows).map(m => ({
     'رقم البصمة': m.empCode,
     'الاسم': m.empName,
@@ -3913,26 +4433,46 @@ function exportComparison(){
     'الفرق (دقيقة)': m.totalBranchNet - m.totalPunch
   }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summary), 'ملخص');
+
+  // شيت HR
+  const hrSum = getBranchHrSummary(branchId, lastComparison.from, lastComparison.to);
+  const hrRows = hrSum.list.map(h => {
+    const info = HR_TYPES[h.type] || HR_TYPES.advance;
+    return {
+      'النوع': info.label,
+      'التاريخ': h.date,
+      'تاريخ النهاية': h.endDate || '',
+      'المبلغ': info.hasAmount ? num(h.amount) : '',
+      'السبب': h.reason || '',
+      'ملاحظات': h.notes || '',
+      'بواسطة': h.createdBy || h.updatedBy || ''
+    };
+  });
+  if(hrRows.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(hrRows), 'حركات الفرع');
+
   XLSX.writeFile(wb, `مقارنة_${branchName(branchId)}_${today()}.xlsx`);
 }
 
+// ═══════════════════════════════════════════════════════════
+// النسخ الاحتياطي + الصيانة
+// ═══════════════════════════════════════════════════════════
 async function backupSystem(){
   showLoader(true);
   try {
     const backup = {
-      version: '2.0',
+      version: '3.0',
       app: 'attendance-system',
       exportedAt: Date.now(),
       exportedBy: currentUser.name,
       counts: {
         branches: DB.branches.length, users: DB.users.length, shifts: DB.shifts.length,
         employees: DB.employees.length, punches: DB.punches.length, daily: DB.daily.length,
-        holidays: DB.holidays.length
+        holidays: DB.holidays.length, hr: DB.hr.length
       },
       data: {
         branches: DB.branches, users: DB.users, shifts: DB.shifts,
         employees: DB.employees, punches: DB.punches, daily: DB.daily,
-        holidays: DB.holidays, settings: DB.settings || {}
+        holidays: DB.holidays, hr: DB.hr, settings: DB.settings || {}
       }
     };
     const json = JSON.stringify(backup, null, 2);
@@ -3981,6 +4521,7 @@ async function restoreSystem(ev){
       await fsBatchDel('punches', () => true);
       await fsBatchDel('daily', () => true);
       await fsBatchDel('holidays', () => true);
+      await fsBatchDel('hr', () => true);
       await fsBatchDel('settings', () => true);
       if(backup.data.branches?.length)  await fsRestore('branches',  backup.data.branches);
       if(backup.data.users?.length)     await fsRestore('users',     backup.data.users);
@@ -3989,6 +4530,7 @@ async function restoreSystem(ev){
       if(backup.data.punches?.length)   await fsRestore('punches',   backup.data.punches);
       if(backup.data.daily?.length)     await fsRestore('daily',     backup.data.daily);
       if(backup.data.holidays?.length)  await fsRestore('holidays',  backup.data.holidays);
+      if(backup.data.hr?.length)        await fsRestore('hr',        backup.data.hr);
       if(backup.data.settings && Object.keys(backup.data.settings).length){
         const { id, ...rest } = backup.data.settings;
         await fsAdd('settings', rest);
@@ -4048,13 +4590,16 @@ async function changeMaintenancePassword(){
   const ok = await verifyPass(oldPass, DB.settings.maintenancePasswordHash);
   if(!ok){ alert('❌ كلمة المرور غير صحيحة'); return; }
   const p1 = prompt('🔑 كلمة المرور الجديدة (٦ أحرف على الأقل):');
-  if(!p1 || p1.length < 6){ alert('كلمة المرور قصيرة جداً'); return; }
+  if(!p1 || p1.length < 6){ alert('كلمة المرور قصيرة جدًا'); return; }
   const p2 = prompt('🔑 أعد كتابة كلمة المرور الجديدة:');
   if(p2 !== p1){ alert('❌ كلمتا المرور غير متطابقتين'); return; }
   await saveMaintenanceSettings({ maintenancePasswordHash: await hashNew(p1) });
   alert('✅ تم تغيير كلمة المرور');
 }
 
+// ═══════════════════════════════════════════════════════════
+// API + التشغيل
+// ═══════════════════════════════════════════════════════════
 const api = {
   doLogin, doLogout, toggleSidebar, navigateTo, renderPage,
   setSettingsTab, submitAddBranch, openAddBranchModal, setDefaultShift, editBranchPass, deleteBranch,
@@ -4076,7 +4621,10 @@ const api = {
   saveCompanyIdentity, uploadLogo, removeLogo, updatePrintBranding,
   saveCompareTolerance, previewReset, executeReset,
   addHoliday, deleteHoliday,
-  backupSystem, restoreSystem, toggleMaintenance, changeMaintenancePassword, renderSystemAdminCard
+  backupSystem, restoreSystem, toggleMaintenance, changeMaintenancePassword, renderSystemAdminCard,
+  // HR
+  setHrBranch, setHrFrom, setHrTo, setHrFilterType, clearHrFilters,
+  openHrModal, onHrTypeChange, saveHrTransaction, editHrTransaction, deleteHrTransaction
 };
 Object.keys(api).forEach(k => { if(typeof api[k] === 'function') window[k] = api[k]; });
 window.$ = $;
