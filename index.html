@@ -161,6 +161,7 @@ tbody tr:last-child td{border-bottom:none}
 .row-match{background:#f0fdf4}
 .row-warn{background:#fffbeb}
 .row-error{background:#fef2f2}
+.row-pending{background:#f8fafc}
 .cmp-print-only{display:none}
 
 /* ===== Branch Cards ===== */
@@ -371,6 +372,15 @@ tbody tr:last-child td{border-bottom:none}
 }
 .reset-option:has(input:checked){border-color:var(--danger);background:#fef2f2;box-shadow:0 0 0 3px rgba(239,68,68,.1)}
 
+/* ===== Comparison Table — Clean ===== */
+.cmp-emp-card .table-wrap{border:1px solid #e5e7eb;border-radius:10px;overflow:hidden}
+.cmp-emp-card th{background:#f9fafb;font-size:11.5px;padding:10px 8px;border-bottom:1px solid #e5e7eb;color:#4b5563;font-weight:700}
+.cmp-emp-card td{padding:10px 8px;font-size:12.5px;vertical-align:middle;border-bottom:1px solid #f3f4f6}
+.cmp-emp-card tr:last-child td{border-bottom:none}
+.cmp-emp-card .report-summary{background:#f9fafb;border-radius:10px;padding:12px 16px;font-size:12px;gap:12px 18px;border:1px solid #f3f4f6}
+.cmp-emp-card .report-summary b{font-size:13.5px;font-weight:800}
+.cmp-emp-card .report-name{font-size:16px;letter-spacing:-.2px}
+
 /* ===== الطباعة ===== */
 .print-header,.print-footer{display:none}
 
@@ -529,11 +539,14 @@ const DAYS = ['الأحد','الإثنين','الثلاثاء','الأربعاء
 const STATUS = { present:'حاضر', absent:'غائب', leave:'أجازة', mission:'مهمة' };
 const PERM = { none:'بدون', hour:'إذن ساعات', day:'يوم كامل' };
 
+const DEFAULT_CMP_TOLERANCE = 15;
+
 const $ = id => document.getElementById(id);
 const showLoader = v => $('loader').style.display = v ? 'flex' : 'none';
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s==null?'':s).trim().toLowerCase().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/\s+/g,'');
 const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+const getCmpTolerance = () => num(DB.settings?.cmpTolerance ?? DEFAULT_CMP_TOLERANCE);
 
 const localKey = d => {
   const dt = (d instanceof Date) ? d : new Date(d);
@@ -1557,6 +1570,7 @@ function renderSettings(){
     { id:'employees', label:'الموظفين' },
     ...(isAdmin ? [
       { id:'branding', label:'🎨 هوية الشركة' },
+      { id:'compare', label:'⚖️ المقارنة' },
       { id:'reset', label:'🗑️ تهيئة' }
     ] : [])
   ];
@@ -1572,12 +1586,59 @@ function renderSettings(){
       ${tab === 'shifts' ? renderShiftsTab() : ''}
       ${tab === 'employees' ? renderEmployeesTab() : ''}
       ${tab === 'branding' ? renderBrandingTab() : ''}
+      ${tab === 'compare' ? renderCompareSettingsTab() : ''}
       ${tab === 'reset' ? renderResetTab() : ''}
     </div>
   </div>
   ${isAdmin ? renderSystemAdminCard() : ''}`;
 }
 function setSettingsTab(t){ UI.settingsTab = t; renderPage(); }
+
+/* ============================================================
+   ⚖️ إعدادات المقارنة
+   ============================================================ */
+
+function renderCompareSettingsTab(){
+  const t = DB.settings?.cmpTolerance ?? DEFAULT_CMP_TOLERANCE;
+  return `
+    <div class="card" style="background:var(--gray-50);box-shadow:none;border:1px solid var(--gray-200)">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px">⚖️ إعدادات المقارنة</div>
+
+      <div class="form-row">
+        <div class="field" style="max-width:280px">
+          <label>⏱️ مدة السماح (بالدقايق)</label>
+          <input type="number" id="cmpToleranceInput" value="${t}" min="0" max="120" step="1">
+          <div class="muted" style="font-size:11.5px;margin-top:4px">
+            الفرق الأقل من الرقم ده مش هيتعدّ فرق
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveCompareTolerance()">💾 حفظ</button>
+      </div>
+
+      <div class="alert alert-info" style="margin-top:14px;display:block">
+        💡 <b>مثال:</b> لو السماحية <b>${t} دقيقة</b>، وفرق الدخول 12 دقيقة →
+        <span style="color:var(--success);font-weight:700">مطابق ✓</span> —
+        لكن لو الفرق 20 دقيقة → <span style="color:var(--warning);font-weight:700">فرق ⚠️</span>
+      </div>
+
+      <div class="alert alert-info" style="margin-top:10px;display:block;background:#f0f9ff;border-color:#bae6fd;color:#075985">
+        📌 <b>ملحوظة عن الإذن:</b> الإذن اللي بيتكتب في التسجيل اليومي (مثلاً "تأخير نصف ساعة")
+        بيظهر كـ <b>معلومة فقط</b> في تقرير المقارنة — مش بيأثر على ساعات البصمة، وبيتخصم بس من ساعات الفرع.
+      </div>
+    </div>`;
+}
+
+async function saveCompareTolerance(){
+  const v = num($('cmpToleranceInput').value);
+  if(v < 0 || v > 120){ alert('القيمة من 0 لـ 120 دقيقة'); return; }
+  showLoader(true);
+  try {
+    await saveMaintenanceSettings({ cmpTolerance: v });
+    alert('✅ تم الحفظ');
+    renderPage();
+  } catch(e){ alert(e.message); }
+  finally { showLoader(false); }
+}
 
 /* ============================================================
    🎨 هوية الشركة
@@ -3465,8 +3526,6 @@ function clearEmpSelection(){ UI.empReportId = ''; lastEmpReport = null; renderP
    🔍 المقارنة
    ============================================================ */
 
-const CMP_TOLERANCE = 10;
-
 function timeToMins(t){
   if(!t || t === '—') return null;
   const [h,m] = String(t).split(':').map(Number);
@@ -3498,6 +3557,7 @@ function calcPunchMins(pIn, pOut){
 }
 
 function compareDayFull(emp, dateKey, dailyRec, punches){
+  const TOL = getCmpTolerance();
   const r = {
     empId: emp.id, empName: emp.name, empCode: emp.code,
     dateKey, day: dayName(dateKey),
@@ -3507,6 +3567,7 @@ function compareDayFull(emp, dateKey, dailyRec, punches){
     punchIn: '', punchOut: '', hasPunch: false,
     punchMins: null,
     inDiff: null, outDiff: null, netDiff: null,
+    permInfo: '',
     issues: [], level: 'match'
   };
 
@@ -3534,8 +3595,8 @@ function compareDayFull(emp, dateKey, dailyRec, punches){
   }
 
   if(!dailyRec && r.hasPunch){
-    r.level = 'error';
-    r.issues.push('الفرع مكتبش (فيه بصمة)');
+    r.level = 'pending';
+    r.issues.push('الفرع لم يسجل — في انتظار التسجيل');
     return r;
   }
   if(!dailyRec && !r.hasPunch){
@@ -3572,31 +3633,32 @@ function compareDayFull(emp, dateKey, dailyRec, punches){
   if(inDiffRaw === null){
     r.level = 'warn';
     r.issues.push('دخول ناقص');
-  } else if(Math.abs(inDiffRaw) > CMP_TOLERANCE){
+  } else if(Math.abs(inDiffRaw) > TOL){
     r.level = 'warn';
-    r.issues.push(`فرق دخول ${inDiffRaw > 0 ? '+' : ''}${Math.abs(inDiffRaw)} دقيقة`);
+    r.issues.push(`فرق دخول ${Math.abs(inDiffRaw)} دقيقة`);
   }
 
   if(outDiffRaw === null){
     if(r.level !== 'error') r.level = 'warn';
     r.issues.push('خروج ناقص');
-  } else if(Math.abs(outDiffRaw) > CMP_TOLERANCE){
+  } else if(Math.abs(outDiffRaw) > TOL){
     if(r.level !== 'error') r.level = 'warn';
-    r.issues.push(`فرق خروج ${outDiffRaw > 0 ? '+' : ''}${Math.abs(outDiffRaw)} دقيقة`);
+    r.issues.push(`فرق خروج ${Math.abs(outDiffRaw)} دقيقة`);
   }
 
   if(r.branchNetMins !== null && r.punchMins !== null){
     r.netDiff = r.branchNetMins - r.punchMins;
-    if(Math.abs(r.netDiff) > CMP_TOLERANCE){
+    if(Math.abs(r.netDiff) > TOL){
       if(r.level !== 'error') r.level = 'warn';
-      r.issues.push(`فرق صافي ${r.netDiff > 0 ? '+' : ''}${Math.abs(r.netDiff)} دقيقة`);
+      r.issues.push(`فرق صافي ${Math.abs(r.netDiff)} دقيقة`);
     }
   }
 
+  // الإذن — معلومة فقط، مش بيدخل في "المشاكل"
   if(r.branchPermType === 'hour' && r.branchPermHours > 0){
-    r.issues.push(`إذن ${arNum(r.branchPermHours)} ساعة`);
+    r.permInfo = `إذن ${r.branchPermHours} س`;
   } else if(r.branchPermType === 'day'){
-    r.issues.push('إذن يوم كامل');
+    r.permInfo = 'إذن يوم كامل';
   }
 
   return r;
@@ -3647,7 +3709,7 @@ function buildSummaryRows(rows){
     if(!map[r.empId]){
       map[r.empId] = {
         empId: r.empId, empName: r.empName, empCode: r.empCode,
-        days: 0, match: 0, warn: 0, error: 0,
+        days: 0, match: 0, warn: 0, error: 0, pending: 0,
         totalBranchNet: 0, totalPunch: 0, totalPermMins: 0
       };
     }
@@ -3656,6 +3718,7 @@ function buildSummaryRows(rows){
     if(r.level === 'match') m.match++;
     else if(r.level === 'warn') m.warn++;
     else if(r.level === 'error') m.error++;
+    else if(r.level === 'pending') m.pending++;
     if(r.branchNetMins !== null) m.totalBranchNet += r.branchNetMins;
     if(r.punchMins !== null) m.totalPunch += r.punchMins;
     if(r.branchPermType === 'hour') m.totalPermMins += Math.round(r.branchPermHours*60);
@@ -3671,7 +3734,7 @@ function buildComparisonByEmployee(rows){
       map[r.empId] = {
         empId: r.empId, empName: r.empName, empCode: r.empCode,
         days: [],
-        totals: { days:0, match:0, warn:0, error:0, branchNetTotal:0, punchTotal:0, permTotal:0 }
+        totals: { days:0, match:0, warn:0, error:0, pending:0, branchNetTotal:0, punchTotal:0, permTotal:0 }
       };
     }
     const m = map[r.empId];
@@ -3680,6 +3743,7 @@ function buildComparisonByEmployee(rows){
     if(r.level === 'match') m.totals.match++;
     else if(r.level === 'warn') m.totals.warn++;
     else if(r.level === 'error') m.totals.error++;
+    else if(r.level === 'pending') m.totals.pending++;
     if(r.branchNetMins !== null) m.totals.branchNetTotal += r.branchNetMins;
     if(r.punchMins !== null)     m.totals.punchTotal    += r.punchMins;
     if(r.branchPermType === 'hour') m.totals.permTotal += Math.round(r.branchPermHours*60);
@@ -3736,42 +3800,63 @@ function renderCompare(){
   let body = '';
   if(lastComparison && lastComparison.rows.length){
     const { rows, summary } = lastComparison;
+
+    // لو الفرع مكتبش خالص — بانر تحذيري
+    const branchRecCount = rows.filter(r => r.branchIn || r.branchOut).length;
+    const noBranchData = branchRecCount === 0;
+
     const summaryHtml = `
       <div class="stats">
         <div class="stat"><div class="stat-icon blue">📊</div><div class="stat-value">${arNum(summary.total)}</div><div class="stat-label">إجمالي الصفوف</div></div>
         <div class="stat"><div class="stat-icon green">✅</div><div class="stat-value">${arNum(summary.match)}</div><div class="stat-label">مطابق</div></div>
         <div class="stat"><div class="stat-icon orange">⚠️</div><div class="stat-value">${arNum(summary.warn)}</div><div class="stat-label">فروقات</div></div>
         <div class="stat"><div class="stat-icon red">❌</div><div class="stat-value">${arNum(summary.error)}</div><div class="stat-label">تناقضات</div></div>
+        <div class="stat"><div class="stat-icon purple">📭</div><div class="stat-value">${arNum(summary.pending || 0)}</div><div class="stat-label">معلّق</div></div>
       </div>`;
+
+    const banner = noBranchData ? `
+      <div class="alert alert-warning" style="font-size:14px;padding:16px;display:block">
+        <div>
+          <b>⚠️ الفرع لم يسجّل أي يوم في الفترة المحددة</b>
+          <div style="font-size:12.5px;margin-top:6px">
+            المقارنة معطّلة — تواصل مع الفرع ليسجّل بياناته أولاً.
+          </div>
+        </div>
+      </div>` : '';
+
     let content = '';
     if(tab === 'detailed'){
       const filtered = filter === 'all' ? rows
         : filter === 'issues' ? rows.filter(r => r.level === 'error' || r.level === 'warn')
         : filter === 'match' ? rows.filter(r => r.level === 'match')
         : filter === 'error' ? rows.filter(r => r.level === 'error')
+        : filter === 'pending' ? rows.filter(r => r.level === 'pending')
         : rows;
 
       const byEmp = buildComparisonByEmployee(filtered);
       const cardsHtml = byEmp.length ? byEmp.map(m => {
         const netDiff = m.totals.branchNetTotal - m.totals.punchTotal;
-        const diffColor = Math.abs(netDiff) <= CMP_TOLERANCE ? 'var(--success)'
+        const tol = getCmpTolerance();
+        const diffColor = Math.abs(netDiff) <= tol ? 'var(--success)'
           : netDiff > 0 ? 'var(--primary)' : 'var(--danger)';
 
         const daysRowsHtml = m.days.map(r => {
-          const cls = r.level === 'match' ? 'row-match' : r.level === 'warn' ? 'row-warn' : 'row-error';
+          const cls = r.level === 'match' ? 'row-match'
+            : r.level === 'warn' ? 'row-warn'
+            : r.level === 'error' ? 'row-error'
+            : r.level === 'pending' ? 'row-pending' : '';
           const badge = r.level === 'match' ? '<span class="badge b-green">✅ مطابق</span>'
             : r.level === 'warn' ? '<span class="badge b-orange">⚠️ فرق</span>'
             : r.level === 'error' ? '<span class="badge b-red">❌ تناقض</span>'
+            : r.level === 'pending' ? '<span class="badge b-gray">📭 معلّق</span>'
             : '<span class="badge b-gray">—</span>';
           let branchCell = '';
           if(r.branchStatus !== 'present' && !r.branchIn){
             branchCell = `<span class="badge b-gray">${STATUS[r.branchStatus] || r.branchStatus}</span>`;
           } else if(r.branchIn || r.branchOut){
-            branchCell = `${arTime(r.branchIn) || '—'} ← ${arTime(r.branchOut) || '—'}`;
-            if(r.branchPermType === 'hour' && r.branchPermHours > 0){
-              branchCell += `<br><span class="badge b-blue" style="font-size:10px">إذن ${arNum(r.branchPermHours)} س</span>`;
-            } else if(r.branchPermType === 'day'){
-              branchCell += `<br><span class="badge b-blue" style="font-size:10px">إذن يوم</span>`;
+            branchCell = `<div style="font-weight:600">${arTime(r.branchIn) || '—'} ← ${arTime(r.branchOut) || '—'}</div>`;
+            if(r.permInfo){
+              branchCell += `<div style="margin-top:4px"><span class="badge b-blue" style="font-size:10px">${esc(r.permInfo)}</span></div>`;
             }
           } else { branchCell = '<span class="muted">—</span>'; }
           const branchHrs = r.branchNetMins !== null ? fmtMinsAr(r.branchNetMins) : '—';
@@ -3800,7 +3885,7 @@ function renderCompare(){
 
         return `<div class="cmp-emp-card report-card" data-cmp-emp="${m.empId}">
           <div class="cmp-print-only">
-            تقرير المقارنة — ${esc(branchName(lastComparison.branchId))} — الفترة: ${from || 'البداية'} ← ${to || 'الآن'} — سماحية ${arNum(CMP_TOLERANCE)} دقيقة
+            تقرير المقارنة — ${esc(branchName(lastComparison.branchId))} — الفترة: ${from || 'البداية'} ← ${to || 'الآن'} — سماحية ${arNum(getCmpTolerance())} دقيقة
           </div>
           <div class="report-header">
             <div>
@@ -3817,6 +3902,7 @@ function renderCompare(){
             <span>✅ مطابق <b style="color:var(--success)">${arNum(m.totals.match)}</b></span>
             <span>⚠️ فروقات <b style="color:var(--warning)">${arNum(m.totals.warn)}</b></span>
             <span>❌ تناقضات <b style="color:var(--danger)">${arNum(m.totals.error)}</b></span>
+            ${m.totals.pending ? `<span>📭 معلّق <b style="color:var(--gray-500)">${arNum(m.totals.pending)}</b></span>` : ''}
             <span>⚖️ صافي الفرع <b>${fmtMinsAr(m.totals.branchNetTotal)}</b></span>
             <span>📥 ساعات البصمة <b>${fmtMinsAr(m.totals.punchTotal)}</b></span>
             <span>الفرق <b style="color:${diffColor}">${netDiff>0?'+':''}${fmtMinsAr(netDiff)}</b></span>
@@ -3848,6 +3934,7 @@ function renderCompare(){
               <button class="btn btn-outline btn-sm" onclick="setCmpFilter('all')" ${filter === 'all' ? 'disabled' : ''}>الكل</button>
               <button class="btn btn-outline btn-sm" onclick="setCmpFilter('issues')" ${filter === 'issues' ? 'disabled' : ''}>الفروقات</button>
               <button class="btn btn-outline btn-sm" onclick="setCmpFilter('error')" ${filter === 'error' ? 'disabled' : ''}>التناقضات</button>
+              <button class="btn btn-outline btn-sm" onclick="setCmpFilter('pending')" ${filter === 'pending' ? 'disabled' : ''}>المعلّق</button>
               <button class="btn btn-outline btn-sm" onclick="setCmpFilter('match')" ${filter === 'match' ? 'disabled' : ''}>المطابق</button>
             </div>
           </div>
@@ -3857,7 +3944,8 @@ function renderCompare(){
       const sumRows = buildSummaryRows(rows);
       const rowsHtml = sumRows.length ? sumRows.map(m => {
         const netDiff = m.totalBranchNet - m.totalPunch;
-        const diffColor = Math.abs(netDiff) <= CMP_TOLERANCE ? 'var(--success)' :
+        const tol = getCmpTolerance();
+        const diffColor = Math.abs(netDiff) <= tol ? 'var(--success)' :
           netDiff > 0 ? 'var(--primary)' : 'var(--danger)';
         return `<tr>
           <td style="text-align:right"><b>${esc(m.empName)}</b><br><span class="muted">${esc(m.empCode)}</span></td>
@@ -3889,7 +3977,7 @@ function renderCompare(){
         </div>`;
     }
 
-    body = summaryHtml + `
+    body = banner + summaryHtml + `
       <div class="tabs-inline no-print">
         <button class="tab-inline ${tab === 'detailed' ? 'active' : ''}" onclick="setCmpTab('detailed')">📋 تفصيلي</button>
         <button class="tab-inline ${tab === 'summary' ? 'active' : ''}" onclick="setCmpTab('summary')">📊 ملخص</button>
@@ -3912,7 +4000,7 @@ function renderCompare(){
     <div class="card-header">
       <div>
         <div class="card-title">🔍 مقارنة جدول الفرع مع البصمة</div>
-        <div class="card-subtitle">السماحية: ${arNum(CMP_TOLERANCE)} دقيقة — الإذن يُخصم من ساعات الفرع</div>
+        <div class="card-subtitle">السماحية: ${arNum(getCmpTolerance())} دقيقة — الإذن يظهر في الفرع فقط، ولا يؤثر على البصمة</div>
       </div>
     </div>
     <div class="form-row">
@@ -3942,11 +4030,12 @@ function generateComparison(){
   showLoader(true);
   try {
     const rows = buildComparisonRows(bId, from, to);
-    const summary = { total: rows.length, match: 0, warn: 0, error: 0, missing: 0 };
+    const summary = { total: rows.length, match: 0, warn: 0, error: 0, missing: 0, pending: 0 };
     rows.forEach(r => {
       if(r.level === 'match') summary.match++;
       else if(r.level === 'warn') summary.warn++;
       else if(r.level === 'error') summary.error++;
+      else if(r.level === 'pending') summary.pending++;
       else summary.missing++;
     });
     lastComparison = { rows, summary, branchId: bId, from, to };
@@ -3971,7 +4060,7 @@ function exportComparison(){
     'بصمة — خروج': r.punchOut || '',
     'بصمة — ساعات (دقيقة)': r.punchMins ?? '',
     'الفرق (دقيقة)': r.netDiff ?? '',
-    'النتيجة': r.level === 'match' ? 'مطابق' : r.level === 'warn' ? 'فرق' : r.level === 'error' ? 'تناقض' : 'غير مكتمل',
+    'النتيجة': r.level === 'match' ? 'مطابق' : r.level === 'warn' ? 'فرق' : r.level === 'error' ? 'تناقض' : r.level === 'pending' ? 'معلّق' : 'غير مكتمل',
     'الملاحظات': r.issues.join(' | ')
   }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detailed), 'تفصيلي');
@@ -3982,6 +4071,7 @@ function exportComparison(){
     'مطابق': m.match,
     'فروقات': m.warn,
     'تناقضات': m.error,
+    'معلّق': m.pending,
     'صافي ساعات الفرع (دقيقة)': m.totalBranchNet,
     'ساعات البصمة (دقيقة)': m.totalPunch,
     'الفرق (دقيقة)': m.totalBranchNet - m.totalPunch
@@ -4142,7 +4232,10 @@ async function changeMaintenancePassword(){
   alert('✅ تم تغيير كلمة المرور');
 }
 
-Object.assign(window, {
+/* ============================================================
+   تصدير الدوال للنطاق العام — نسخة آمنة
+   ============================================================ */
+const __exports = {
   doLogin, doLogout, toggleSidebar, navigateTo, renderPage,
   setSettingsTab, submitAddBranch, openAddBranchModal, setDefaultShift, editBranchPass, deleteBranch,
   autoShiftHours, addShift, deleteShift,
@@ -4160,9 +4253,13 @@ Object.assign(window, {
   setCmpFilter, setCmpTab, generateComparison, exportComparison, shareCompareWhatsApp,
   printComparison,
   saveCompanyIdentity, uploadLogo, removeLogo, updatePrintBranding,
+  saveCompareTolerance,
   previewReset, executeReset,
   backupSystem, restoreSystem, toggleMaintenance, changeMaintenancePassword, renderSystemAdminCard
-});
+};
+for(const k in __exports){
+  if(typeof __exports[k] === 'function') window[k] = __exports[k];
+}
 window.$ = $;
 
 (async function init(){
